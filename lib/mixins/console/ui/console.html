@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html> 
+	<head> 
+	<title>Flux Node</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+		#FluxNodeLogin{
+			visibility: hidden;
+			margin-left:auto;
+			margin-right: auto;
+			border: 1px solid;
+		}
+		
+		#FluxNodeConsoleWrapper{
+			display:block;
+			width: 50em;
+			height:42em;
+			margin-left: auto;
+			margin-right: auto;
+			padding:0;
+		}
+		#FluxNodeConsole{
+			display:block;
+			width: 50em;
+			height:40em;
+			margin:0;
+			padding:0;
+			float:left;
+			clear: both;
+		}
+		
+		#FluxNodeConsoleInput{
+			display:block;
+			width: 50em;
+			height:1.2em;
+			margin:0;
+			padding:0;
+			float:left;
+		}
+
+	</style>
+	<script src="/socket.io/socket.io.js"></script>
+	
+	<script src="/lib/js/extend.js"></script>
+	<script src="/lib/js/eventemitter2.js"></script>
+	<script src="/lib/js/FluxNode.js"></script>
+	
+	<script>
+		FluxNode.on('stdout', function(data){
+			if(data=='clear'){
+				document.getElementById('FluxNodeConsole').value ='';
+			}else{
+				document.getElementById('FluxNodeConsole').value += data+'\n';
+			}
+			
+			document.getElementById('FluxNodeConsoleInput').focus();
+		});
+		
+		FluxNode.onAny(function(data){
+			console.log(this.event);
+		});
+		
+		FluxNode.start();
+		
+		function doInputKeypress(e){
+		    if (e.keyCode == 13) {
+		        var tb = document.getElementById("FluxNodeConsoleInput");
+		        document.getElementById('FluxNodeConsole').value += tb.value+'\n';
+		        if(tb.value=='clear'){
+		        	document.getElementById('FluxNodeConsole').value = '';
+		        	document.getElementById('FluxNodeConsoleInput').focus();
+		        }else{
+		        	FluxNode.sendEmit('stdin', tb.value);
+		        }
+		        tb.value='';
+		        return false;
+		    }
+		}
+	</script>
+	
+</head> 
+<body>
+	<div id="FluxNodeConsoleWrapper">
+		<textarea id='FluxNodeConsole'></textarea>
+		<input type="text" id="FluxNodeConsoleInput" onkeypress="return doInputKeypress(event)"/>
+	</div>
+</body>
+</html>

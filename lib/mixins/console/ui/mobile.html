@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html> 
+	<head> 
+	<title>Flux Node</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
+	<style>
+		#login-panel form{
+			max-width: 30em;
+			margin: auto auto;
+		}
+		
+		#login-panel .ui-field-contain input.ui-input-text, #login-panel .ui-field-contain textarea.ui-input-text, #login-panel .ui-field-contain .ui-input-search {
+		    display: inline-block;
+		    width: 100%;
+		}
+	</style>
+	
+	<script src="/socket.io/socket.io.js"></script>
+</head> 
+<body> 
+
+<!-- Start of first page -->
+<div data-role="page" id="login-panel">
+	<div data-role="content">	
+		<form method="post" onSubmit="return false;">
+			<div data-role="fieldcontain">
+				<label for="basic">Username:</label>
+				<input type="text" name="name" id="login-username" data-mini="true" />	
+			</div>
+			<div data-role="fieldcontain">
+				<label for="basic">Password:</label>
+				<input type="password" name="name" id="login-password" data-mini="true" />
+			</div>
+			<div data-role="fieldcontain">
+				<a href="#" data-role="button" onClick="doLogin();">Login</a>
+			</div>
+		</form> 
+	</div><!-- /content -->
+</div><!-- /page -->
+
+
+<!-- Start of second page -->
+<div data-role="page" id="home-panel">
+	<div data-role="header" data-id="h"  data-position="fixed">
+		<h1 id="node-title">Flux Node</h1>
+	</div><!-- /header -->
+
+	<div data-role="content">	
+		<ul data-role="listview">
+			<li><a href="#">Panels</a></li>
+			<li><a href="#">Mixins</a></li>
+			<li><a href="#">Transports</a></li>
+			<li><a href="#">Nodes</a></li>
+		</ul>
+	</div><!-- /content -->
+
+	<div data-role="footer" data-id="footer" data-position="fixed">
+		<div data-role="navbar">
+			<ul>
+				<li><a href="#home-panel"data-icon="home">Home</a></li>
+				<li><a href="#settings-panel" data-icon="gear">Settings</a></li>
+			</ul>
+		</div>
+	</div><!-- /footer -->
+</div><!-- /page -->
+
+<div data-role="page" id="settings-panel">
+	<div data-role="content">	
+		<ul data-role="listview">
+			<li><a href="#">Panels</a></li>
+			<li><a href="#">Mixins</a></li>
+			<li><a href="#">Transports</a></li>
+			<li><a href="#">Nodes</a></li>
+		</ul>
+	</div><!-- /content -->
+</div><!-- /page -->
+
+<!-- Start of first page -->
+<div data-role="page" id="panels-panel">
+	<div data-role="content">	
+		 <ul data-role="listview" id="panels-list">
+			<li><a href="#">Home</a></li>
+			<li><a href="#">Settings</a></li>
+		</ul>
+	</div><!-- /content -->
+</div><!-- /page -->
+<!-- Start of first page -->
+<div data-role="page" id="mixins-panel">
+	<div data-role="content">	
+		<ul data-role="listview" id="mixins-list">
+			<li><a href="#">Home</a></li>
+			<li><a href="#">Settings</a></li>
+		</ul>
+	</div><!-- /content -->
+</div><!-- /page -->
+
+<!-- Start of first page -->
+<div data-role="page" id="transports-panel">
+	<div data-role="content">	
+		 <ul data-role="listview" id="transports-list">
+			<li><a href="#">Home</a></li>
+			<li><a href="#">Settings</a></li>
+		</ul>
+	</div><!-- /content -->
+</div><!-- /page -->
+
+
+<!-- Start of first page -->
+<div data-role="page" id="nodes-panel">
+	<div data-role="content">	
+		 <ul data-role="listview" id="nodes-list">
+			<li><a href="#">Home</a></li>
+			<li><a href="#">Settings</a></li>
+		</ul>
+	</div><!-- /content -->
+</div><!-- /page -->
+<script language="javascript">
+	function doLogin(){
+		$('#login-username').val('');
+		$('#login-password').val('');
+		$('#login-username').attr('disabled', true);
+		$('#login-password').attr('disabled', true);
+		$.mobile.changePage($("#home-panel"));
+	}
+	
+	function doLogout(){
+		$('#login-username').attr('disabled', false);
+		$('#login-password').attr('disabled', false);
+		$.mobile.changePage($("#login-panel"));
+	}
+</script>
+<script src="/lib/js/start.js"></script>
+</body>
+</html>
