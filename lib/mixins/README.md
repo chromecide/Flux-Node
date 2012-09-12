@@ -4,13 +4,15 @@ Flux-Node/lib
 Flux Singularity Mixins
 ---------
 
+At the moment, few of these are ready for any sort of use
+
 ### _blank
 
 A Blank template to create mixins from
 
 ### Child Nodes
 
-Adds capability of creating child nodes that can communicate as part of the Network
+Adds capability of creating child nodes that can communicate as part of the Event Network
 
 ### Discovery
 
