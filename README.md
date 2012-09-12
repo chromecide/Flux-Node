@@ -16,14 +16,14 @@ Flux Singularity is a distributed event messaging system
 
 ### Browser - (Experimental)
 
-	The Browser Support is Extremely limited and I wouldn't rely on it at all
+The Browser Support is Extremely limited and I wouldn't rely on it at all
 
-	RequireJS - [http://requirejs.org/](http://requirejs.org/) 
+RequireJS - [http://requirejs.org/](http://requirejs.org/) 
 	
 
 ### NodeJS
 	
-	EventEmitter2 - [https://github.com/hij1nx/EventEmitter2](https://github.com/hij1nx/EventEmitter2)
+EventEmitter2 - [https://github.com/hij1nx/EventEmitter2](https://github.com/hij1nx/EventEmitter2)
 
 ## Using Flux Singularity
 
