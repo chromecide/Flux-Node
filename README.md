@@ -60,7 +60,7 @@ The Browser Support is Extremely limited and I wouldn't rely on it at all
     	console.log(myFluxNode);
     });
     
-You can now telnet to 127.0.0.1:8081 (not tat you could do anything effectively, but you should see an init message from the server)
+You can now telnet to 127.0.0.1:8081 (not that you could do anything effectively, but you should see an init message from the server)
     
 ### Create a Basic Node does nothing, but connects to another Node
 
@@ -75,7 +75,7 @@ Create and run the the example above, then create and run this in a seperate pro
 			destination: '8298e3fc-7265-4d08-a100-4a8714ad1dc3', //connect to the server we made above
 			type: 'TCP',
 			options:{
-				host: '10.0.0.8',
+				host: '127.0.0.1',
 				port: 8080
 			}
 		}
