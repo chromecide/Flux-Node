@@ -64,7 +64,7 @@ You can now telnet to 127.0.0.1:8081 (not tat you could do anything effectively,
     
 ### Create a Basic Node does nothing, but connects to another Node
 
-Create and run the the example above, then create and rn this in a seperate process (or on a seperate machine, but you'll have to change the options)
+Create and run the the example above, then create and run this in a seperate process (or on a seperate machine, but you'll have to change the options)
 
     var FluxNode = require('/lib/FluxNode_0.0.1').FluxNode;
     
