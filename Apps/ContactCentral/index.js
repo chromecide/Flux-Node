@@ -6,19 +6,9 @@ var hostPort = 8080;
 
 var basePath = process.env.PWD;
  
-var AllSeeingEye = new FluxNode({
+var ContactCentral = new FluxNode({
 	mixins: [
 		/*{
-			name: basePath+'/Mixins/Sector',
-			options:{
-				host: hostName,
-				port: hostPort,
-				Grid:{
-					width: 40
-				}
-			}
-		},*/
-		{
 			name: 'emailclient',
 			options:{
 				Accounts:[
@@ -46,9 +36,17 @@ var AllSeeingEye = new FluxNode({
 			name: 'googleplusclient',
 			AuthKey: '',
 			AuthSecret: ''
+		},*/
+		{
+			name: 'UserProfile',
+			options:{
+				DisplayName: 'Justin Pradier',
+				Avatar: '',
+				Email: []
+			}
 		},
 		function(self){
-			self.emit('Sector.Start', {});
+			self.emit('Clients.Ready', {});
 			//console.log(self.SectorMap.grid);
 		}
 	]

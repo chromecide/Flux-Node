@@ -3,3 +3,4 @@ vendors
 lib/_old
 lib/mixins/console/node_modules
 Apps/TDRPG
+node_modules
