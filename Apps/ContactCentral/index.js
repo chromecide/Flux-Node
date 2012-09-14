@@ -8,35 +8,6 @@ var basePath = process.env.PWD;
  
 var ContactCentral = new FluxNode({
 	mixins: [
-		/*{
-			name: 'emailclient',
-			options:{
-				Accounts:[
-					{
-						Name: 'chromecide@chromecide.com',
-						type: 'pop3',
-						host: 'mail.chromecide.com',
-						username: 'chromecide@chromecide.com',
-						password: 'aedyn1'
-					}
-				]
-			}
-		},
-		{
-			name: 'twitterclient',
-			AuthKey: '',
-			AuthSecret: ''
-		},
-		{
-			name: 'facebookclient',
-			AuthKey: '',
-			AuthSecret: ''
-		},
-		{
-			name: 'googleplusclient',
-			AuthKey: '',
-			AuthSecret: ''
-		},*/
 		{
 			name: 'UserProfile',
 			options:{
@@ -47,6 +18,7 @@ var ContactCentral = new FluxNode({
 		},
 		function(self){
 			self.emit('Clients.Ready', {});
+			console.log(self);
 			//console.log(self.SectorMap.grid);
 		}
 	]
