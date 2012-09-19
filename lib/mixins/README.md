@@ -26,6 +26,10 @@ Adds basic ability for reporting information to the user
 
 This Needs to be cleaned up and moved to the Apps or Examples directory
 
+### POP3
+
+Simple functionality for reading emails from a POP3 server.
+
 ### SaveNodeFile
 
 Uses the Storage Manager to Save Node State
