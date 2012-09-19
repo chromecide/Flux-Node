@@ -2,7 +2,7 @@
 var FluxNode;
 var myNode = null;
 
-FluxNode = require('../../lib/FluxNode_0.0.1').FluxNode;
+FluxNode = require('../../lib/FluxNode').FluxNode;
 
 myNode = new FluxNode({
 	delimiter:'.',
