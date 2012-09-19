@@ -76,4 +76,7 @@ More Examples for using FluxNode can be found in the Examples and Apps folders.
 
 More detailed information about the API can be found in the README in the lib folder
 
+Information about mixins can be found in READMEs for the individual mixins found in '/lib/mixins'
+
+
 Twitter: @chromecide
