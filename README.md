@@ -3,20 +3,19 @@ Flux-Node
 
 # Flux Singularity Core for Javascript
 
-Flux Singularity is a distributed event messaging system
+At it's core, a FluxNode is an enhanced event emitter.  The built in Message Manager allows connections between FluxNodes(called Tunnels), within the same script, on the same machine, 
+or even on entirely seperate machines communicating via the internet.  These other FluxNodes can Subscribe to events emitted by the local node, and can be Subscribed to.
 
 ## Current Status
 
 ### Major TODOs
 
 * Add Some Form Security to the Tunnel Manager
-* Move the Require System to an Internal Function within FluxNode
+* Move the Require System to an Internal Function within FluxNode????
 
 ## Requirements
 
-### Browser - (Experimental)
-
-The Browser Support is Extremely limited and I wouldn't rely on it at all
+### Browser
 
 RequireJS - [http://requirejs.org/](http://requirejs.org/) 
 	
@@ -27,69 +26,54 @@ EventEmitter2 - [https://github.com/hij1nx/EventEmitter2](https://github.com/hij
 
 ## Using Flux Singularity
 
-### Browser (Experimental)
+### Basics
 
-The Browser Support is Extremely limited and I wouldn't rely on it at all
+FluxNode can be used both in NodeJS and the browser, although some mixins may only work in one or the other (such as the TCP mixin, which only works in NodeJS)
 
-### NodeJS
+#### Creating a Node
+```javascript
+var myNode = new FluxNode({});
+```
 
-#### Create a Basic Node that does nothing
+#### Mixins
 
-    var FluxNode = require('/lib/FluxNode_0.0.1').FluxNode;
-    
-    new FluxNode({
-    	
-    }, function(myFluxNode){
-    	console.log(myFluxNode);
-    });
-    
-#### Create a Basic Node that does nothing, but can accept connections via TCP
+FluxNode provides a basic core of functionality for a distributed event system.  Mixins Provide a simple mechanism for extending that functionality with custom properties and methods.
 
-    var FluxNode = require('/lib/FluxNode_0.0.1').FluxNode;
-    
-    new FluxNode({
-    	id: '8298e3fc-7265-4d08-a100-4a8714ad1dc3', //if this isn't supplied, it'll be auto generated, but we're going to re-use this one below
-    	mixins:{
-    		type: 'TCPServer',
-    		options:{
-    			host: '127.0.0.1',
-    			port:8081
-    		}
-    	}
-    }, function(myFluxNode){
-    	console.log(myFluxNode);
-    });
-    
-You can now telnet to 127.0.0.1:8081 (not that you could do anything effectively, but you should see an init message from the server)
-    
-### Create a Basic Node does nothing, but connects to another Node
-
-Create and run the the example above, then create and run this in a seperate process (or on a seperate machine, but you'll have to change the options)
-
-    var FluxNode = require('/lib/FluxNode_0.0.1').FluxNode;
-    
-    new FluxNode({
-    	id: '8298e3fc-7265-4d08-a100-4a8714ad1dc3', //if this isn't supplied, it'll be auto generated, but we're going to re-use this one below
-    	tunnels:[ //the tunnels configuration is only for making connections to nodes that you know the id for
+```javascript
+var myNode = new FluxNode({
+	mixins:[
 		{
-			destination: '8298e3fc-7265-4d08-a100-4a8714ad1dc3', //connect to the server we made above
-			type: 'TCP',
+			name: 'TCPServer',
 			options:{
-				host: '127.0.0.1',
+				host: 'localhost',
 				port: 8080
 			}
 		}
-	],
-    }, function(myFluxNode){
-    	console.log(myFluxNode);
-    });
+	]
+});
+```
+
+#### Tunnels
+
+Tunnels are the communication connections between FluxNodes.  They provide a wrapper around different communication methods to allow uniform messages to be sent, whether the remote FluxNode
+is connected via TCP, or Websockets. 
+
+```javascript
+var myNode = new FluxNode({
+	tunnels:{
+		"RemoteNodeIDHere":{
+			type: "TCP",
+			host: "localhost",
+			port: 8080
+		}
+	}
+});
+```
 
 ## More Information
 
-### Flux Singularity Website
+More Examples for using FluxNode can be found in the Examples and Apps folders.
 
-http://www.fluxsingularity.com
+More detailed information about the API can be found in the README in the lib folder
 
-### Examples
-
-More Examples can be found in the Examples Folder
+Twitter: @chromecide
