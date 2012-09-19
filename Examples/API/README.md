@@ -13,3 +13,9 @@ Examples of using the Data Transformation and Manipulation Functions within Flux
 ```
 node DataFunctions.js
 ```
+
+#### Browser
+
+```
+Open DataFunctions.html in your browser and view the console output
+```
