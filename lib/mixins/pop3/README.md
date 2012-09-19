@@ -13,6 +13,18 @@ Examples can be found in the Examples Folder under "/POP3/"
 
 ## Events
 
+The following Events are Listened for by this Mixin
+
+### POP3.AddAccount
+
+### POP3.RemoveAccount
+
+### POP3.CheckAccounts
+
+### POP3.StartPolling
+
+### POP3.StopPolling
+
 The Following events are submitted by this mixin
 
 ### POP3.Error
