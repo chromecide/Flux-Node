@@ -6,10 +6,10 @@ Flux Singularity API Examples
 
 ### Data Functions
 
-	Examples of using the Data Transformation and Manipulation Functions within Flux Node
+Examples of using the Data Transformation and Manipulation Functions within Flux Node
 	
-	#### Node JS
+#### Node JS
 	
-	```
-		node DataFunctions.js
-	```
+```
+node DataFunctions.js
+```
