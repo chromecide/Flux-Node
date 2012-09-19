@@ -1,7 +1,7 @@
-Flux-Node/lib
+Flux-Node/Examples
 =========
 
-Flux Singularity NodeJS Examples
+Flux Singularity Examples
 ---------
 
 ### API
