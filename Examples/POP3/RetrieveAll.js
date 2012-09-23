@@ -7,7 +7,7 @@ var mailPort = 110;
 var mailUsername = '';
 var mailPassword = '';
 
-FluxNode = require('../../lib/FluxNode_0.0.1').FluxNode;
+FluxNode = require('../../lib/FluxNode').FluxNode;
 
 POP3Node = new FluxNode({
 	delimiter:'.',
