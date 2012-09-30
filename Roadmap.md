@@ -18,3 +18,7 @@ FluxNode communication via serial ports.  This will be the basis for allowing th
 ## Arduino Firmata mixin
 
 Mixin allowing for emitting events coming from an arduino utilising the firmata framework
+
+## Redis Tunnel
+
+Redis based tunnel for communicating between nodes running in different processes on the same machine
