@@ -10,6 +10,10 @@ Flux Singularity Examples
 
 	Examples of using the Data Transformation and Manipulation Functions within Flux Node
 	
+### Arduino
+
+	Examples of using the Arduino-Firmata Mixin
+
 ### POP3
 
 	Examples of using the POP3 Mixin

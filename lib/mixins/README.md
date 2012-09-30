@@ -10,6 +10,10 @@ At the moment, few of these are ready for any sort of use
 
 A Blank template to create mixins from
 
+### Arduino Firmata
+
+Adds the ability to communicate with and recieve events from a Firmata enabled Arduino
+
 ### Child Nodes
 
 Adds capability of creating child nodes that can communicate as part of the Event Network
