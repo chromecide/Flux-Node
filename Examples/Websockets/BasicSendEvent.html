@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+		<title>Websocket Connection Example</title>
+		<script src="../../lib/RequireJS.js" data-main="../../node_modules/"></script>
+	</head>
+	<body>
+		<h1>Check your console...</h1>
+    	<script>
+    	/*
+    	 * We have to put in the "../../Examples/Websockets/Websockets.js" because require js main data folder is not this directory
+    	 */
+			require(['FluxNode/index', 'FluxNode-Websockets/index', '../Examples/Websockets/BasicSendEvent'], function(){
+				console.log('Loaded');
+			});
+		</script>
+	</body>
+</html>

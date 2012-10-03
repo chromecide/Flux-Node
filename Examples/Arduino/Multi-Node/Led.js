@@ -1,9 +1,19 @@
-var FluxNode = require('../../FluxNode.js').FluxNode;
-var arduinoBoardName = 'Arduino1';
+var FluxNode = require('../../../lib/FluxNode.js').FluxNode;
+var arduinoBoardName = 'Arduino with LED';
  
- 
+var sensorBoardNodeID = '1ac63cd7-15ce-4240-85f0-9fae1ddfb319';
 //Create the Flux Node
 var arduinoBoard = new FluxNode({
+	tunnels:[
+		{
+			destination: sensorBoardNodeID,
+			type: 'TCP',
+			options:{
+				host: '10.0.0.16',
+				port: 8081
+			}
+		}
+	],
 	mixins:[
 		{
 			name: 'arduino-firmata'
@@ -12,7 +22,11 @@ var arduinoBoard = new FluxNode({
 }, function(nd){
 	var ledVal = 255;
 	
-	
+	nd.on('tunnelready', function(destination, destTunnel){
+		if(destination==sensorBoardNodeID){
+			nd.sendEvent(destination, 'Subscribe', {eventName: ['LightSensor.On', 'LightSensor.Off']});
+		}
+	});
 	nd.on('ArduinoFirmata.AddBoardError', function(message, rawMessage){
 		console.log('Arduino Board not Ready: '+message);
 	});

@@ -6,7 +6,7 @@ if (typeof define === 'function' && define.amd) {
 		run();
 	});
 } else {
-	FluxNode = require('../../lib/FluxNode').FluxNode;
+	FluxNode = require('../../FluxNode.js').FluxNode;
 	run();
 }
 

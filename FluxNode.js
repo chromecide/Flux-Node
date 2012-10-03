@@ -1,13 +1,24 @@
 //FluxNode is an Instance of EventEmitter2 that has been extended with additional functionality
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
-	
+
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2', 'TunnelManager/TunnelManager', 'StorageManager/StorageManager'], function(util, EventEmitter2, TunnelManager, StorageManager) {
+	require.config({
+		paths:{
+			'FluxNode': './',
+			'TunnelManager': './TunnelManager',
+			'Tunnels': './TunnelManager/Tunnels',
+			'StorageManager': './StorageManager',
+			'Stores': './StorageManager/Stores',
+			'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2'
+		}
+	});
+	
+	define(['FluxNode/lib/util', 'EventEmitter2', 'TunnelManager/TunnelManager', 'StorageManager/StorageManager'], function(util, EventEmitter2, TunnelManager, StorageManager) {
 		var fnConstruct = FluxNodeObj(util, EventEmitter2, TunnelManager, StorageManager);
 		return fnConstruct;
 	});		
 } else {
-	var util = require('util'),
+	var util = require('./lib/util'),
 		EventEmitter2 = require('EventEmitter2').EventEmitter2,
 		TunnelManager = require('./TunnelManager/TunnelManager.js').TunnelManager,
 		StorageManager = require('./StorageManager/StorageManager.js').StorageManager;
@@ -18,7 +29,6 @@ if (typeof define === 'function' && define.amd) {
 
 //this wrapper allows us to deal with the difference in loading times between NodeJS and asyync browser loading
 function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
-	
 	//This is the actual Flux Node Constructor
 	function FluxNodeConstructor(cfg, cb){
 		var self = this;
@@ -129,6 +139,8 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		if(cb){
 			cb(self, cfg);
 		}
+		
+		return self;
 	}
 	
 		util.inherits(FluxNodeConstructor, evObj);
@@ -421,7 +433,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				}
 			}else{
 				//if(self.debug) console.log('./mixins/'+mixinName+'.js');
-				require(['mixins/'+mixinName], function(mixinClass){
+				require([mixinName], function(mixinClass){
 					//if(self.debug) console.log(arguments);
 					for(var x in mixinClass){
 						if(x!='init'){

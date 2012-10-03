@@ -1,7 +1,7 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2', 'StorageManager/Store'], function(util, EventEmitter2, Store) {
+	define(['FluxNode/util', 'EventEmitter2', 'StorageManager/Store'], function(util, EventEmitter2, Store) {
 		return StorageManagerBuilder(util, EventEmitter2, Store);
 	});		
 } else {

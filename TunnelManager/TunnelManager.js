@@ -1,7 +1,7 @@
 	exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2', 'TunnelManager/Tunnel'], function(util, EventEmitter2, Tunnel) {
+	define(['FluxNode/util', 'EventEmitter2', 'TunnelManager/Tunnel'], function(util, EventEmitter2, Tunnel) {
 		return TunnelManagerBuilder(util, EventEmitter2, Tunnel);
 	});		
 } else {
@@ -12,7 +12,7 @@ if (typeof define === 'function' && define.amd) {
 	exports.TunnelManager = TunnelManagerBuilder(util, EventEmitter2, Tunnel);
 }
 
-var debug = true;
+var debug = false;
 var allowRelay = false;
 var tunnels = {};
 var rulesTable = [

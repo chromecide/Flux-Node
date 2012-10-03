@@ -1,13 +1,22 @@
-var FluxNode = require('../../lib/FluxNode.js').FluxNode;
-var arduinoBoardName = 'Arduino1';
+var FluxNode = require('../../../lib/FluxNode.js').FluxNode;
+var arduinoBoardName = 'Arduino With Light Sensor';
  
 var arduinoBoard = new FluxNode({
+	id: '1ac63cd7-15ce-4240-85f0-9fae1ddfb319',
 	mixins:[
 		{
 			name: 'arduino-firmata'
+		},
+		{
+			name: 'TCPServer',
+			options:{
+				host: '10.0.0.16',
+				port: 8081
+			}
 		}
 	]
 }, function(nd){
+	console.log(nd.id);
 	var ledVal = 255;
 	nd.on('ArduinoFirmata.AddBoardError', function(message, rawMessage){
 		console.log('Arduino Board not Ready: '+message);
@@ -15,14 +24,12 @@ var arduinoBoard = new FluxNode({
 	
 	nd.on('ArduinoFirmata.SetPinModeError', function(message){
 		console.log(message);
+		process.exit();
 	});
 	
 	nd.on('ArduinoFirmata.SetPinModeDone', function(message){
 		console.log('PIN MODE SET');
 		switch(message.pin){
-			case 13:
-			
-				break;
 			case 14:
 				nd.emit('ArduinoFirmata.AnalogRead', {
 					name: arduinoBoardName,
@@ -38,17 +45,9 @@ var arduinoBoard = new FluxNode({
 	
 	nd.on('ArduinoFirmata.AnalogReadDone', function(message){
 		if(message.value>500){// turn the led on
-			nd.emit('ArduinoFirmata.DigitalWrite',{
-				name: arduinoBoardName,
-				pin: 13,
-				value: 255
-			});
+			nd.emit('LightSensor.On', {});
 		}else{//turn the led off
-			nd.emit('ArduinoFirmata.DigitalWrite',{
-				name: arduinoBoardName,
-				pin: 13,
-				value: 0
-			});
+			nd.emit('LightSensor.Off', {});
 		}
 	});
 	
@@ -59,13 +58,6 @@ var arduinoBoard = new FluxNode({
 	
 	nd.on('ArduinoFirmata.BoardReady', function(board){
 		console.log('Arduino Board Ready: '+board.name);
-		
-		//set the pin mode for the LED
-		nd.emit('ArduinoFirmata.SetPinMode', {
-			name: arduinoBoardName,
-			pin: 13, 
-			mode: 'OUTPUT'
-		});
 		
 		//set the pin mode for the light sensor
 		nd.emit('ArduinoFirmata.SetPinMode', {
