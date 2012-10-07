@@ -18,14 +18,13 @@ if (typeof define === 'function' && define.amd) {
 		return fnConstruct;
 	});		
 } else {
-	var util = require('./lib/util'),
+	var util = require('util'),
 		EventEmitter2 = require('EventEmitter2').EventEmitter2,
 		TunnelManager = require('./TunnelManager/TunnelManager.js').TunnelManager,
 		StorageManager = require('./StorageManager/StorageManager.js').StorageManager;
 	var fnConstruct = FluxNodeObj(util, EventEmitter2, TunnelManager, StorageManager);
 	exports.FluxNode = fnConstruct;
 }
-
 
 //this wrapper allows us to deal with the difference in loading times between NodeJS and asyync browser loading
 function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
@@ -70,7 +69,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		if(self.debug) console.log('Configuring Storage Manager');
 		
-		self.StorageManager = StorageManager;
+		self.StorageManager = new StorageManager();
 		
 		self.sendEvent = function(destinationId, topic, message){
 			
@@ -413,8 +412,9 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				}
 				
 				if(!mixinClass){
-					mixinClass = require('./mixins/'+mixinName);
+					mixinClass = require(mixinName);
 				}
+				
 				for(var x in mixinClass){
 					if(x!='init'){
 						self[x] = mixinClass[x];
