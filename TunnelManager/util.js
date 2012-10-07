@@ -10,7 +10,7 @@ var util = {
 	      configurable: true
 	    }
 	  });
-	}	
+	}
 }
 
 if (typeof define === 'function' && define.amd) {

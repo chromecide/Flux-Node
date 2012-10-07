@@ -1,6 +1,6 @@
 var mixinFunctions = {
 	init: function(){
-		var self = this;
+		var thisNode = this;
 		//add properties that are needed by this mixin
 	
 		//add Events that are emitted by this mixin

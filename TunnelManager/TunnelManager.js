@@ -72,6 +72,14 @@ function configure(cfg){
 	}
 }
 
+function beforeSend(destination, topic, message, callback){
+	return true;
+}
+
+function afterSend(destination, topic, message, callback){
+	return true;	
+}
+
 function send(destination, topic, message, callback){
 	
 	var self = this;
