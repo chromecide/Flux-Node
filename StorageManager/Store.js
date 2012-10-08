@@ -49,6 +49,7 @@ function StoreBuilder(util, EventEmitter2){
 		return newID;
 	}
 	
+	//TODO: find an intuitive way of passing back return messages
 	Store.prototype.validateValue = function(rec, keyName, validation){
 		var self = this;
 		var keyValid = true; //we're optimists
@@ -65,7 +66,7 @@ function StoreBuilder(util, EventEmitter2){
 			case 'object':
 				//determine if it's an array, a regex or a complex cfg object
 				if(Array.isArray(validation)){ //all sub values must match
-					
+					//TODO
 				}else{
 					if(validation instanceof RegExp){ 
 						//we need to test the value against the supplied regex
@@ -73,12 +74,25 @@ function StoreBuilder(util, EventEmitter2){
 							keyValid = false;
 						}
 					}else{
+						var attrType = validation.type?validation.type:'anything';
+						var isRequired = validation.required?validation.required:false;
+						var mustExist = validation.mustExist?validation.mustExist:false;
+						var min = validation.min?validation.min:false;
+						var max = validation.max?validation.max:false;
+						var validations = validation.validations?validation.validations:[];
+						
 						//we need to parse the complex cfg
 						for(var cfgKey in validation){
 							switch(cfgKey){
 								case 'type':
-									if((typeof rec[keyName])!=validation.type){
-										keyValid = false;
+									if(rec[keyName]){
+										if((typeof rec[keyName])!=validation.type){
+											if(validation.type =='date' && rec[keyName].getMonth){
+												//do nothing it's valid
+											}else{
+												keyValid = false;	
+											}
+										}	
 									}
 									break;
 								case 'required':
@@ -103,6 +117,56 @@ function StoreBuilder(util, EventEmitter2){
 									}
 									if(!itemPassed){
 										keyValid = false;
+									}
+									break;
+								case 'min':
+									switch(attrType){
+										case 'string':
+											if(rec[keyName].toString().length<min){
+												keyValid = false;
+											}
+											break;
+										case 'number':
+											if((rec[keyName]*1)<min){ //the multiply by 1 ensures a numeric value, (naive/lazy much??)
+												keyValid = false;
+											}
+											break;
+										case 'date':
+											if(rec[keyName]<min){ //TODO:better date compare
+												keyValid = false;
+											}
+											break;
+										case 'anything': 	//either a field marked as anything,
+										default: 			// or one we don't know
+											if(!Array.isArray(rec[keyName]) || rec[keyName].length<min){ // assume that, by supply a min value, the user means it's a list of something
+												keyValid = false;
+											}			
+											break;
+									}
+									break;
+								case 'max':
+									switch(attrType){
+										case 'string':
+											if(rec[keyName].toString().length>max){
+												keyValid = false;
+											}
+											break;
+										case 'number':
+											if((rec[keyName]*1)>max){ //the multiply by 1 ensures a numeric value, (naive/lazy much??)
+												keyValid = false;
+											}
+											break;
+										case 'date':
+											if(rec[keyName]>max){ //TODO: better date compare
+												keyValid = false;
+											}
+											break;
+										case 'anything': 	//either a field marked as anything,
+										default: 			// or one we don't know
+											if(!Array.isArray(rec[keyName]) || rec[keyName].length>max){ // assume that, by supply a max value, the user means it's a list of something
+												keyValid = false;
+											}			
+											break;
 									}
 									break;
 							}
