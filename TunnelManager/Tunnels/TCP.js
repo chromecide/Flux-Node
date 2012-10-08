@@ -1,8 +1,8 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['FluxNode/util', 'EventEmitter2', 'Tunnel'], function(util, EventEmitter2, Tunnel) {
-		return tcpTunnelBuilder(util, EventEmitter2, Tunnel);
+	define(['util', 'EventEmitter2', 'Tunnel'], function(util, EventEmitter2, Tunnel) {
+		return false;
 	});		
 } else {
 	var util = require('util'), 

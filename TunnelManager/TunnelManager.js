@@ -1,9 +1,10 @@
 	exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['FluxNode/util', 'EventEmitter2', 'TunnelManager/Tunnel'], function(util, EventEmitter2, Tunnel) {
+	define(['util', 'EventEmitter2', 'Tunnel'], function(util, EventEmitter2, Tunnel) {
 		return TunnelManagerBuilder(util, EventEmitter2, Tunnel);
-	});		
+	});	
+	
 } else {
 	var util = require('util'), 
 	EventEmitter2 = require('EventEmitter2').EventEmitter2,
@@ -21,7 +22,7 @@ var rulesTable = [
 
 //this wrapper allows us to deal with the differnce in requireing modules between browser async and NodeJS
 function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
-	var TunnelManager = function(){
+	var TunnelManager = function(cfg){
 		var self = this;
 		self.senderID = false;
 		self.unsentQueue = [];
@@ -30,6 +31,9 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 			delimiter: '.',
 			wildcard: true
 		});
+		if(cfg){
+			configure.call(this, cfg);
+		}
 	}
 	
 		util.inherits(TunnelManager, EventEmitter2);
@@ -39,6 +43,8 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 		TunnelManager.prototype.recieve = recieve;
 		TunnelManager.prototype.registerTunnel = registerTunnel;
 		TunnelManager.prototype.deregisterTunnel = deregisterTunnel;
+		TunnelManager.prototype.allowed = allowed;
+		TunnelManager.prototype.processData = processData;
 		TunnelManager.prototype.factory = function(type, callback){
 			var self = this;
 			if(self._environment=='nodejs'){
@@ -51,15 +57,13 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 	return TunnelManager;
 }
 
-
-
 function configure(cfg){
 	var self = this;
 	if(cfg.rulesTable!='undefined'){
 		rulesTable = cfg.rulesTable;
 	}
 	
-	if(cfg.debug===false){
+	if(cfg.debug===true){
 		debug = cfg.debug;
 	}
 	
@@ -70,86 +74,108 @@ function configure(cfg){
 	if(cfg.sender){
 		self.senderID = cfg.sender;
 	}
+	
+	if(cfg.allowed){
+		self.allowed = cfg.allowed;
+	}
 }
 
-function beforeSend(destination, topic, message, callback){
+function processData(action, destination, topic, message, callback){
+	callback(destination, topic, message);
 	return true;
 }
 
-function afterSend(destination, topic, message, callback){
-	return true;	
+function allowed(action, destination, topic, message){
+	return true;//by default, everyone is allowed to do anything
 }
+
 
 function send(destination, topic, message, callback){
 	
 	var self = this;
-	var payload = {
-		topic: topic,
-		message: message
-	}
 	
-	if(typeof destination == 'object'){ //it's a tunnel, so we already know where we are sending it
-		payload._message = {
-			id: generateID(),
-			sender: self.senderID,
-			topic: topic
+	if(!self.allowed('send', destination, topic, message)){
+		if(callback){
+			callback(false, destination, topic, message);	
 		}
-	}else{
-		payload._message = {
-			id: generateID(),
-			sender: self.senderID,
-			destination: destination,
-			topic: topic
-		}
-		
-		if(tunnels[destination]){
-			destination = tunnels[destination];
-		}
-	}
-	
-	if(destination && (typeof destination=='object')){
-		destination.send(payload);
-	}else{
-		switch(destination){
-			case '*':
-				for(var tunnelDest in tunnels){
-					var thisTunnel = tunnels[tunnelDest];
-					thisTunnel.send(payload);
-				}
-				break;
-			default:
-				if(allowRelay===true){
-					for(var tunnelDest in tunnels){
-						var thisTunnel = tunnels[tunnelDest];
-						if(thisTunnel.allowRelay===true){
-							thisTunnel.send(payload);
-						}else{
-							console.log('No Relaying allowed for: '+tunnelDest);
-						}
-					}
-				}else{
-					console.log('Relay not allowed');
-				}	
-				break;
-		}
-		
 		return false;
 	}
+	
+	
+	self.processData('send', destination, topic, message, function(clnDestination, clnTopic, clnMessage){
+		var payload = {
+			topic: clnTopic,
+			message: clnMessage
+		}
+		
+		if(typeof destination == 'object'){ //it's a tunnel, so we already know where we are sending it
+			payload._message = {
+				id: generateID(),
+				sender: self.senderID,
+				topic: clnTopic
+			}
+		}else{
+			payload._message = {
+				id: generateID(),
+				sender: self.senderID,
+				destination: destination,
+				topic: clnTopic
+			}
+			
+			if(tunnels[destination]){
+				destination = tunnels[destination];
+			}
+		}
+		
+		if(destination && (typeof destination=='object')){
+			destination.send(payload);
+		}else{
+			switch(destination){
+				case '*':
+					for(var tunnelDest in tunnels){
+						var thisTunnel = tunnels[tunnelDest];
+						thisTunnel.send(payload);
+					}
+					break;
+				default:
+					if(allowRelay===true){
+						for(var tunnelDest in tunnels){
+							var thisTunnel = tunnels[tunnelDest];
+							if(thisTunnel.allowRelay===true){
+								thisTunnel.send(payload);
+							}else{
+								console.log('No Relaying allowed for: '+tunnelDest);
+							}
+						}
+					}else{
+						console.log('Relay not allowed');
+					}	
+					break;
+			}
+			
+			return false;
+		}	
+	});
+	
 }
 
 function recieve(tunnelObj, message){
 	var self = this;
-	if(!message._message){
+	if(!message._message){//not a valid FluxNode message
 		console.log(arguments);
 		return false;
 	}
+	
+	if(!self.allowed('recieve', tunnelObj, message.topic, message)){
+		return false;
+	}
+	
 	if(debug){
-		console.log(message._message.sender+'\t\t'+message._message.destination+'\t\t'+message.topic+'\t\t');
+		console.log('RECV: \t\t'+message._message.sender+'\t\t'+message._message.destination+'\t\t'+message.topic+'\t\t');
 	}
 	
 	if(message._message.sender!=self.senderID){
-		if(!message._message.destination || message._message.destination==self.senderID){ //addressed to me
-			
+		if(!message._message.destination || message._message.destination==self.senderID){ //addressed to me, or there is no destination(i.e. everyone)
 			switch(message.topic){
 				case 'init': //introductions
 					var remoteID = message._message.sender;
