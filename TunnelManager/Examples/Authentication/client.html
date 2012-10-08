@@ -1,0 +1,39 @@
+<html>
+	<head>
+		
+		<title>TunnelManager Authentication Example</title>
+		
+		<script src="http://requirejs.org/docs/release/2.1.0/minified/require.js" data-main="../../"></script>
+		<script>
+			var tunnelManager;
+			require(['TunnelManager', 'http://localhost:8081/socket.io/socket.io.js', 'Tunnels/Websocket'], function(TM, sio, Tunnel){
+				tunnelManager = new TM({
+					debug:true,
+					sender: (new Date()).toString()
+				});
+				
+				var socket = window.io.connect('localhost', {
+					port: 8081
+				});
+				
+				var wsTunnel = new Tunnel();
+				wsTunnel.setSocket(socket, function(){
+					tunnelManager.registerTunnel(false, wsTunnel);
+				});
+			});
+			
+			function doMessage(){
+				tunnelManager.send('1', 'hello', {});
+			}
+			
+			function doLogin(){
+				tunnelManager.send('1', 'auth', {username: 'node2', password:'abc123'});
+			}
+		</script>
+	</head>
+	<body>
+		<h1>Check your console</h1>
+		<input type="button" value="Send Message" onclick="doMessage();"/><br/>
+		<input type="button" value="Do Login" onclick="doLogin();"/><br/>
+	</body>
+</html>
