@@ -4,16 +4,19 @@ exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined
 if (typeof define === 'function' && define.amd) {
 	require.config({
 		paths:{
+			'util': './lib/util',
 			'FluxNode': './',
 			'TunnelManager': './TunnelManager',
+			'Tunnel': 'TunnelManager/Tunnel',
 			'Tunnels': './TunnelManager/Tunnels',
 			'StorageManager': './StorageManager',
-			'Stores': './StorageManager/Stores',
+			'Store': 'StorageManager/Store',
+			'Stores': 'StorageManager/Stores',
 			'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2'
 		}
 	});
 	
-	define(['FluxNode/lib/util', 'EventEmitter2', 'TunnelManager/TunnelManager', 'StorageManager/StorageManager'], function(util, EventEmitter2, TunnelManager, StorageManager) {
+	define(['util', 'EventEmitter2', 'TunnelManager/TunnelManager', 'StorageManager/StorageManager'], function(util, EventEmitter2, TunnelManager, StorageManager) {
 		var fnConstruct = FluxNodeObj(util, EventEmitter2, TunnelManager, StorageManager);
 		return fnConstruct;
 	});		
