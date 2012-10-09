@@ -1,7 +1,7 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['FluxNode/util', 'EventEmitter2'], function(util, EventEmitter2) {
+	define(['util', 'EventEmitter2'], function(util, EventEmitter2) {
 		var fnConstruct = StoreBuilder(util, EventEmitter2);
 		return fnConstruct;
 	});		
@@ -66,7 +66,18 @@ function StoreBuilder(util, EventEmitter2){
 			case 'object':
 				//determine if it's an array, a regex or a complex cfg object
 				if(Array.isArray(validation)){ //all sub values must match
-					//TODO
+					var validations = validation;
+					var itemPassed = false; //not so optimistic
+					for(var valIdx in validations){
+						var itemValidation = validations[valIdx];
+						if(self.validateValue(rec, keyName, itemValidation)){
+							itemPassed = true;
+							break;
+						}
+					}
+					if(!itemPassed){
+						keyValid = false;
+					}
 				}else{
 					if(validation instanceof RegExp){ 
 						//we need to test the value against the supplied regex
