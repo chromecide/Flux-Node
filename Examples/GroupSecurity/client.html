@@ -1,0 +1,42 @@
+<html>
+	<head>
+		
+		<title>TunnelManager Authentication Example</title>
+		<base href="./" target="_blank">
+		<script src="http://requirejs.org/docs/release/2.1.0/minified/require.js" data-main="../../"></script>
+		<script>
+			var myNode;
+			var serverID = false;
+			require(['FluxNode'], function(FluxNode, sio){
+				new FluxNode({
+					mixins:[
+						{
+							name: 'node_modules/FluxNode-Websockets/index',
+							options:{
+								port: 8081
+							}
+						}
+					]
+				}, function(nd){
+					myNode = nd;
+					myNode.on('tunnelready',function(destination){
+						serverID = destination;//we'll only ever connect to one other node from a browser
+					});
+				});
+			});
+			
+			function doMessage(){
+				myNode.sendEvent(serverID, 'hello', {});
+			}
+			
+			function doLogin(){
+				myNode.sendEvent(serverID, 'Security.Login', {username: 'admin', password:'abc123'});
+			}
+		</script>
+	</head>
+	<body>
+		<h1>Check your console</h1>
+		<input type="button" value="Send Message" onclick="doMessage();"/><br/>
+		<input type="button" value="Do Login" onclick="doLogin();"/><br/>
+	</body>
+</html>

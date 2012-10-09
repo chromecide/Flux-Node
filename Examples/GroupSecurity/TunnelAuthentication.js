@@ -3,39 +3,32 @@ var FluxNode = require('../../FluxNode').FluxNode;
 var SecureNode = new FluxNode({
 	mixins:[
 		{
-			name: 'FNMGroupSecurity',
-			options:{
-				
-			}
+			name: 'FNMAuthorisedTunnels'
 		},
 		{
-			name: 'FNM-WebServer'
+			name: 'FluxNode-Websockets',
+			options:{
+				port:8081
+			}
 		}
 	]
 }, function(nd){
 	var thisNode = nd;
-	thisNode.FNMWebserver_startServer();
+	
 	//Add some Groups
-	/*thisNode.FNMGroupSecurity_doAddGroup({
+	thisNode.FNMGroupSecurity_AddGroup({
 		name: 'Administrators'
+	}, function(err, groupRec){
+		console.log('Administrators Group Saved');
+		thisNode.FNMGroupSecurity_AddUser({
+			name: 'Administrator',
+			username: 'admin',
+			password: 'abc123',
+			groups: [
+				groupRec
+			]
+		}, function(err, userRec){
+			console.log('Admin User Saved');
+		});
 	});
-	
-	thisNode.FNMGroupSecurity_doAddGroup({
-		name: 'Guests'
-	});
-	
-	//Add some Users
-	thisNode.FNMGroupSecurity_doAddUser({
-		name: 'Administrator',
-		groups: [
-			'Administrators'
-		]
-	});
-
-	thisNode.FNMGroupSecurity_doAddUser({
-		name: 'Guest',
-		groups: [
-			'Guests'
-		]
-	});*/
 });
