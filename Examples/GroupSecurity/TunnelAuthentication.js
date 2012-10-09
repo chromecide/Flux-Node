@@ -3,7 +3,7 @@ var FluxNode = require('../../FluxNode').FluxNode;
 var SecureNode = new FluxNode({
 	mixins:[
 		{
-			name: 'FNMAuthorisedTunnels'
+			name: 'FNMAuthenticatedTunnels'
 		},
 		{
 			name: 'FluxNode-Websockets',
