@@ -1,7 +1,7 @@
 	exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2', 'Tunnel'], function(util, EventEmitter2, Tunnel) {
+	define(['../util', 'EventEmitter2', 'Tunnel'], function(util, EventEmitter2, Tunnel) {
 		return TunnelManagerBuilder(util, EventEmitter2, Tunnel);
 	});	
 	
@@ -41,6 +41,7 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 		TunnelManager.prototype.configureManager = configure;
 		TunnelManager.prototype.send = send;
 		TunnelManager.prototype.recieve = recieve;
+		TunnelManager.prototype.getTunnel = getTunnel;
 		TunnelManager.prototype.registerTunnel = registerTunnel;
 		TunnelManager.prototype.deregisterTunnel = deregisterTunnel;
 		TunnelManager.prototype.allowed = allowed;
@@ -209,6 +210,10 @@ function recieve(tunnelObj, message){
 		
 		}
 	}
+}
+
+function getTunnel(destination){
+	return tunnels[destination];
 }
 
 function registerTunnel(remoteID, tunnelObj){
