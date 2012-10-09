@@ -1,7 +1,7 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['FluxNode/util', 'EventEmitter2', 'StorageManager/Store'], function(util, EventEmitter2, Store) {
+	define(['util', 'EventEmitter2', 'StorageManager/Store'], function(util, EventEmitter2, Store) {
 		var fnConstruct = StoreBuilder(util, EventEmitter2, Store);
 		return fnConstruct;
 	});		
@@ -148,7 +148,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				}
 				break;
 			case 'object':
-				returnRecords = queryByObject.call(self, query, channel);
+				returnRecords = queryByObject.call(self, query, channel, false);
 				break;
 			case 'function':
 				for(var recIdx in self.records[channels]){
@@ -164,11 +164,12 @@ function StoreBuilder(util, EventEmitter2, Store){
 		}
 	}
 	
-	function queryByObject(query, channel, callback){
+	function queryByObject(query, channel, maxRecs, callback){
 		var self = this;
 		
 		var retArray = [];
 		if(Array.isArray(query)){ //it's an OR style query
+			var currentCount = 0;
 			retArray = self.records[channel].filter(function(rec){
 				var matches = false;
 				for(var idx in query){
@@ -196,9 +197,14 @@ function StoreBuilder(util, EventEmitter2, Store){
 					}
 					
 				}
-				
+				if(matches){
+					currentCount++;
+					
+					if(maxRecs && currentCount>maxRecs){
+						matches = false;
+					}
+				}
 				return matches;
-				
 			});
 		}else{
 			if(query._map){//map reduce
@@ -218,11 +224,44 @@ function StoreBuilder(util, EventEmitter2, Store){
 		return retArray;
 	}
 	
-	function findOne(query){
-		return false;
+	function findOne(query, channel, callback){
+		var self = this;
+		var err = false;
+		var queryType = typeof query;
+		var returnRecords = [];
+		
+		switch(queryType){
+			case 'string': //assume it's an id
+				for(var recIdx in self.records[channel]){
+					if(self.records[recIdx].id==query){
+						returnRecords.push(self.records[recIdx]);
+						break; //there is only going to be one item with the supplied ID
+					}
+				}
+				break;
+			case 'object':
+				returnRecords = queryByObject.call(self, query, channel, 1);
+				break;
+			case 'function':
+				var currentCount = 0;
+				for(var recIdx in self.records[channels]){
+					if(query(self.records[recIdx])===true){
+						currentCount++;
+						if(currentCount==maxRecs){
+							break;
+						}
+						returnRecords.push(self.records[recIdx]);
+					}
+				}
+				break;
+		}
+		
+		if(callback){
+			callback(err, returnRecords);
+		}
 	}
 	
-	function remove(query){
+	function remove(query, channel, callback){
 		var queryType = typeof query;
 		
 		return false;
