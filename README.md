@@ -10,8 +10,7 @@ or even on entirely seperate machines communicating via the internet.  These oth
 
 ### Major TODOs
 
-* Add Some Form Security to the Tunnel Manager
-* Move the Require System to an Internal Function within FluxNode????
+
 
 ## Requirements
 
