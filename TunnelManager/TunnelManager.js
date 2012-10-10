@@ -86,8 +86,11 @@ function processData(action, destination, topic, message, callback){
 	return true;
 }
 
-function allowed(action, destination, topic, message){
-	return true;//by default, everyone is allowed to do anything
+function allowed(action, destination, topic, message, callback){
+	if(callback){
+		callback(false, true);
+	}
+	return false;//by default, everyone is allowed to do anything
 }
 
 
@@ -95,67 +98,68 @@ function send(destination, topic, message, callback){
 	
 	var self = this;
 	
-	if(!self.allowed('send', destination, topic, message)){
-		if(callback){
-			callback(false, destination, topic, message);	
-		}
-		return false;
-	}
-	
-	
-	self.processData('send', destination, topic, message, function(clnDestination, clnTopic, clnMessage){
-		var payload = {
-			topic: clnTopic,
-			message: clnMessage
-		}
-		
-		if(typeof destination == 'object'){ //it's a tunnel, so we already know where we are sending it
-			payload._message = {
-				id: generateID(),
-				sender: self.senderID,
-				topic: clnTopic
+	self.allowed('send', destination, topic, message, function(err, result){
+		if(err || !result){
+			if(callback){
+				callback(false, destination, topic, message);	
 			}
+			return false;	
 		}else{
-			payload._message = {
-				id: generateID(),
-				sender: self.senderID,
-				destination: destination,
-				topic: clnTopic
+			self.processData('send', destination, topic, message, function(clnDestination, clnTopic, clnMessage){
+			var payload = {
+				topic: clnTopic,
+				message: clnMessage
 			}
 			
-			if(tunnels[destination]){
-				destination = tunnels[destination];
+			if(typeof destination == 'object'){ //it's a tunnel, so we already know where we are sending it
+				payload._message = {
+					id: generateID(),
+					sender: self.senderID,
+					topic: clnTopic
+				}
+			}else{
+				payload._message = {
+					id: generateID(),
+					sender: self.senderID,
+					destination: destination,
+					topic: clnTopic
+				}
+				
+				if(tunnels[destination]){
+					destination = tunnels[destination];
+				}
 			}
-		}
-		
-		if(destination && (typeof destination=='object')){
-			destination.send(payload);
-		}else{
-			switch(destination){
-				case '*':
-					for(var tunnelDest in tunnels){
-						var thisTunnel = tunnels[tunnelDest];
-						thisTunnel.send(payload);
-					}
-					break;
-				default:
-					if(allowRelay===true){
+			
+			if(destination && (typeof destination=='object')){
+				destination.send(payload);
+			}else{
+				switch(destination){
+					case '*':
 						for(var tunnelDest in tunnels){
 							var thisTunnel = tunnels[tunnelDest];
-							if(thisTunnel.allowRelay===true){
-								thisTunnel.send(payload);
-							}else{
-								console.log('No Relaying allowed for: '+tunnelDest);
-							}
+							thisTunnel.send(payload);
 						}
-					}else{
-						console.log('Relay not allowed');
-					}	
-					break;
-			}
-			
-			return false;
-		}	
+						break;
+					default:
+						if(allowRelay===true){
+							for(var tunnelDest in tunnels){
+								var thisTunnel = tunnels[tunnelDest];
+								if(thisTunnel.allowRelay===true){
+									thisTunnel.send(payload);
+								}else{
+									console.log('No Relaying allowed for: '+tunnelDest);
+								}
+							}
+						}else{
+							console.log('Relay not allowed');
+						}	
+						break;
+				}
+				
+				return false;
+			}	
+		});		
+		}
 	});
 	
 }
@@ -166,50 +170,53 @@ function recieve(tunnelObj, message){
 		console.log(arguments);
 		return false;
 	}
-	
-	if(!self.allowed('recieve', tunnelObj, message.topic, message)){
-		return false;
-	}
-	
-	if(debug){
-		console.log('RECV: \t\t'+message._message.sender+'\t\t'+message._message.destination+'\t\t'+message.topic+'\t\t');
-	}
-	
-	if(message._message.sender!=self.senderID){
-		if(!message._message.destination || message._message.destination==self.senderID){ //addressed to me, or there is no destination(i.e. everyone)
-			switch(message.topic){
-				case 'init': //introductions
-					var remoteID = message._message.sender;
-					tunnelObj.initiated = true;
-					if(message.message.allowRelay===true){
-						allowRelay = true;
-						tunnelObj.allowRelay = true;
-					}
-					tunnelObj.remoteId = remoteID;
-					if(!tunnels[remoteID]){
-						tunnels[remoteID] = tunnelObj;
-					}
-					self.emit('tunnelready', remoteID, tunnelObj);
-					break;
-				default:
-					self.emit('message', message);	
-					
-					break;
-			}	
+	self.allowed('recieve', tunnelObj, message.topic, message, function(err, result){
+		if(err ||!result){
+			if(debug){
+				console.log('RECV: \t\t'+message._message.sender+'\t\t'+message._message.destination+'\t\t'+message.topic+'\t\tNOT ALLOWED');
+			}
+			return false;	
 		}else{
-			
-			if(allowRelay===true){
-				for(var tunnelDest in tunnels){
-					if(message._message.destination==tunnelDest){
-						tunnels[tunnelDest].send(message);
-					}		
-				}	
-			}else{
-				console.log('relay not allowed');
-			}	
-		
+			if(debug){
+				console.log('RECV: \t\t'+message._message.sender+'\t\t'+message._message.destination+'\t\t'+message.topic+'\t\tALLOWED');
+			}
+			if(message._message.sender!=self.senderID){
+				if(!message._message.destination || message._message.destination==self.senderID){ //addressed to me, or there is no destination(i.e. everyone)
+					switch(message.topic){
+						case 'init': //introductions
+							var remoteID = message._message.sender;
+							tunnelObj.initiated = true;
+							if(message.message.allowRelay===true){
+								allowRelay = true;
+								tunnelObj.allowRelay = true;
+							}
+							tunnelObj.remoteId = remoteID;
+							if(!tunnels[remoteID]){
+								tunnels[remoteID] = tunnelObj;
+							}
+							self.emit('tunnelready', remoteID, tunnelObj);
+							break;
+						default:
+							self.emit('message', message);	
+							
+							break;
+					}	
+				}else{
+					
+					if(allowRelay===true){
+						for(var tunnelDest in tunnels){
+							if(message._message.destination==tunnelDest){
+								tunnels[tunnelDest].send(message);
+							}		
+						}	
+					}else{
+						console.log('relay not allowed');
+					}	
+				
+				}
+			}
 		}
-	}
+	});
 }
 
 function getTunnel(destination){
@@ -241,7 +248,7 @@ function registerTunnel(remoteID, tunnelObj){
 		});
 		
 		tunnelObj.on('disconnect', function(){
-			self.deregisterTunnel(tunnelObj.remoteId);
+			self.deregisterTunnel(remoteID);
 		});
 		
 		self.send(tunnelObj, 'init', {
@@ -256,6 +263,7 @@ function deregisterTunnel(remoteID){
 	var self = this;
 	if(tunnels[remoteID]){
 		tunnels[remoteID].close();
+		
 		delete tunnels[remoteID];
 	}
 	self.emit('tunnelclosed', remoteID);
