@@ -17,6 +17,7 @@ function TunnelBuilder(util, EventEmitter2){
 	function Tunnel(){
 		var self = this;
 		self.initiated = false;
+		self.status = 'connected';
 		self._environment = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? 'nodejs' : 'browser');
 	}
 	
