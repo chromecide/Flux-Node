@@ -22,6 +22,18 @@
 					myNode.on('tunnelready',function(destination){
 						serverID = destination;//we'll only ever connect to one other node from a browser
 					});
+					
+					myNode.on('tunnelclosed', function(message){
+						console.log('CONNECTION CLOSED');
+					});
+					
+					myNode.on('FNMGroupSecurity.MustLogin', function(message){
+						alert('You must login within '+message.timeout+' seconds');
+					});
+					
+					myNode.on('FNMGroupSecurity.LoginTimeoutReached', function(message){
+						alert('You failed to Login within the allocated time frame. Your connection has been closed');
+					});
 				});
 			});
 			
@@ -30,7 +42,7 @@
 			}
 			
 			function doLogin(){
-				myNode.sendEvent(serverID, 'FNMAuthenticatedTunnels.Login', {username: 'admin', password:'abc123'});
+				myNode.sendEvent(serverID, 'FNMGroupSecurity.Login', {username: 'admin', password:'abc123'});
 			}
 		</script>
 	</head>
