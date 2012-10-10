@@ -17,10 +17,11 @@ function wsTunnelBuilder(util, EventEmitter2, Tunnel){
 	function WebsocketTunnel(){
 		var self = this;
 		
+		Tunnel.call(this, arguments);
 		self.setSocket = setSocket;
 		self.send = send;
 		self.recieve = recieve;
-		self.close = function(){}
+		self.close = close;
 	}
 	
 		util.inherits(WebsocketTunnel, Tunnel);
@@ -33,6 +34,7 @@ function wsTunnelBuilder(util, EventEmitter2, Tunnel){
 		});
 		
 		self.socket.on('disconnect', function(){
+			self.status = 'disconnected';
 			self.emit('disconnect', self);
 		});
 		
@@ -53,5 +55,12 @@ function wsTunnelBuilder(util, EventEmitter2, Tunnel){
 		self.emit('message', self, message);
 	}
 	
+	function close(){
+		var self = this;
+		if(self.status!='disconnected'){
+			self.socket.disconnect();	
+		}
+		
+	}
 	return WebsocketTunnel;
 }
