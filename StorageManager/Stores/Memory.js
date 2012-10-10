@@ -262,8 +262,31 @@ function StoreBuilder(util, EventEmitter2, Store){
 	}
 	
 	function remove(query, channel, callback){
+		var self = this;
 		var queryType = typeof query;
-		
+		switch(queryType){
+			case 'string': //assume it's an id
+				for(var recIdx in self.records[channel]){
+					if(self.records[Channel][recIdx].id==query){
+						delete self.records[Channel][recIdx];
+						break; //there is only going to be one item with the supplied ID
+					}
+				}
+				break;
+			case 'object':
+				returnRecords = queryByObject.call(self, query, channel, 1);
+				for(var recIdx in returnRecords){
+					self.remove(returnRecords[recIdx].id, channel, callback);
+				}
+				break;
+			case 'function':
+				for(var recIdx in self.records[channels]){
+					if(query(self.records[recIdx])===true){
+						delete self.records[Channel][recIdx];
+					}
+				}
+				break;
+		}
 		return false;
 	}
 	
