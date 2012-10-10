@@ -25,30 +25,57 @@ EventEmitter2 - [https://github.com/hij1nx/EventEmitter2](https://github.com/hij
 
 ## Flux Singularity Terminology
 
-### Nodes
+### FluxNodes
 
-### Tunnels
+FluxNodes (or Nodes) form the basis of Flux Singularity.  On their own they are capable of very little, but when "Mixins" are added, the posibilities are endless.
 
-#### The TunnelManager
+FluxNodes, whether in the browser or NodeJS, have built in Storage and Tunnel Managers that allow simple methods for saving and retrieving data, as well as communicating with other FluxNodes
+ 
+#### FluxNode Network
+
+This term is used to describe a network of interconnected FluxNodes.  This can be a network of FluxNodes all running in the same process, on the same machine, on seperate machines, or a combination of the three.
+
+### Events
+
+
+
+### The TunnelManager
+
+The TunnelManager handles the processing of Messages to and from FluxNodes, and translating them into events that can be emitted by the recieving FluxNode.
 
 #### Tunnels
 
-### Stores
+Tunnels are the connections between FluxNodes.  They enable a simple method of sending messages between FluxNodes, without having to worry about the technicalities of the commucation method, whether it be Websockets, TCP or something else entirely.
 
-#### The StorageManager
+#### Tunnels
+
+### The Storage Manager
+
+The StorageManager, as the name implies, handles the data storage and retrieval for a FluxNode.  It enables data managament to be a simple and consistent activity, irespective of the Database Engine used.
 
 #### Stores
 
+Stores are the connectors between the data manager and a Database engine.  They provide a consistent interface for saving and retrieving complex objects.
+
 #### Channels
+
+Channels can be thought of like tables within a traditional database engine.  They allow records of similar types to be grouped together.
 
 #### Collections
 
+Collections are similar to Channels, but operate at the StorageManager Level and are read only.  They can be queried in the same way as a Store, but may span multiple actual Stores.
+
 #### Models
+
+The Model system used by the StorageManager does not use a traditional method of defining data.  Instead it uses the idea of validating data instead of defining it.  Standard style field configurations can be supplied, but are simply translated into a validation function.
+
+These validations for fields can be used to both validate data before saving to a store, as well as for querying the same data.
 
 #### Queries 
 
 ### Mixins
 
+Mixins are at the heart of Flux Singularity.  They extend the basic functionality of a FluxNode and include everything from Group Based Security to POP3 email functionality, and many many more.
 
 ## Using Flux Singularity
 
