@@ -132,7 +132,45 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	}
 	
 	StorageManager.prototype.find = function(record, stores, callback){
+		var self = this;
+		var err = false;
+		var recs = [];
+		if(!stores){
+			stores = [];
+			for(var strIdx in self.stores){
+				stores.push(self.stores[strIdx]);
+			}
+		}else{
+			if(!Array.isArray(stores)){
+				var store = self.getStore(store);
+				stores = [store]; 
+			}
+		}
 		
+		function searchNextStore(){
+			if(stores.length==0){
+				if(callback){
+					callback(err, recs);
+				}
+				return;
+			}
+			var store = stores.shift();
+			
+			store.find(query, channels, function(err, records){
+				recs = records;
+				if(!err){
+					if(recs.length==0){//keep looking
+						searchNextStore();
+					}else{
+						if(callback){
+							callback(err, recs);
+						}
+					}
+				}
+			});
+		}
+		
+		searchNextStore();
 	}
 	
 	StorageManager.prototype.findOne = function(query, stores, channels, callback){
@@ -177,8 +215,46 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		searchNextStore();
 	}
 	
-	StorageManager.prototype.findById = function(record, stores, callback){
+	StorageManager.prototype.remove = function(query, stores, channel, callback){
+		var self = this;
+		var err = false;
+		var recs = [];
+		if(!stores){
+			stores = [];
+			for(var strIdx in self.stores){
+				stores.push(self.stores[strIdx]);
+			}
+		}else{
+			if(!Array.isArray(stores)){
+				var store = self.getStore(store);
+				stores = [store]; 
+			}
+		}
 		
+		function removeFromNextStore(){
+			if(stores.length==0){
+				if(callback){
+					callback(err, recs);
+				}
+				return;
+			}
+			var store = stores.shift();
+			
+			store.remove(query, channels, function(err, records){
+				recs = records;
+				if(!err){
+					if(recs.length==0){//keep looking
+						searchNextStore();
+					}else{
+						if(callback){
+							callback(err, recs);
+						}
+					}
+				}
+			});
+		}
+		
+		removeFromNextStore();
 	}
 	
 	StorageManager.prototype.createStore = function(cfg, callback){
