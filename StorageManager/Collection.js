@@ -1,7 +1,7 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2'], function(util, EventEmitter2) {
+	define(['util', 'eventemitter2'], function(util, EventEmitter2) {
 		var fnConstruct = CollectionBuilder(util, EventEmitter2);
 		return fnConstruct;
 	});		
