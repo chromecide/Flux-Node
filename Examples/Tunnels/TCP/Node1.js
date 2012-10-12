@@ -5,9 +5,9 @@ myNode = new FluxNode({
 	id: '4d1cb28a-90af-4972-bd21-f3f296290849',
 	mixins: [
 		{
-			name: 'TCPServer',
+			name: 'FNMTCPServer',
 			options:{
-				host: 'localhost',
+				host: '0.0.0.0',
 				port: 8081
 			}
 		}
