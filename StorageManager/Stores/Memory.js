@@ -7,7 +7,7 @@ if (typeof define === 'function' && define.amd) {
 	});		
 } else {
 	var util = require('util'), 
-	EventEmitter2 = require('EventEmitter2').EventEmitter2,
+	EventEmitter2 = require('eventemitter2').EventEmitter2,
 	Store = require('../Store').Store;
 	
 	var fnConstruct = StoreBuilder(util, EventEmitter2, Store);

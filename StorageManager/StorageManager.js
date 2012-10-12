@@ -6,7 +6,7 @@ if (typeof define === 'function' && define.amd) {
 	});		
 } else {
 	var util = require('util'), 
-	EventEmitter2 = require('EventEmitter2').EventEmitter2,
+	EventEmitter2 = require('eventemitter2').EventEmitter2,
 	Store = require('./Store.js').Tunnel;
 	Collection = require('./Collection.js').Collection;
 	var MemoryStore = require('./Stores/Memory.js').Collection;
