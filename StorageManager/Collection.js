@@ -1,13 +1,13 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'eventemitter2'], function(util, EventEmitter2) {
+	define(['util', 'EventEmitter2'], function(util, EventEmitter2) {
 		var fnConstruct = CollectionBuilder(util, EventEmitter2);
 		return fnConstruct;
 	});		
 } else {
 	var util = require('util'), 
-	EventEmitter2 = require('EventEmitter2').EventEmitter2;
+	EventEmitter2 = require('eventemitter2').EventEmitter2;
 	var fnConstruct = CollectionBuilder(util, EventEmitter2);
 	exports.Collection = fnConstruct;
 }
