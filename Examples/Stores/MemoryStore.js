@@ -14,7 +14,6 @@ new FluxNode({}, function(myNode){
 	});
 });
 
-
 function doStoreOperations(store){
 	console.log(sepLine);
 	console.log('Commencing Store Operations');

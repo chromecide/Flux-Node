@@ -1,5 +1,15 @@
-Basic IntraProcessNode Tunnel Example
+FluxNode Tunnel Examples
 =========
 
-This Example demonstrates comminucation between 2 seperate Flux Singularity Nodes running within the same NodeJS Process
+## IntraProcessNode
+
+Examples for communicating between FluxNodes running in the same process
+
+## TCP
+
+Examples for communicating between FluxNodes using TCP
+
+## Websockets
+
+Examples for communicating between Browser-based FluxNodes and NodeJS FluxNodes using Websockets
 

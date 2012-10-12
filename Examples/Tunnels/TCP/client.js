@@ -7,7 +7,7 @@ myNode = new FluxNode({
 			destination: '4d1cb28a-90af-4972-bd21-f3f296290849',
 			type:'TCP',
 			options:{
-				host: 'localhost',
+				host: '10.0.0.23',
 				port: 8081
 			}
 		}
