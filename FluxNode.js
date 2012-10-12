@@ -22,7 +22,7 @@ if (typeof define === 'function' && define.amd) {
 	});		
 } else {
 	var util = require('util'),
-		EventEmitter2 = require('EventEmitter2').EventEmitter2,
+		EventEmitter2 = require('eventemitter2').EventEmitter2,
 		TunnelManager = require('./TunnelManager/TunnelManager.js').TunnelManager,
 		StorageManager = require('./StorageManager/StorageManager.js').StorageManager;
 	var fnConstruct = FluxNodeObj(util, EventEmitter2, TunnelManager, StorageManager);
