@@ -37,7 +37,7 @@ This term is used to describe a network of interconnected FluxNodes.  This can b
 
 ### Events
 
-
+Events are what allows the flexibility and expandability of FluxNodes.  Almost everything that happens within a FluxNode will emit an event.  These events can be listened for, and additional functionality can be added.
 
 ### The TunnelManager
 
@@ -46,8 +46,6 @@ The TunnelManager handles the processing of Messages to and from FluxNodes, and 
 #### Tunnels
 
 Tunnels are the connections between FluxNodes.  They enable a simple method of sending messages between FluxNodes, without having to worry about the technicalities of the commucation method, whether it be Websockets, TCP or something else entirely.
-
-#### Tunnels
 
 ### The Storage Manager
 
@@ -73,9 +71,13 @@ These validations for fields can be used to both validate data before saving to 
 
 #### Queries 
 
+Queries can be performed in a number of ways.
+
 ### Mixins
 
 Mixins are at the heart of Flux Singularity.  They extend the basic functionality of a FluxNode and include everything from Group Based Security to POP3 email functionality, and many many more.
+
+
 
 ## Using Flux Singularity
 
