@@ -74,10 +74,12 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		if(self.debug) console.log('Configuring Storage Manager');
 		
+		
 		self.StorageManager = new StorageManager();
 		self.StorageManager.on('error', function(){
 			self.emit.apply('error', arguments);
 		});
+		
 		self.sendEvent = function(destinationId, topic, message){
 			
 			if(!destinationId || destinationId==self.id){
@@ -116,6 +118,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					self.TunnelManager.registerTunnel(tunnel.destination, newTunnel);
 				}
 			}
+			
 			if(cfg.mixins){
 				var mixin = false;
 				var mixinLoop = function(){
@@ -139,6 +142,20 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					}
 				}
 				mixinLoop();
+			}
+			
+			
+			if(cfg && cfg.stores){
+				if((typeof cfg.stores[cfg.stores.length-1])=='function'){
+					callback = cfg.stores.pop();
+				}
+				self.StorageManager.configure({
+					stores: cfg.stores
+				}, function(allStores){
+					if(callback){
+						callback(false, self.StorageManager.stores);
+					}
+				});
 			}
 		}
 		

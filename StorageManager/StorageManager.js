@@ -35,7 +35,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		if(!cfg.stores || cfg.stores.length==0){
 			cfg.stores = [{
 				type: 'Memory',
-				isDefault: true,
 				options:{
 					channels:[
 						'master'
@@ -70,7 +69,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		var err = false;
 		for(var storeIdx in stores){
 			var storeCfg = stores[storeIdx];
+			
 			self.createStore(storeCfg, function(creatErr, store){
+				
 				if(finishedStores==0 || storeCfg.isDefault===true){ //the first store to be added will be the default store, unless a later one has isDefault===true
 					self.defaultStore = store;
 				}
@@ -80,7 +81,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				}
 				if(finishedStores==numStores || err){
 					if(callback){
-						callback(err, self.stores);
+						callback.call(self, err, self.stores);
 					}
 				}
 			});
@@ -88,6 +89,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	}
 	
 	StorageManager.prototype.factory = function(type, callback){
+		if(!type){
+			return;
+		}
 		var self = this;
 		
 		if(self._environment=='nodejs'){
