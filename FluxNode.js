@@ -2,6 +2,7 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 
 if (typeof define === 'function' && define.amd) {
+	
 	require.config({
 		paths:{
 			'util': './lib/util',
@@ -12,7 +13,8 @@ if (typeof define === 'function' && define.amd) {
 			'StorageManager': './StorageManager',
 			'Store': 'StorageManager/Store',
 			'Stores': 'StorageManager/Stores',
-			'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2'
+			'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
+			'mixins': './lib/mixins'
 		}
 	});
 	
@@ -73,7 +75,9 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		if(self.debug) console.log('Configuring Storage Manager');
 		
 		self.StorageManager = new StorageManager();
-		
+		self.StorageManager.on('error', function(){
+			self.emit.apply('error', arguments);
+		});
 		self.sendEvent = function(destinationId, topic, message){
 			
 			if(!destinationId || destinationId==self.id){
@@ -408,14 +412,16 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			
 			if(self._environment=='nodejs'){
 				var mixinClass= false;
+				//try and load the mixin from the standard paths
 				try{
 					mixinClass = require(mixinName);	
 				}catch(err){
 					//nothing to see here, move along
 				}
 				
+				//fall back to the mixin folder
 				if(!mixinClass){
-					mixinClass = require(mixinName);
+					mixinClass = require('./lib/mixins/'+mixinName);
 				}
 				
 				for(var x in mixinClass){
@@ -436,7 +442,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				}
 			}else{
 				//if(self.debug) console.log('./mixins/'+mixinName+'.js');
-				require([mixinName], function(mixinClass){
+				require(['mixins/'+mixinName], function(mixinClass){
 					//if(self.debug) console.log(arguments);
 					for(var x in mixinClass){
 						if(x!='init'){
