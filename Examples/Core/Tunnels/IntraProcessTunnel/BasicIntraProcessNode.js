@@ -1,5 +1,5 @@
 var FluxNode;
-FluxNode = require('../../../FluxNode').FluxNode;
+FluxNode = require('../../../../FluxNode').FluxNode;
 
 
 //create the first node

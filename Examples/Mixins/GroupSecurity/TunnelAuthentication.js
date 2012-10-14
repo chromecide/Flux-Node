@@ -1,4 +1,4 @@
-var FluxNode = require('../../FluxNode').FluxNode;
+var FluxNode = require('../../../FluxNode').FluxNode;
 
 var SecureNode = new FluxNode({
 	mixins:[
@@ -16,7 +16,7 @@ var SecureNode = new FluxNode({
 			}
 		},
 		{
-			name: 'FluxNode-Websockets',
+			name: 'FNMWebsockets',
 			options:{
 				port:8081
 			}

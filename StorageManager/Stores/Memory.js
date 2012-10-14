@@ -217,7 +217,6 @@ function StoreBuilder(util, EventEmitter2, Store){
 						}	
 					}
 					return true;
-					
 				});
 			}
 		}
