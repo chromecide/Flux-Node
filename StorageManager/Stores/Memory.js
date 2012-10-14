@@ -31,6 +31,8 @@ function StoreBuilder(util, EventEmitter2, Store){
 		if(cfg){
 			self.configureStore(cfg);
 		}
+		self.status = 'ready';
+		self.emit('ready', false, self);
 	}
 	
 		util.inherits(MemoryStore, Store);
@@ -93,13 +95,11 @@ function StoreBuilder(util, EventEmitter2, Store){
 			
 			var newRecord = records.shift();
 			saveRecord.call(self, newRecord, channel, function(err, rec){
-				if(err){
-					err = true;
-					newRecord = {
-						error: err,
-						record: newRecord
-					}
+				newRecord = {
+					error: err,
+					record: newRecord
 				}
+				
 				ReturnRecords.push(newRecord);
 				doSaveRecords();
 			});
@@ -133,16 +133,32 @@ function StoreBuilder(util, EventEmitter2, Store){
 	}
 	
 	function find(query, channel, callback){
+		
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
 		var returnRecords = [];
 		
+		if(!channel){
+			channel = self.defaultChannel;	
+		}else{
+			if((typeof channel)=='function'){
+				callback = channel;
+				channel = self.defaultChannel;
+			}
+		}
+		
 		switch(queryType){
 			case 'string': //assume it's an id
+			
 				for(var recIdx in self.records[channel]){
-					if(self.records[recIdx].id==query){
-						returnRecords.push(self.records[recIdx]);
+					
+					if(self.records[channel][recIdx].id==query){
+						returnRecords.push({
+							err: false,
+							record: self.records[channel][recIdx]
+						});
+						
 						break; //there is only going to be one item with the supplied ID
 					}
 				}
@@ -151,9 +167,9 @@ function StoreBuilder(util, EventEmitter2, Store){
 				returnRecords = queryByObject.call(self, query, channel, false);
 				break;
 			case 'function':
-				for(var recIdx in self.records[channels]){
-					if(query(self.records[recIdx])===true){
-						returnRecords.push(self.records[recIdx]);
+				for(var recIdx in self.records[channel]){
+					if(query(self.records[channel][recIdx])===true){
+						returnRecords.push({err: false, record: self.records[channel][recIdx]});
 					}
 				}
 				break;
@@ -220,6 +236,14 @@ function StoreBuilder(util, EventEmitter2, Store){
 				});
 			}
 		}
+		
+		for(var idx in retArray){
+			retArray[idx] = {
+				err:false,
+				record: retArray[idx]
+			}
+		}
+		
 		return retArray;
 	}
 	

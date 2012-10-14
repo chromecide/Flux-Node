@@ -219,7 +219,10 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 								console.log(err);
 							}else{
 								if(callback){
-									callback(err, record);
+									callback(err, [{
+										err: err, 
+										record: record
+									}]);
 								}
 							}
 						});	
@@ -245,7 +248,9 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 						cursor.toArray(function(err, arr){
 							for(var arrIdx in arr){
 								if(query(arr[arrIdx])===true){
-									retObjects.push(arr[arrIdx]);
+									retObjects.push({
+										err: false,
+										record: arr[arrIdx]});
 								}
 							}
 							if(callback){
@@ -279,12 +284,18 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 					if(maxRecs && maxRecs==1){
 						collection.findOne(query, {}, queryOpts, function(err, record){
 							if(callback){
-								callback(err, record);
+								callback(err, {err: err, record: record});
 							}
 						});	
 					}else{
 						collection.find(query, {}, queryOpts, function(err, cursor){
 							cursor.toArray(function(err, arr){
+								for(var idx in arr){
+									arr[idx] = {
+										err: false,
+										record: arr[idx]
+									}
+								}
 								if(callback){
 									callback(err, arr);
 								}
