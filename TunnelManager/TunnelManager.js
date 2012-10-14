@@ -49,7 +49,19 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 		TunnelManager.prototype.factory = function(type, callback){
 			var self = this;
 			if(self._environment=='nodejs'){
-				var tunnelDef = require('./Tunnels/'+type);
+				//first try and include from the standard paths
+				var tunnelDef= false;
+				try{
+					tunnelDef = require(type);
+				}catch(e){
+					//nothing to see here, move along
+				}
+				
+				//fallback to the tunnels directory
+				if(!tunnelDef){
+					tunnelDef = require('./Tunnels/'+type);	
+				}
+				
 				return tunnelDef;
 			}else{
 				require(['./Tunnels/'+type], callback);
