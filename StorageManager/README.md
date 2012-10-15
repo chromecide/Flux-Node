@@ -1,10 +1,10 @@
-Flux-Node.StoreManager
+Flux-Node.StorageManager
 =========
 
-Flux Singularity Storage Manager
+Flux Singularity StorageManager
 ---------
 
-The Flux Singularity Storage Manager provides a consistent interface for the storage and retrieval of complex data objects.
+The Flux Singularity StorageManager provides a consistent interface for the storage and retrieval of complex data objects.
 
 ## Basic Data Functions
 
@@ -31,7 +31,7 @@ The Flux Singularity Storage Manager provides a consistent interface for the sto
     	}
     ];
     
-	MyNode.StoreManager.save(data, function(err, records){
+	MyNode.StorageManager.save(data, function(err, records){
 		if(!err){ //no errors, all records are fine
 			for(var recordIndex in records){
 				var record = records[recordIndex].record;
@@ -62,7 +62,7 @@ The Flux Singularity Storage Manager provides a consistent interface for the sto
     	Surname: 'Citizen'
     };
     
-	MyNode.StoreManager.find(query, function(err, records){
+	MyNode.StorageManager.find(query, function(err, records){
 		if(!err){
 			for(var recordIndex in records){
 				var record = records[recordIndex].record;
@@ -79,7 +79,7 @@ The Flux Singularity Storage Manager provides a consistent interface for the sto
     	FirstName: 'Jane'
     };
     
-	MyNode.StoreManager.findOne(query, function(err, records){
+	MyNode.StorageManager.findOne(query, function(err, records){
 		if(!err){
 			for(var recordIndex in records){
 				var record = records[recordIndex].record;
@@ -95,13 +95,13 @@ The Flux Singularity Storage Manager provides a consistent interface for the sto
 
 ### Deleting Data
 
-## Stores and the Storage Manager
+## Stores and the StorageManager
 
-Stores are the objects that allow the StoreManager to provide a consistent interface for data within Flux Singularity, providing a link between the Flux Singularity functions and the equivalent functionality of the associated database engine.
+Stores are the objects that allow the StorageManager to provide a consistent interface for data within Flux Singularity, providing a link between the Flux Singularity functions and the equivalent functionality of the associated database engine.
 
-## Store Manager Events
+## StorageManager Events
 
-As with everything else in FluxSingularity, the StoreManager is an instance of the event emitter.  The following events may be emitted by the StoreManager.
+As with everything else in FluxSingularity, the StorageManager is an instance of the event emitter.  The following events may be emitted by the StorageManager.
 
 ### Store.Connected
 
@@ -139,11 +139,11 @@ __Parameters__
 
 * config: object
 
-An object containing the configuration options for the StoreManager
+An object containing the configuration options for the StorageManager
 
 * callback(err, storeConfig)
 
-An optional function that will be called when the configuration process is complete, where _err_ is either _false_ or an _object_ containing the information of any errors that occurred and _storeConfig_ is the current configuration options for the StoreManager.
+An optional function that will be called when the configuration process is complete, where _err_ is either _false_ or an _object_ containing the information of any errors that occurred and _storeConfig_ is the current configuration options for the StorageManager.
 
 __Configuration Options__
 
@@ -167,7 +167,7 @@ An object containing the options for the store that is to be created.
 
 * callback
 
-An optional function that will be executed when the store has been created, where _err_ is either _false_ or an _object_ containing the infortmation of any errors that occurred, and _newStore_ is the newly created store.  Any store created using _createStore_ will automatically be registered with the StoreManager if no errors ocurred.
+An optional function that will be executed when the store has been created, where _err_ is either _false_ or an _object_ containing the infortmation of any errors that occurred, and _newStore_ is the newly created store.  Any store created using _createStore_ will automatically be registered with the StorageManager if no errors ocurred.
 
 ### factory(type, [callback(err, driverClass)])
 
@@ -195,7 +195,7 @@ Finds the first record that matches the supplied query.
 
 ### getDefaultStore()
 
-Returns the default store for the StoreManager.
+Returns the default store for the StorageManager.
 
 ### getStore(query, [callback(err, store)])
 
@@ -203,7 +203,7 @@ Retrieves the first instance of a Store that matches the supplied criteria.
 
 ### registerStore(storeID, store, [callback])
 
-Registers a Store with the StoreManager.
+Registers a Store with the StorageManager.
 
 ### remove(query, [stores], [channels], [callback(err, records)])
 
