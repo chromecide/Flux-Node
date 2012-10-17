@@ -30,7 +30,7 @@ function StoreBuilder(util, EventEmitter2){
 		for(var key in cfg){
 			switch(key){
 				case 'channels':
-					console.log(cfg.channels);
+					//console.log(cfg.channels);
 					break;
 				default:
 					self[key] = cfg[key];
@@ -186,7 +186,8 @@ function StoreBuilder(util, EventEmitter2){
 				}
 				break;
 			case 'function':
-				if(!validation(rec[keyName])){
+				
+				if(!validation(rec, rec[keyName])){
 					keyValid = false;
 				}
 				break;
@@ -201,17 +202,18 @@ function StoreBuilder(util, EventEmitter2){
 	Store.prototype.validateRecord = function(rec, validationCfg){
 		var self = this;
 		var allKeysValid = true;
+		//console.log('------------------------------------------');
 		for(var keyName in validationCfg){
 			var validations = validationCfg[keyName];
 			var keyValid = true;
-
+			//console.log('------'+keyName+'------');
 			if(validations){
 				//make sure the validations value is an array, even if it's a single item
 				if(!Array.isArray(validations)){
 					validations = [validations];
 				}
-				
 				for(var validationIdx in validations){
+					//console.log(validationIdx);
 					var validation = validations[validationIdx];
 					
 					if(!self.validateValue(rec, keyName, validation)){
@@ -222,12 +224,14 @@ function StoreBuilder(util, EventEmitter2){
 						break; //we don't need to do more testing, so break out of both loops
 					}
 				}
+				
 			}
+			//console.log('------/'+keyName+'------');
 			if(!allKeysValid){
 				break;
 			}
 		}
-		
+		//console.log('------------------------------------------');
 		return allKeysValid;
 	}
 	

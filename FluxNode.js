@@ -36,64 +36,34 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 	//This is the actual Flux Node Constructor
 	function FluxNodeConstructor(cfg, cb){
 		var self = this;
-		self.TunnelManager = TunnelManager;
+		
 		self.NodeSubscribers = {};
 		
+		if(!cfg){
+			cfg = {};
+		}
+		
+		if(cfg.debug){
+			self.debug = cfg.debug;
+		}
+		
 		evObj.call(self, cfg);
+		
+		self._environment = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? 'nodejs' : 'browser');
+		
 		if(cfg.id){
 			self.id = cfg.id;		
 		}
+		
 		if(!self.id){
+			if(self.debug) console.log('Generating ID....');
 			var thisId = self.generateID(); 
 			if(self.debug) console.log('setting id: '+thisId);
 			self.id = thisId;
 		}
 		
-		if(self.debug) console.log('Configuring Tunnel Manager');
-		self.TunnelManager = new TunnelManager();
+		if(self.debug) console.log('Starting FluxNode: '+self.id);
 		
-		self.TunnelManager.configureManager({
-			debug:true,
-			allowRelay: true,
-			sender: self.id
-		});
-		
-		self.TunnelManager.on('message', function(message){
-			self.emit(message.topic, message.message, message);
-		});
-		
-		self.TunnelManager.on('tunnelready', function(destination, tunnel){
-			self.emit('tunnelready', destination, tunnel);
-		});
-		
-		self.TunnelManager.on('tunnelclosed', function(remoteId){
-			self.doUnsubscribe(remoteId);
-			
-			self.emit('tunnelclosed', remoteId);
-		});
-		
-		if(self.debug) console.log('Configuring Storage Manager');
-		
-		
-		self.StorageManager = new StorageManager();
-		self.StorageManager.on('error', function(){
-			self.emit.apply('error', arguments);
-		});
-		
-		self.sendEvent = function(destinationId, topic, message){
-			
-			if(!destinationId || destinationId==self.id){
-				self.emit(topic, message);
-			}else{
-				self.TunnelManager.send(destinationId, topic, message);
-			}
-		}
-		
-		//TODO: for legacy code, remove
-		self.fireEvent = self.sendEvent;
-		self._environment = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? 'nodejs' : 'browser');
-		
-		//require some items
 		self.Subscribers = {};
 		
 		self.on('Subscribe', function(message, data){
@@ -107,7 +77,80 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			self.doUnsubscribe(data._message.sender, data.message.events);
 		});
 		
-		if(cfg){
+		if(cfg.listeners){
+			if(self.debug) console.log('Configuring Listeners');
+			for(var topic in cfg.listeners){
+				self.on(topic, cfg.listeners[topic]);
+			}
+		}
+		
+		if(self.debug) console.log('Configuring StorageManager');
+		
+		var storageManager = new StorageManager();
+		
+		storageManager.on('error', function(){
+			self.emit.apply('error', arguments);
+		});
+		
+		if(cfg && cfg.stores){
+			var smCallback = false;
+			//if the last item in the supplied list of stores is a function, pop it off the list and use it as a callback
+			if((typeof cfg.stores[cfg.stores.length-1])=='function'){
+				smCallback = cfg.stores.pop();
+			}
+		}else{
+			console.log('creating default store');
+			cfg.stores = [
+				{
+					type: 'Memory',
+					isDefault: true
+				}
+			]	
+		}
+		
+		storageManager.once('StorageManager.Ready', function(err, SM){
+			if(self.debug) console.log('StorageManager Ready');
+			self.StorageManager = SM;
+			self.StorageManager.on('StorageManager.StoreReady', function(err, store){
+				self.emit('StorageManager.StoreReady', err, store);
+			});
+			
+			if(self.debug) console.log('Configuring Tunnel Manager');
+			self.TunnelManager = new TunnelManager();
+			
+			self.TunnelManager.configureManager({
+				debug:true,
+				allowRelay: true,
+				sender: self.id
+			});
+			
+			self.TunnelManager.on('message', function(message){
+				self.emit(message.topic, message.message, message);
+			});
+			
+			self.TunnelManager.on('tunnelready', function(destination, tunnel){
+				console.log('tunnel ready');
+				self.emit('tunnelready', destination, tunnel);
+			});
+			
+			self.TunnelManager.on('tunnelclosed', function(remoteId){
+				self.doUnsubscribe(remoteId);
+				
+				self.emit('tunnelclosed', remoteId);
+			});
+			
+			self.sendEvent = function(destinationId, topic, message){
+				
+				if(!destinationId || destinationId==self.id){
+					self.emit(topic, message);
+				}else{
+					self.TunnelManager.send(destinationId, topic, message);
+				}
+			}
+			
+			//TODO: for legacy code, remove
+			self.fireEvent = self.sendEvent;
+			
 			if(cfg.tunnels){
 				for(var tIdx in cfg.tunnels){
 					var tunnel = cfg.tunnels[tIdx];
@@ -120,6 +163,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			}
 			
 			if(cfg.mixins){
+				if(self.debug) console.log('Configuring Mixins');
 				var mixin = false;
 				var mixinLoop = function(){
 					if(cfg.mixins.length>0){
@@ -139,29 +183,27 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 								self.mixin(mixin, {}, mixinLoop);	
 							}
 						}	
+					}else{
+						console.log('READY');
+						self.emit('FluxNode.Ready', self);
+						if(cb){
+							cb(self, cfg);
+						}
+						
 					}
 				}
 				mixinLoop();
-			}
-			
-			
-			if(cfg && cfg.stores){
-				if((typeof cfg.stores[cfg.stores.length-1])=='function'){
-					callback = cfg.stores.pop();
+			}else{
+				self.emit('FluxNode.Ready', self);
+				if(cb){
+					cb(self, cfg);
 				}
-				self.StorageManager.configure({
-					stores: cfg.stores
-				}, function(allStores){
-					if(callback){
-						callback(false, self.StorageManager.stores);
-					}
-				});
 			}
-		}
+		});
 		
-		if(cb){
-			cb(self, cfg);
-		}
+		storageManager.configure({
+			stores: cfg.stores
+		});
 		
 		return self;
 	}

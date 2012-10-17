@@ -42,7 +42,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		try{
 			self.db.open(function(err, db) {
 				if(!err) {
-					self.emit('ready', self);
+					self.emit('Store.Ready', err, self);
 				}else{
 					console.log(err);
 				}
@@ -136,6 +136,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 	}
 	
 	function saveRecord(record, channels, callback){
+		
 		var self = this;
 		
 		var db = self.db;
@@ -161,9 +162,9 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		for(var chanIdx in channels){
 			var channelName = channels[chanIdx];
 			
-			db.collection(channelName, function(err, collection){
-				
+			db.collection(channelName, function(err, collection){	
 				try{
+					
 					collection.findOne({id: record.id}, function(err, item) {
 						if(!err){
 							if(item){
@@ -183,9 +184,12 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 									self.emit('Store.RecordSaved', err, record);
 								});
 							}
+						}else{
+							console.log(err);
 						}
 					});	
 				}catch(e){
+					console.log(e);
 					self.emit('Store.Error', e);
 				}
 				
@@ -268,10 +272,12 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 	
 	function queryByObject(query, channel, maxRecs, callback){
 		var self = this;
-		
+		console.log('QUERYING');
+		console.log(query);
+		console.log('-------------');
 		var retArray = [];
 		if(Array.isArray(query)){ //it's an OR style query
-			console.log('arr');
+			console.log('OR QUERY ATTEMPT: NOT YET IMPLEMENTED');
 		}else{
 			if(query._map){//map reduce
 				
@@ -310,6 +316,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 	
 	
 	function findOne(query, channel, callback){
+		console.log('FINDING ONE');
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
@@ -323,7 +330,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 				channel = self.defaultChannel;
 			}
 		}
-		
+
 		switch(queryType){
 			case 'string': //assume it's an id
 				self.db.collection(channel, function(err, collection){
@@ -344,6 +351,8 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 				
 				break;
 			case 'object':
+			console.log('searching........');
+			console.log(query);
 				returnRecords = queryByObject.call(self, query, channel, 1, function(err, recs){
 					if(callback){
 						callback(err, recs);

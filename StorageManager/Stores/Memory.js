@@ -32,7 +32,12 @@ function StoreBuilder(util, EventEmitter2, Store){
 			self.configureStore(cfg);
 		}
 		self.status = 'ready';
-		self.emit('ready', false, self);
+		
+		// this is here because the store is ready instantly, any code within the new FluxNode callback will never recieve the event,
+		setTimeout(function(){
+			self.emit('Store.Ready', false, self);	
+		}, 1000)
+		
 	}
 	
 		util.inherits(MemoryStore, Store);
@@ -150,7 +155,6 @@ function StoreBuilder(util, EventEmitter2, Store){
 		
 		switch(queryType){
 			case 'string': //assume it's an id
-			
 				for(var recIdx in self.records[channel]){
 					
 					if(self.records[channel][recIdx].id==query){
@@ -164,6 +168,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				}
 				break;
 			case 'object':
+				
 				returnRecords = queryByObject.call(self, query, channel, false);
 				break;
 			case 'function':
@@ -184,6 +189,25 @@ function StoreBuilder(util, EventEmitter2, Store){
 		var self = this;
 		
 		var retArray = [];
+		
+		var queryFunctions = objectToQuery(query);
+		
+		if(self.records[channel]){
+			for(var recIdx=0;recIdx<self.records[channel].length;recIdx++){
+				
+				if(maxRecs!=false && retArray.length==maxRecs){
+					break;
+				}else{
+					if(self.validateRecord(self.records[channel][recIdx], queryFunctions)){
+						retArray.push(self.records[channel][recIdx]);
+					}	
+				}
+			}	
+		}else{
+			//console.log('Channel '+channel+' not found');
+		}
+		
+		/*
 		if(Array.isArray(query)){ //it's an OR style query
 			var currentCount = 0;
 			retArray = self.records[channel].filter(function(rec){
@@ -226,6 +250,9 @@ function StoreBuilder(util, EventEmitter2, Store){
 			if(query._map){//map reduce
 				
 			}else{ //find by attribute
+				if(!self.records[channel]){
+					return false;
+				}
 				retArray = self.records[channel].filter(function(rec){
 					for(var key in query){
 						if(rec[key] && rec[key]!=query[key]){
@@ -235,7 +262,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 					return true;
 				});
 			}
-		}
+		}*/
 		
 		for(var idx in retArray){
 			retArray[idx] = {
@@ -245,6 +272,253 @@ function StoreBuilder(util, EventEmitter2, Store){
 		}
 		
 		return retArray;
+	}
+	
+	function objectToQuery(object, callback){
+		var returnQuery = {};
+		
+		if(Array.isArray(object)){//OR query
+			//console.log('OR QUERY');
+		}else{
+			for(var key in object){
+				returnQuery[key] = [];
+				var fieldProcessed = false;
+				
+				var criteria = object[key];
+				
+				if(!Array.isArray(criteria)){
+					criteria = [criteria];
+				}
+				
+				for(var critIdx in criteria){
+					var objectVal = criteria[critIdx];
+					//console.log(objectVal);
+					if(objectVal.eq){
+						objectVal = objectVal.eq;
+						var valFunc = function(oVal){
+							return function(record, val){
+								//console.log(val+' == '+oVal);
+								if(val==oVal){
+									//console.log(' - Yes');
+									return true;
+								}
+								//console.log(' - No');
+								return false;
+							}
+						}
+						
+						returnQuery[key].push(valFunc(objectVal));
+						fieldProcessed = true;
+					}
+					if(objectVal.neq){
+						objectVal = objectVal.neq;
+						var valFunc = function(oVal){
+							return function(record, val){
+								//console.log(val+' != '+oVal);
+								if(val!=oVal){
+									//console.log(' - Yes');
+									return true;
+								}
+								//console.log(' - No');
+								return false;
+							}
+						}
+						
+						returnQuery[key].push(valFunc(objectVal));
+						fieldProcessed = true;
+					}
+					if(objectVal.lt){
+						objectVal = objectVal.lt;
+						var valFunc = function(oVal){
+							return function(record, val){
+								//console.log(val+' < '+oVal);
+								if(val<oVal){
+									//console.log(' - Yes');
+									return true;
+								}
+								//console.log(' - No');
+								return false;
+							}
+						}
+						
+						returnQuery[key].push(valFunc(objectVal));
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.gt){
+						objectVal = objectVal.gt;
+						var valFunc = function(oVal){
+							return function(record, val){
+								//console.log(val+' > '+oVal);
+								if(val>oVal){
+									//console.log(' - Yes');
+									return true;
+								}
+								//console.log(' - No');
+								return false;
+							}
+						}
+						
+						returnQuery[key].push(valFunc(objectVal));
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.lte){
+						objectVal = objectVal.lte;
+						var valFunc = function(oVal){
+							return function(record, val){
+								//console.log(val+' <= '+oVal);
+								if(val<=oVal){
+									//console.log(' - Yes');
+									return true;
+								}
+								//console.log(' - No');
+								return false;
+							}
+						}
+						
+						returnQuery[key].push(valFunc(objectVal));
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.gte){
+						objectVal = objectVal.gte
+						var valFunc = function(oVal){
+							return function(record, val){
+								//console.log(val+' >= '+oVal);
+								if(val>=oVal){
+									//console.log(' - Yes');
+									return true;
+								}
+								//console.log(' - No');
+								return false;
+							}
+						}
+						
+						returnQuery[key].push(valFunc(objectVal));
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.ct){
+						var ignoreCase = objectVal.ignoreCase?objectVal.ignoreCase:true;
+						objectVal = objectVal.ct;
+						
+						var valFunc = function(oVal){
+							return function(record, val){
+								switch(typeof oVal){
+									case 'string':
+										var recVal = record[key];
+										var objVal = oVal;
+										if(ignoreCase===true){
+											recVal = recVal.toLowerCase();
+											objVal = objVal.toLowerCase();
+										}
+										//console.log(recVal+' ct '+objVal);
+										if(recVal.indexOf(objVal)>-1){
+											//console.log(' - Yes');
+											return true;
+										}
+										//console.log(' - No');
+										return false
+										break;
+									case 'number'://can't do contains on numbers
+										return false;
+										break;
+									case 'object':
+										return false;
+										break;
+									default:
+										//console.log(typeof oVal);
+										return false;
+										break;
+								}
+								return false;
+							}
+						}
+						returnQuery[key].push(valFunc(objectVal));
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.dct){
+						var ignoreCase = objectVal.ignoreCase?objectVal.ignoreCase:true;
+						objectVal = objectVal.dct;
+						
+						var valFunc = function(oVal){
+							return function(record, val){
+								switch(typeof oVal){
+									case 'string':
+										var recVal = record[key];
+										var objVal = oVal;
+										if(ignoreCase===true){
+											recVal = recVal.toLowerCase();
+											objVal = objVal.toLowerCase();
+										}
+										//console.log(val+' dct '+objectVal);
+										if(recVal.indexOf(objVal)==-1){
+											//console.log(' - Yes');
+											return true;
+										}
+										//console.log(' - No');
+										return false
+										break;
+									case 'number'://can't do contains on numbers
+										return false;
+										break;
+									case 'object':
+										return false;
+										break;
+									default:
+										//console.log(typeof oVal);
+										return false;
+										break;
+								}
+								return false;
+							}
+						}
+						
+						returnQuery[key].push(valFunc(objectVal));
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.ae){
+						objectVal = objectVal.ae;
+						
+						var valFunc = function(oVal){
+							return function(record, val){
+								if(oval==true){
+									if(record[key]){
+										return true;	
+									}
+									return false;	
+								}else{
+									if(record[key]){
+										return false;;	
+									}
+									return true;
+								}
+								
+							}
+						}
+						
+						returnQuery[key].push(valFunc(objectVal));
+						fieldProcessed = true;
+					}
+					
+					if(!fieldProcessed){
+						returnQuery[key].push(function(record, val){
+							
+							if(record[key]==objectVal){
+								return true;
+							}
+							return false;
+						});
+					}	
+				}
+				
+			}
+		}
+		
+		return returnQuery;
 	}
 	
 	function findOne(query, channel, callback){

@@ -81,37 +81,47 @@ function doSearchOperations(store, seedRecords, callback){
 }
 
 function seedRecords(store, callback){
+	
 	console.log(sepLine);
 	console.log('Seeding Records');
 	console.log(sepLine);
-	store.save([
-		{
-			FirstName: 'Joe',
-			Surname: 'Roberts',
-			Position: 'CEO',
-			Gender: 'M'
-		},
-		{
-			FirstName: 'Jane',
-			Surname: 'Smith',
-			Position: 'CTO',
-			Gender: 'F'
-		},
-		{
-			FirstName: 'John',
-			Surname: 'Cooper',
-			Position: 'Developer',
-			Gender: 'M'
-		},
-		{
-			FirstName: 'Ronald',
-			Surname: 'Citizen',
-			Position: 'Developer',
-			Gender: 'M'
+	store.find({}, function(err, recs){
+		if(recs.length>0){
+			console.log('Data already exists');
+			callback(err, recs);
+		}else{
+			console.log('Saving Records');
+			store.save([
+				{
+					FirstName: 'Joe',
+					Surname: 'Roberts',
+					Position: 'CEO',
+					Gender: 'M'
+				},
+				{
+					FirstName: 'Jane',
+					Surname: 'Smith',
+					Position: 'CTO',
+					Gender: 'F'
+				},
+				{
+					FirstName: 'John',
+					Surname: 'Cooper',
+					Position: 'Developer',
+					Gender: 'M'
+				},
+				{
+					FirstName: 'Ronald',
+					Surname: 'Citizen',
+					Position: 'Developer',
+					Gender: 'M'
+				}
+			], function(err, records){
+				callback(err, records);
+			});
 		}
-	], function(err, records){
-		callback(err, records);
 	});
+	
 }
 
 function printStoreStats(store){

@@ -3,20 +3,27 @@
 		
 		<title>TunnelManager Authentication Example</title>
 		<base href="./" target="_blank">
-		<script src="http://requirejs.org/docs/release/2.1.0/minified/require.js" data-main="../../"></script>
+		<script src="http://requirejs.org/docs/release/2.1.0/minified/require.js" data-main="../../../"></script>
 		<script>
 			var myNode;
 			var serverID = false;
 			require(['FluxNode'], function(FluxNode, sio){
 				new FluxNode({
+					debug: true,
 					mixins:[
 						{
-							name: 'node_modules/FluxNode-Websockets/index',
+							name: 'websockets',
 							options:{
 								port: 8081
 							}
 						}
-					]
+					],
+					listeners:{
+						'tunnelready': function(destination, tunnel){
+							console.log(destination);
+							serverID = destination;
+						}
+					}
 				}, function(nd){
 					myNode = nd;
 					myNode.on('tunnelready',function(destination){
@@ -27,11 +34,11 @@
 						console.log('CONNECTION CLOSED');
 					});
 					
-					myNode.on('FNMGroupSecurity.MustLogin', function(message){
+					myNode.on('GroupSecurity.MustLogin', function(message){
 						alert('You must login within '+message.timeout+' seconds');
 					});
 					
-					myNode.on('FNMGroupSecurity.LoginTimeoutReached', function(message){
+					myNode.on('GroupSecurity.LoginTimeoutReached', function(message){
 						alert('You failed to Login within the allocated time frame. Your connection has been closed');
 					});
 				});
@@ -42,7 +49,7 @@
 			}
 			
 			function doLogin(){
-				myNode.sendEvent(serverID, 'FNMGroupSecurity.Login', {username: 'admin', password:'abc123'});
+				myNode.sendEvent(serverID, 'GroupSecurity.Login', {username: 'admin', password:'abc123'});
 			}
 		</script>
 	</head>
