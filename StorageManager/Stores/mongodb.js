@@ -283,35 +283,129 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 				
 			}else{ //find by attribute
 				self.db.collection(channel, function(err, collection){
+					var mQuery = objectToQuery(query);
 					var queryOpts = {};
 					if(maxRecs && maxRecs>0){
 						queryOpts.limit = maxRecs;
 					}
-					if(maxRecs && maxRecs==1){
-						collection.findOne(query, {}, queryOpts, function(err, record){
-							if(callback){
-								callback(err, {err: err, record: record});
+					console.log(mQuery);
+					collection.find(mQuery, {}, queryOpts, function(err, cursor){
+						cursor.toArray(function(err, arr){
+							for(var idx in arr){
+								arr[idx] = {
+									err: false,
+									record: arr[idx]
+								}
 							}
-						});	
-					}else{
-						collection.find(query, {}, queryOpts, function(err, cursor){
-							cursor.toArray(function(err, arr){
-								for(var idx in arr){
-									arr[idx] = {
-										err: false,
-										record: arr[idx]
-									}
-								}
-								if(callback){
-									callback(err, arr);
-								}
-							});
-						});	
-					}
+							if(callback){
+								callback(err, arr);
+							}
+						});
+					});
 				});
 			}
 		}
 		return retArray;
+	}
+	
+	function objectToQuery(object, callback){
+		var returnQuery = {};
+		
+		if(Array.isArray(object)){//OR query
+			console.log('OR QUERY');
+		}else{
+			for(var key in object){
+				returnQuery[key] = {};
+				var fieldProcessed = false;
+				
+				var criteria = object[key];
+				
+				if(!Array.isArray(criteria)){
+					criteria = [criteria];
+				}
+				
+				for(var critIdx in criteria){
+					var objectVal = criteria[critIdx];
+					//console.log(objectVal);
+					if(objectVal.eq){
+						objectVal = objectVal.eq; 
+						returnQuery[key] = objectVal;
+						fieldProcessed = true;
+					}
+					if(objectVal.neq){
+						objectVal = objectVal.neq;
+						
+						var keyItem = returnQuery[key]; 
+						keyItem['$ne'] = objectVal;
+						fieldProcessed = true;
+					}
+					if(objectVal.lt){
+						objectVal = objectVal.lt;
+						var keyItem = returnQuery[key]; 
+						keyItem['$lt'] = objectVal;
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.gt){
+						objectVal = objectVal.gt;
+						var keyItem = returnQuery[key]; 
+						keyItem['$gt'] = objectVal;
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.lte){
+						objectVal = objectVal.lte;
+						
+						var keyItem = returnQuery[key]; 
+						keyItem['$lte'] = objectVal;
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.gte){
+						objectVal = objectVal.gte
+						
+						var keyItem = returnQuery[key]; 
+						keyItem['$gte'] = objectVal;
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.ct){
+						var ignoreCase = objectVal.ignoreCase?objectVal.ignoreCase:true;
+						objectVal = objectVal.ct;
+						
+						var keyItem = returnQuery[key]; 
+						keyItem['$regex'] = new RegExp(objectVal, ignoreCase==true?"i":"");
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.dct){
+						var ignoreCase = objectVal.ignoreCase?objectVal.ignoreCase:true;
+						objectVal = objectVal.dct;
+						
+						var keyItem = returnQuery[key]; 
+						keyItem['$regex'] = new RegExp(objectVal, ignoreCase==true?"i":"");
+						fieldProcessed = true;
+					}
+					
+					if(objectVal.ae){
+						objectVal = objectVal.ae;
+						
+						var keyItem = returnQuery[key]; 
+						keyItem['$exists'] = objectVal; 
+						fieldProcessed = true;
+					}
+					
+					if(!fieldProcessed){
+						var keyItem = returnQuery[key]; 
+						keyItem = objectVal;
+						fieldProcessed = true;
+					}	
+				}
+				
+			}
+		}
+		
+		return returnQuery;
 	}
 	
 	
