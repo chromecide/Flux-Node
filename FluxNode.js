@@ -493,12 +493,12 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					mixinParams = {};
 				}
 				
-				mixinClass.init.call(self, mixinParams);
-				self.emit('MixinAdded', mixinClass, mixinParams);
+				mixinClass.init.call(self, mixinParams, function(){
+					if(callback){
+						callback.call(self);	
+					}	
+				});
 				
-				if(callback){
-					callback.call(self);	
-				}
 			}else{
 				//if(self.debug) console.log('./mixins/'+mixinName+'.js');
 				require(['mixins/'+mixinName], function(mixinClass){
