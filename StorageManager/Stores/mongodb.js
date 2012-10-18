@@ -290,17 +290,26 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 					}
 					console.log(mQuery);
 					collection.find(mQuery, {}, queryOpts, function(err, cursor){
-						cursor.toArray(function(err, arr){
-							for(var idx in arr){
-								arr[idx] = {
-									err: false,
-									record: arr[idx]
+						var retArr = [];
+						if(cursor){
+							console.log('ere');
+							cursor.toArray(function(err, arr){
+								for(var idx in arr){
+									retArr[idx] = {
+										err: false,
+										record: arr[idx]
+									}
 								}
-							}
+								
+								if(callback){
+									callback(err, retArr);
+								}
+							});	
+						}else{
 							if(callback){
-								callback(err, arr);
+								callback(err, retArr);
 							}
-						});
+						}
 					});
 				});
 			}
@@ -395,9 +404,8 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 						fieldProcessed = true;
 					}
 					
-					if(!fieldProcessed){
-						var keyItem = returnQuery[key]; 
-						keyItem = objectVal;
+					if(!fieldProcessed){ 
+						returnQuery[key] = objectVal;
 						fieldProcessed = true;
 					}	
 				}
@@ -444,8 +452,8 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 				
 				break;
 			case 'object':
-			
-				returnRecords = queryByObject.call(self, query, channel, 1, function(err, recs){
+				queryByObject.call(self, query, channel, false, function(err, recs){
+					console.log('adsfsadfsadf');
 					if(callback){
 						callback(err, recs);
 					}
