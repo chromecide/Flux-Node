@@ -4,12 +4,24 @@ var sepLine = '--------------------------------------------';
 
 new FluxNode({
 	debug:true,
+	stores:[
+		{
+			type: 'mongodb',
+			options:{
+				host: 'localhost',
+				port: 27017,
+				databaseName: 'query_test'
+			},
+			isDefault: true
+		}
+	],
 	mixins:[
 		{
 			name: __dirname+'/installDataMixin.js'
 		}
 	]
 }, function(myNode){
+	
 	myNode.on('error', function(){
 		console.log('ERR');
 		console.log(arguments);
