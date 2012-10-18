@@ -410,7 +410,6 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 	
 	
 	function findOne(query, channel, callback){
-		console.log('FINDING ONE');
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
@@ -445,8 +444,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 				
 				break;
 			case 'object':
-			console.log('searching........');
-			console.log(query);
+			
 				returnRecords = queryByObject.call(self, query, channel, 1, function(err, recs){
 					if(callback){
 						callback(err, recs);

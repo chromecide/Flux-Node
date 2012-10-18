@@ -1,5 +1,5 @@
 var mixinFunctions = {
-	init: function(){
+	init: function(cfg, callback){
 		var thisNode = this;
 		//add properties that are needed by this mixin
 		
@@ -7,7 +7,6 @@ var mixinFunctions = {
 		thisNode.StorageManager.findOne({
 			FirstName: 'Joe'
 		}, function(err, rec){
-			
 			if(!rec || rec.length==0){
 				console.log('Installing test data');
 				thisNode.StorageManager.save([
@@ -54,9 +53,13 @@ var mixinFunctions = {
 						Age: 20
 					}
 				], function(){
+					console.log('all data saved');
 					thisNode.emit('Mixin.Ready', {
 						name: 'initDataMixins'
 					});
+					if(callback){
+						callback();
+					}
 				});
 			}
 		})
