@@ -162,7 +162,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	}
 	
 	//TODO: FIX AND ADD SUPPORT FOR CHANNELS
-	StorageManager.prototype.find = function(query, stores, channels, callback){
+	StorageManager.prototype.find = function(query, fields, stores, channels, callback){
 		var self = this;
 		var err = false;
 		var recs = [];
@@ -201,7 +201,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 
 			var store = stores.shift();
 
-			store.find(query, channels, function(err, records){
+			store.find(query, fields, channels, function(err, records){
 				recs = records;
 				if(!err){
 					if(recs.length==0){//keep looking
@@ -220,14 +220,26 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		searchNextStore();
 	}
 	
-	StorageManager.prototype.findOne = function(query, stores, channels, callback){
+	StorageManager.prototype.findOne = function(query, fields, stores, channels, callback){
 		var self = this;
 		var err = false;
 		var recs = [];
 		
+		
+		if(typeof fields =='function'){ //callback supplied as the second arg
+			callback = fields;
+			fields = {};
+			stores=[];
+			channels=false;
+			for(var strIdx in self.stores){
+				stores.push(self.stores[strIdx]);
+			}
+		}
+		
 		if(typeof stores =='function'){ //callback supplied as the second arg
 			callback = stores;
 			stores = [];
+			channels = false;
 			for(var strIdx in self.stores){
 				stores.push(self.stores[strIdx]);
 			}
@@ -261,7 +273,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}
 			var store = stores.shift();
 			
-			store.findOne(query, channels, function(err, records){
+			store.findOne(query, fields, channels, function(err, records){
 				recs = records;
 				if(!err){
 					if(recs.length==0){//keep looking

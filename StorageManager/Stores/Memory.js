@@ -137,12 +137,18 @@ function StoreBuilder(util, EventEmitter2, Store){
 		self.emit('Store.RecordSaved', err, record);
 	}
 	
-	function find(query, channel, callback){
+	function find(query, fields, channel, callback){
 		
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
 		var returnRecords = [];
+		
+		if(typeof fields =='function'){
+			callback = fields;
+			fields = {};
+			channel = false;
+		}
 		
 		if(!channel){
 			channel = self.defaultChannel;	
@@ -169,7 +175,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				break;
 			case 'object':
 				
-				returnRecords = queryByObject.call(self, query, channel, false);
+				returnRecords = queryByObject.call(self, fields, query, channel, false);
 				break;
 			case 'function':
 				for(var recIdx in self.records[channel]){
@@ -185,7 +191,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 		}
 	}
 	
-	function queryByObject(query, channel, maxRecs, callback){
+	function queryByObject(query, fields, channel, maxRecs, callback){
 		var self = this;
 		
 		var retArray = [];
@@ -521,11 +527,27 @@ function StoreBuilder(util, EventEmitter2, Store){
 		return returnQuery;
 	}
 	
-	function findOne(query, channel, callback){
+	function findOne(query, fields, channel, callback){
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
 		var returnRecords = [];
+		
+		if(typeof fields =='function'){
+			callback = fields;
+			fields = {};
+			channel = false;
+		}
+		
+		
+		if(!channel){
+			channel = self.defaultChannel;	
+		}else{
+			if((typeof channel)=='function'){
+				callback = channel;
+				channel = self.defaultChannel;
+			}
+		}
 		
 		switch(queryType){
 			case 'string': //assume it's an id

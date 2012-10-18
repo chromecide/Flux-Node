@@ -199,12 +199,16 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		return false;
 	}
 	
-	function find(query, channel, callback){
+	function find(query, fields, channel, callback){
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
 		var returnRecords = [];
-		
+		if(typeof fields =='function'){
+			callback = fields;
+			fields = {};
+			channel = false;
+		}
 		if(!channel){
 			channel = self.defaultChannel;
 		}else{
@@ -237,7 +241,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 				
 				break;
 			case 'object':
-				queryByObject.call(self, query, channel, false, function(err, recs){
+				queryByObject.call(self, query, fields, channel, false, function(err, recs){
 					
 					if(callback){
 						callback(err, recs);
@@ -270,7 +274,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		return false;
 	}
 	
-	function queryByObject(query, channel, maxRecs, callback){
+	function queryByObject(query, fields, channel, maxRecs, callback){
 		var self = this;
 		console.log('QUERYING');
 		console.log(query);
@@ -292,7 +296,6 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 					collection.find(mQuery, {}, queryOpts, function(err, cursor){
 						var retArr = [];
 						if(cursor){
-							console.log('ere');
 							cursor.toArray(function(err, arr){
 								for(var idx in arr){
 									retArr[idx] = {
@@ -417,7 +420,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 	}
 	
 	
-	function findOne(query, channel, callback){
+	function findOne(query, fields, channel, callback){
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
@@ -452,8 +455,8 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 				
 				break;
 			case 'object':
-				queryByObject.call(self, query, channel, false, function(err, recs){
-					console.log('adsfsadfsadf');
+				queryByObject.call(self, query, fields, channel, false, function(err, recs){
+					
 					if(callback){
 						callback(err, recs);
 					}
