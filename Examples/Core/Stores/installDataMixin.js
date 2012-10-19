@@ -7,7 +7,6 @@ var mixinFunctions = {
 		thisNode.StorageManager.findOne({
 			FirstName: 'Joe'
 		}, function(err, rec){
-			
 			if(!rec || rec.length==0){
 				console.log('Installing test data');
 				thisNode.StorageManager.save([
