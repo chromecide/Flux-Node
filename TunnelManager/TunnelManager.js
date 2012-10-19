@@ -31,8 +31,11 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 			delimiter: '.',
 			wildcard: true
 		});
+		
 		if(cfg){
 			configure.call(this, cfg);
+		}else{
+			self.emit('TunnelManager.Ready', self);
 		}
 	}
 	
@@ -61,7 +64,9 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 				if(!tunnelDef){
 					tunnelDef = require('./Tunnels/'+type);	
 				}
-				
+				if(callback){
+					callback(tunnelDef);
+				}
 				return tunnelDef;
 			}else{
 				require(['./Tunnels/'+type], callback);
@@ -70,8 +75,15 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 	return TunnelManager;
 }
 
-function configure(cfg){
+function configure(cfg, callback){
+	if(!cfg){
+		cfg = {};
+	}
+	
 	var self = this;
+	
+	self._config = cfg;
+	
 	if(cfg.rulesTable!='undefined'){
 		rulesTable = cfg.rulesTable;
 	}
@@ -91,6 +103,37 @@ function configure(cfg){
 	if(cfg.allowed){
 		self.allowed = cfg.allowed;
 	}
+	
+	if(cfg.tunnels){
+		
+		function tunnelLoop(){
+			if(cfg.tunnels.length==0){
+				if(callback){
+					callback(self._config);
+				}
+				self.emit('TunnelManager.Ready', self, self._config);
+				return;
+			}
+			
+			var tunnel = cfg.tunnels.shift();
+			self.factory(tunnel.type, function(tunnelDefinition){
+				tunnelDef= tunnelDefinition.Tunnel;
+				var newTunnel = new tunnelDef(tunnel.options);
+				newTunnel.remoteID = tunnel.destination;
+				console.log('registering tunnels');
+				self.registerTunnel(tunnel.destination, newTunnel, tunnelLoop);
+			});
+		}
+		
+		tunnelLoop();
+	}else{
+		if(callback){
+			callback(self._config);
+		}
+		self.emit('TunnelManager.Ready', self, self._config);	
+	}
+	
+	
 }
 
 function processData(action, destination, topic, message, callback){
@@ -235,7 +278,7 @@ function getTunnel(destination){
 	return tunnels[destination];
 }
 
-function registerTunnel(remoteID, tunnelObj){
+function registerTunnel(remoteID, tunnelObj, callback){
 	var self = this;
 	if(tunnels[remoteID]){
 		deregisterTunnel(remoteID);
@@ -268,6 +311,10 @@ function registerTunnel(remoteID, tunnelObj){
 		});
 		
 		tunnels[tunnelObj.remoteID] = tunnelObj;
+	}
+	
+	if(callback){
+		callback(remoteId, tunnelObj);
 	}
 }
 

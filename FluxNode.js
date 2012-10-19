@@ -118,26 +118,69 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			if(self.debug) console.log('Configuring Tunnel Manager');
 			self.TunnelManager = new TunnelManager();
 			
+			self.TunnelManager.once('TunnelManager.Ready', function(){
+				
+				self.TunnelManager.on('message', function(message){
+					self.emit(message.topic, message.message, message);
+				});
+				
+				self.TunnelManager.on('tunnelready', function(destination, tunnel){
+					console.log('tunnel ready');
+					self.emit('tunnelready', destination, tunnel);
+				});
+				
+				self.TunnelManager.on('tunnelclosed', function(remoteId){
+					self.doUnsubscribe(remoteId);
+					
+					self.emit('tunnelclosed', remoteId);
+				});
+				
+				if(cfg.mixins){
+					if(self.debug) console.log('Configuring Mixins');
+					var mixin = false;
+					var mixinLoop = function(){
+						if(cfg.mixins.length>0){
+							mixin = cfg.mixins.shift();
+						}else{
+							mixin = false;
+						}
+						if(mixin){
+							if(typeof mixin=='function'){
+								mixin(self);
+							}else{
+								if(typeof mixin == 'object'){
+									var mixinName = mixin.name;
+									var options = mixin.options;
+									self.mixin(mixinName, options, mixinLoop);
+								}else{
+									self.mixin(mixin, {}, mixinLoop);	
+								}
+							}	
+						}else{
+							console.log('READY');
+							self.emit('FluxNode.Ready', self);
+							if(cb){
+								cb(self, cfg);
+							}
+							
+						}
+					}
+					mixinLoop();
+				}else{
+					self.emit('FluxNode.Ready', self);
+					if(cb){
+						cb(self, cfg);
+					}
+				}
+			});
+			
 			self.TunnelManager.configureManager({
 				debug:true,
 				allowRelay: true,
-				sender: self.id
+				sender: self.id,
+				tunnels: cfg && cfg.tunnels?cfg.tunnels:[]
 			});
 			
-			self.TunnelManager.on('message', function(message){
-				self.emit(message.topic, message.message, message);
-			});
-			
-			self.TunnelManager.on('tunnelready', function(destination, tunnel){
-				console.log('tunnel ready');
-				self.emit('tunnelready', destination, tunnel);
-			});
-			
-			self.TunnelManager.on('tunnelclosed', function(remoteId){
-				self.doUnsubscribe(remoteId);
-				
-				self.emit('tunnelclosed', remoteId);
-			});
 			
 			self.sendEvent = function(destinationId, topic, message){
 				
@@ -145,58 +188,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					self.emit(topic, message);
 				}else{
 					self.TunnelManager.send(destinationId, topic, message);
-				}
-			}
-			
-			//TODO: for legacy code, remove
-			self.fireEvent = self.sendEvent;
-			
-			if(cfg.tunnels){
-				for(var tIdx in cfg.tunnels){
-					var tunnel = cfg.tunnels[tIdx];
-					
-					var tunnelDef = self.TunnelManager.factory(tunnel.type).Tunnel;
-					var newTunnel = new tunnelDef(tunnel.options);
-					newTunnel.remoteID = tunnel.destination;
-					self.TunnelManager.registerTunnel(tunnel.destination, newTunnel);
-				}
-			}
-			
-			if(cfg.mixins){
-				if(self.debug) console.log('Configuring Mixins');
-				var mixin = false;
-				var mixinLoop = function(){
-					if(cfg.mixins.length>0){
-						mixin = cfg.mixins.shift();
-					}else{
-						mixin = false;
-					}
-					if(mixin){
-						if(typeof mixin=='function'){
-							mixin(self);
-						}else{
-							if(typeof mixin == 'object'){
-								var mixinName = mixin.name;
-								var options = mixin.options;
-								self.mixin(mixinName, options, mixinLoop);
-							}else{
-								self.mixin(mixin, {}, mixinLoop);	
-							}
-						}	
-					}else{
-						console.log('READY');
-						self.emit('FluxNode.Ready', self);
-						if(cb){
-							cb(self, cfg);
-						}
-						
-					}
-				}
-				mixinLoop();
-			}else{
-				self.emit('FluxNode.Ready', self);
-				if(cb){
-					cb(self, cfg);
 				}
 			}
 		});
