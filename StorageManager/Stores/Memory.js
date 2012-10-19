@@ -200,7 +200,6 @@ function StoreBuilder(util, EventEmitter2, Store){
 		
 		if(self.records[channel]){
 			for(var recIdx=0;recIdx<self.records[channel].length;recIdx++){
-				
 				if(maxRecs!=false && retArray.length==maxRecs){
 					break;
 				}else{
@@ -212,63 +211,6 @@ function StoreBuilder(util, EventEmitter2, Store){
 		}else{
 			//console.log('Channel '+channel+' not found');
 		}
-		
-		/*
-		if(Array.isArray(query)){ //it's an OR style query
-			var currentCount = 0;
-			retArray = self.records[channel].filter(function(rec){
-				var matches = false;
-				for(var idx in query){
-					var queryItem = query[idx];
-					switch(typeof queryItem){
-						case 'string':
-						
-							break;
-						case 'object':
-							var allItemsMatch = true;
-							for(var key in queryItem){
-								if(rec[key] && rec[key]!=queryItem[key]){
-									allItemsMatch = false;
-									break;
-								}	
-							}
-							if(allItemsMatch){
-								matches = true;
-								break;
-							}
-							break;
-						case 'function':
-						
-							break;	
-					}
-					
-				}
-				if(matches){
-					currentCount++;
-					
-					if(maxRecs && currentCount>maxRecs){
-						matches = false;
-					}
-				}
-				return matches;
-			});
-		}else{
-			if(query._map){//map reduce
-				
-			}else{ //find by attribute
-				if(!self.records[channel]){
-					return false;
-				}
-				retArray = self.records[channel].filter(function(rec){
-					for(var key in query){
-						if(rec[key] && rec[key]!=query[key]){
-							return false;
-						}	
-					}
-					return true;
-				});
-			}
-		}*/
 		
 		for(var idx in retArray){
 			retArray[idx] = {
