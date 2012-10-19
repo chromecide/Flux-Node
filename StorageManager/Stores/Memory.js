@@ -137,7 +137,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 		self.emit('Store.RecordSaved', err, record);
 	}
 	
-	function find(query, fields, channel, callback){
+	function find(query, fields, channels, callback){
 		
 		var self = this;
 		var err = false;
@@ -147,40 +147,52 @@ function StoreBuilder(util, EventEmitter2, Store){
 		if(typeof fields =='function'){
 			callback = fields;
 			fields = {};
-			channel = false;
+			channels = false;
 		}
 		
-		if(!channel){
-			channel = self.defaultChannel;	
+		if(!channels){
+			channels = [self.defaultChannel];	
 		}else{
-			if((typeof channel)=='function'){
-				callback = channel;
-				channel = self.defaultChannel;
+			if((typeof channels)=='function'){
+				callback = channels;
+				channels= [self.defaultChannel];
 			}
 		}
 		
 		switch(queryType){
 			case 'string': //assume it's an id
-				for(var recIdx in self.records[channel]){
-					
-					if(self.records[channel][recIdx].id==query){
-						returnRecords.push({
-							err: false,
-							record: self.records[channel][recIdx]
-						});
+				for(var chanIdx in channels){
+					var channel = channels[chanIdx];
+					for(var recIdx in self.records[channel]){
 						
-						break; //there is only going to be one item with the supplied ID
-					}
+						if(self.records[channel][recIdx].id==query){
+							returnRecords.push({
+								err: false,
+								record: self.records[channel][recIdx]
+							});
+							
+							break; //there is only going to be one item with the supplied ID
+						}
+					}	
 				}
 				break;
 			case 'object':
-				
-				returnRecords = queryByObject.call(self, fields, query, channel, false);
+				for(var chanIdx in channels){
+					var channel = channels[chanIdx];
+					var retRecs = queryByObject.call(self, fields, query, channel, false);
+					for(var i=0;i<retRecs.length;i++){
+						returnRecords.push(retRecs[i]);	
+					}
+					 
+				}
 				break;
 			case 'function':
-				for(var recIdx in self.records[channel]){
-					if(query(self.records[channel][recIdx])===true){
-						returnRecords.push({err: false, record: self.records[channel][recIdx]});
+				for(var chanIdx in channels){
+					var channel = channels[chanIdx];
+					for(var recIdx in self.records[channel]){
+						if(query(self.records[channel][recIdx])===true){
+							returnRecords.push({err: false, record: self.records[channel][recIdx]});
+						}
 					}
 				}
 				break;
@@ -469,7 +481,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 		return returnQuery;
 	}
 	
-	function findOne(query, fields, channel, callback){
+	function findOne(query, fields, channels, callback){
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
@@ -478,40 +490,53 @@ function StoreBuilder(util, EventEmitter2, Store){
 		if(typeof fields =='function'){
 			callback = fields;
 			fields = {};
-			channel = false;
+			channels = false;
 		}
 		
 		
-		if(!channel){
-			channel = self.defaultChannel;	
+		if(!channels){
+			channels = [self.defaultChannel];	
 		}else{
-			if((typeof channel)=='function'){
-				callback = channel;
-				channel = self.defaultChannel;
+			if((typeof channels)=='function'){
+				callback = channels;
+				channels= [self.defaultChannel];
 			}
 		}
 		
 		switch(queryType){
 			case 'string': //assume it's an id
-				for(var recIdx in self.records[channel]){
-					if(self.records[recIdx].id==query){
-						returnRecords.push(self.records[recIdx]);
-						break; //there is only going to be one item with the supplied ID
+				for(var chanIdx in channels){
+					var channel = channels[chanIdx];
+					for(var recIdx in self.records[channel]){
+						if(self.records[recIdx].id==query){
+							returnRecords.push(self.records[recIdx]);
+							break; //there is only going to be one item with the supplied ID
+						}
 					}
 				}
 				break;
 			case 'object':
-				returnRecords = queryByObject.call(self, query, channel, 1);
+				for(var chanIdx in channels){
+					var channel = channels[chanIdx];
+					var retRecs = queryByObject.call(self, fields, query, channel, 1);
+					for(var i=0;i<retRecs.length;i++){
+						returnRecords.push(retRecs[i]);
+					}
+					 
+				}
 				break;
 			case 'function':
 				var currentCount = 0;
-				for(var recIdx in self.records[channels]){
-					if(query(self.records[recIdx])===true){
-						currentCount++;
-						if(currentCount==maxRecs){
-							break;
+				for(var chanIdx in channels){
+					var channel = channels[chanIdx];
+					for(var recIdx in self.records[channels]){
+						if(query(self.records[recIdx])===true){
+							currentCount++;
+							if(currentCount==maxRecs){
+								break;
+							}
+							returnRecords.push(self.records[recIdx]);
 						}
-						returnRecords.push(self.records[recIdx]);
 					}
 				}
 				break;

@@ -189,6 +189,35 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}
 		}
 		
+		if(!channels){
+			channels = [];
+			for(var i=0;i<stores.length;i++){
+				channels[i] = false;
+			}
+		}else{
+			if(typeof channels=='string'){
+				var chanName = channels;
+				channels = [];
+				for(var i=0;i<stores.length;i++){
+					channels[i] = chanName;
+				}
+			}else{
+				if(Array.isArray(channels)){
+					if(typeof channels[0]=='string'){ //it's an array of strings, so all channels will be called for all stores
+						var chanArray = channels;
+						for(var i=0;i<stores.length;i++){
+							channels[i] = chanArray;
+						}
+					}else{
+						//leave as is, cause it's an array of arrays
+					}
+				}else{
+					//we don't support anything else	
+				}
+			}
+		}
+		
+		var curStoreIdx = 0;
 		function searchNextStore(){	
 			
 			if(stores.length==0){
@@ -200,8 +229,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}
 
 			var store = stores.shift();
-
-			store.find(query, fields, channels, function(err, records){
+			
+			var storeChannels = channels[curStoreIdx];
+			store.find(query, fields, storeChannels, function(err, records){
 				recs = records;
 				if(!err){
 					if(recs.length==0){//keep looking
@@ -215,6 +245,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 					console.log(err);
 				}
 			});
+			curStoreIdx++;
 		}
 		
 		searchNextStore();
@@ -263,6 +294,36 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		}
 		
 		
+		if(!channels){
+			channels = [];
+			for(var i=0;i<stores.length;i++){
+				channels[i] = false;
+			}
+		}else{
+			if(typeof channels=='string'){
+				var chanName = channels;
+				channels = [];
+				for(var i=0;i<stores.length;i++){
+					channels[i] = chanName;
+				}
+			}else{
+				if(Array.isArray(channels)){
+					if(typeof channels[0]=='string'){ //it's an array of strings, so all channels will be called for all stores
+						var chanArray = channels;
+						for(var i=0;i<stores.length;i++){
+							channels[i] = chanArray;
+						}
+					}else{
+						//leave as is, cause it's an array of arrays
+					}
+				}else{
+					//we don't support anything else	
+				}
+			}
+		}
+		
+		var curStoreIdx = 0;
+		
 		function searchNextStore(){
 			if(stores.length==0){
 				
@@ -273,7 +334,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}
 			var store = stores.shift();
 			
-			store.findOne(query, fields, channels, function(err, records){
+			store.findOne(query, fields, channels[curStoreIdx], function(err, records){
 				recs = records;
 				if(!err){
 					if(recs.length==0){//keep looking
@@ -284,6 +345,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 						}
 					}
 				}
+				curStoreIdx++;
 			});
 		}
 		
