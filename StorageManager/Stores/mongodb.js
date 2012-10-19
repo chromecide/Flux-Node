@@ -199,7 +199,8 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		return false;
 	}
 	
-	function find(query, fields, channel, callback){
+	function find(query, fields, channels, callback){
+		
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
@@ -209,44 +210,78 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 			fields = {};
 			channel = false;
 		}
-		if(!channel){
-			channel = self.defaultChannel;
+
+		if(!channels){
+			channels = [self.defaultChannel];	
 		}else{
-			if((typeof channel)=='function'){
-				callback = channel;
-				channel = self.defaultChannel;
+			if((typeof channels)=='function'){
+				callback = channels;
+				channels= [self.defaultChannel];
 			}
 		}
 		
 		switch(queryType){
 			case 'string': //assume it's an id
-				self.db.collection(channel, function(err, collection){
-					if(!err){
-						collection.findOne({id: query}, function(err, record){
-							if(err){
-								console.log(err);
-							}else{
-								if(callback){
-									callback(err, [{
-										err: err, 
-										record: record
-									}]);
+				var returnRecord = false;
+				function channelSearchLoop(){
+					if(channels.length==0 || returnRecord!==false){
+						if(callback){
+							callback(err, [{
+								err: err, 
+								record: returnRecord
+							}]);
+						}
+					}
+					
+					var channel = channels.shift();
+					
+					self.db.collection(channel, function(err, collection){
+						if(!err){
+							collection.findOne({id: query}, function(err, record){
+								if(err){
+									console.log(err);
+								}else{
+									if(record){
+										returnRecord = record;
+									}else{
+										channelSearchLoop();
+									}
 								}
-							}
-						});	
-					}else{
-						console.log(err);
-					}	
-				});
+							});	
+						}else{
+							console.log(err);
+							channelSearchLoop();
+						}	
+					});	
+				}
 				
+				channelSearchLoop();	
 				break;
 			case 'object':
-				queryByObject.call(self, query, fields, channel, false, function(err, recs){
-					
-					if(callback){
-						callback(err, recs);
+				var returnRecords = [];
+				var didErr = false;
+				function objectSearchLoop(){
+					if(channels.length==0){
+						if(callback){
+							callback(err, returnRecords);
+						}
+						return;
 					}
-				});
+					
+					var channel = channels.shift();
+
+					queryByObject.call(self, query, fields, channel, false, function(err, recs){
+						if(err){
+							didErr = true;
+						}else{
+							for(var i=0;i<recs.length;i++){
+								returnRecords.push(recs[i]);
+							}
+						}
+						objectSearchLoop();
+					});
+				} 
+				objectSearchLoop();
 				break;
 			case 'function': //this has the potential to be a very processor intensive task, as it has to load all objects in a collection
 				self.db.collection(channel, function(err, collection){
@@ -276,9 +311,6 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 	
 	function queryByObject(query, fields, channel, maxRecs, callback){
 		var self = this;
-		console.log('QUERYING');
-		console.log(query);
-		console.log('-------------');
 		var retArray = [];
 		if(Array.isArray(query)){ //it's an OR style query
 			console.log('OR QUERY ATTEMPT: NOT YET IMPLEMENTED');
@@ -286,13 +318,14 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 			if(query._map){//map reduce
 				
 			}else{ //find by attribute
+				
 				self.db.collection(channel, function(err, collection){
 					var mQuery = objectToQuery(query);
 					var queryOpts = {};
 					if(maxRecs && maxRecs>0){
 						queryOpts.limit = maxRecs;
 					}
-					console.log(mQuery);
+					
 					collection.find(mQuery, {}, queryOpts, function(err, cursor){
 						var retArr = [];
 						if(cursor){
