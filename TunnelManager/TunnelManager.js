@@ -120,7 +120,6 @@ function configure(cfg, callback){
 				tunnelDef= tunnelDefinition.Tunnel;
 				var newTunnel = new tunnelDef(tunnel.options);
 				newTunnel.remoteID = tunnel.destination;
-				console.log('registering tunnels');
 				self.registerTunnel(tunnel.destination, newTunnel, tunnelLoop);
 			});
 		}
