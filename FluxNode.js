@@ -118,6 +118,17 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			if(self.debug) console.log('Configuring Tunnel Manager');
 			self.TunnelManager = new TunnelManager();
 			
+			console.log('SETTING SEND EVNT');
+			self.sendEvent = function(destinationId, topic, message){
+				console.log('sending event');
+				if(!destinationId || destinationId==self.id){
+					self.emit(topic, message);
+				}else{
+					console.log(' - via TunnelManager');
+					self.TunnelManager.send(destinationId, topic, message);
+				}
+			}
+			
 			self.TunnelManager.once('TunnelManager.Ready', function(){
 				
 				self.TunnelManager.on('message', function(message){
@@ -181,15 +192,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				tunnels: cfg && cfg.tunnels?cfg.tunnels:[]
 			});
 			
-			
-			self.sendEvent = function(destinationId, topic, message){
-				
-				if(!destinationId || destinationId==self.id){
-					self.emit(topic, message);
-				}else{
-					self.TunnelManager.send(destinationId, topic, message);
-				}
-			}
 		});
 		
 		storageManager.configure({
