@@ -5,7 +5,7 @@ var sepLine = '--------------------------------------------';
 new FluxNode({
 	debug:true,
 	stores:[
-		{
+		/*{
 			type: 'mongodb',
 			options:{
 				host: 'localhost',
@@ -13,7 +13,7 @@ new FluxNode({
 				databaseName: 'query_test'
 			},
 			isDefault: true
-		}
+		}*/
 	],
 	mixins:[
 		{
@@ -54,7 +54,8 @@ new FluxNode({
 						Age:{
 							lte: 40
 						}
-					}, function (err, records){
+					},
+					function (err, records){
 						if(records  && records.length>0){
 							for(var recIdx in records){
 								var nonCeo = records[recIdx].record;
@@ -99,7 +100,7 @@ new FluxNode({
 														console.log(' - '+nonCeo.FirstName+' '+nonCeo.Surname+': '+nonCeo.Position);
 													}
 													
-													console.log('Find anyone whose Surname contains "Smith but is not "Smithson""');
+													console.log('Find anyone whose Surname contains "Smith" but is not "Smithson"');
 													myNode.StorageManager.find({
 														Surname:[
 															{
@@ -137,7 +138,7 @@ new FluxNode({
 				}
 			});
 		}else{
-			console.log('FIND FAILED');
+			console.log('CEO FIND FAILED');
 		}
 	});
 });
