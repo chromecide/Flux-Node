@@ -62,8 +62,10 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 				
 				//fallback to the tunnels directory
 				if(!tunnelDef){
-					tunnelDef = require('./Tunnels/'+type);	
+					console.log(__dirname+'/Tunnels/'+type);
+					tunnelDef = require(__dirname+'/Tunnels/'+type);	
 				}
+				
 				if(callback){
 					callback(tunnelDef);
 				}
@@ -117,10 +119,14 @@ function configure(cfg, callback){
 			
 			var tunnel = cfg.tunnels.shift();
 			self.factory(tunnel.type, function(tunnelDefinition){
-				tunnelDef= tunnelDefinition.Tunnel;
+				
+				tunnelDef = tunnelDefinition.Tunnel;
 				var newTunnel = new tunnelDef(tunnel.options);
 				newTunnel.remoteID = tunnel.destination;
-				self.registerTunnel(tunnel.destination, newTunnel, tunnelLoop);
+				newTunnel.on('Tunnel.Ready', function(){
+					self.registerTunnel(tunnel.destination, newTunnel, tunnelLoop);
+				});
+				
 			});
 		}
 		
@@ -248,7 +254,7 @@ function recieve(tunnelObj, message){
 							if(!tunnels[remoteID]){
 								tunnels[remoteID] = tunnelObj;
 							}
-							self.emit('tunnelready', remoteID, tunnelObj);
+							self.emit('Tunnel.Ready', remoteID, tunnelObj);
 							break;
 						default:
 							self.emit('message', message);	
@@ -279,11 +285,13 @@ function getTunnel(destination){
 
 function registerTunnel(remoteID, tunnelObj, callback){
 	var self = this;
+	
 	if(tunnels[remoteID]){
 		deregisterTunnel(remoteID);
 	}
 	
 	if(!remoteID){//we need to do some comms with the other end to introduce ourselves
+		tunnelObj.localId = self.senderID;
 		tunnelObj.on('message', function(tunnelObj, message){
 			self.recieve(tunnelObj, message);
 		});
@@ -296,6 +304,7 @@ function registerTunnel(remoteID, tunnelObj, callback){
 			allowRelay: allowRelay
 		});
 	}else{
+		tunnelObj.localId = self.senderID;
 		tunnelObj.remoteId = remoteID;
 		tunnelObj.on('message', function(tunnelObj, message){
 			self.recieve(tunnelObj, message);
@@ -313,7 +322,7 @@ function registerTunnel(remoteID, tunnelObj, callback){
 	}
 	
 	if(callback){
-		callback(remoteId, tunnelObj);
+		callback(remoteID, tunnelObj);
 	}
 }
 
@@ -324,7 +333,8 @@ function deregisterTunnel(remoteID){
 		
 		delete tunnels[remoteID];
 	}
-	self.emit('tunnelclosed', remoteID);
+	console.log('deregistering tunnel');
+	self.emit('Tunnel.Closed', remoteID);
 }
 
 
