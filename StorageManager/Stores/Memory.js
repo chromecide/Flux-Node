@@ -179,7 +179,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 			case 'object':
 				for(var chanIdx in channels){
 					var channel = channels[chanIdx];
-					var retRecs = queryByObject.call(self, fields, query, channel, false);
+					var retRecs = queryByObject.call(self, query, fields, channel, false);
 					for(var i=0;i<retRecs.length;i++){
 						returnRecords.push(retRecs[i]);	
 					}
