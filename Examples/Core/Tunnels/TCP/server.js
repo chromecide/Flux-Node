@@ -25,7 +25,7 @@ myNode.on('HelloRightBack', function(message, rawMessage){
 	console.log(rawMessage._message.sender+' sent: '+message.NewCustomProperty);
 });
 
-myNode.on('tunnelready', function(destination){
+myNode.on('Tunnel.Ready', function(destination){
 	console.log('connection recieved from: '+destination);
 });
 

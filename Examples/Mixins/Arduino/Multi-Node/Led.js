@@ -22,7 +22,7 @@ var arduinoBoard = new FluxNode({
 }, function(nd){
 	var ledVal = 255;
 	
-	nd.on('tunnelready', function(destination, destTunnel){
+	nd.on('Tunnel.Ready', function(destination, destTunnel){
 		if(destination==sensorBoardNodeID){
 			nd.sendEvent(destination, 'Subscribe', {eventName: ['LightSensor.On', 'LightSensor.Off']});
 		}

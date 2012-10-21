@@ -14,7 +14,7 @@ myNode = new FluxNode({
 	]
 });
 
-myNode.on('tunnelready', function(destination){
+myNode.on('Tunnel.Ready', function(destination){
 	console.log('connection recieved from: '+destination);
 	var thisNode = this;
 	thisNode.sendEvent(destination, 'Hello.World', {

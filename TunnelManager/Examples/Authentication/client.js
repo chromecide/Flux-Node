@@ -12,7 +12,7 @@ var tunnelManager = new TunnelManagerDef({
 	sender: '2', //the id number of this tunnel manager
 });
 
-tunnelManager.on('tunnelready', function(tunnel){
+tunnelManager.on('Tunnel.Ready', function(tunnel){
 	console.log('ready');
 	tunnelManager.send('1', 'auth', {
 		username:'node2',

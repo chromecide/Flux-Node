@@ -73,9 +73,9 @@ Emit an event that can be subscribed to
 
 The following Events are emitted by a default instance of a FluxNode (no mixins).  Other events and functionality are provided by mixins.
 
-### tunnelready
+### Tunnel.Ready
 
-### tunnelclosed
+### Tunnel.Closed
 
 ### Subscribe
 

@@ -19,14 +19,14 @@
 						}
 					],
 					listeners:{
-						'tunnelready': function(destination, tunnel){
+						'Tunnel.Ready': function(destination, tunnel){
 							console.log(destination);
 							serverID = destination;
 						}
 					}
 				}, function(nd){
 					myNode = nd;
-					myNode.on('tunnelready',function(destination){
+					myNode.on('Tunnel.Ready',function(destination){
 						serverID = destination;//we'll only ever connect to one other node from a browser
 					});
 					

@@ -135,15 +135,14 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					self.emit(message.topic, message.message, message);
 				});
 				
-				self.TunnelManager.on('tunnelready', function(destination, tunnel){
-					console.log('tunnel ready');
-					self.emit('tunnelready', destination, tunnel);
+				self.TunnelManager.on('Tunnel.Ready', function(destination, tunnel){
+					self.emit('Tunnel.Ready', destination, tunnel);
 				});
 				
-				self.TunnelManager.on('tunnelclosed', function(remoteId){
+				self.TunnelManager.on('Tunnel.Closed', function(remoteId){
 					self.doUnsubscribe(remoteId);
 					
-					self.emit('tunnelclosed', remoteId);
+					self.emit('Tunnel.Closed', remoteId);
 				});
 				
 				if(cfg.mixins){
@@ -234,15 +233,19 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					self.NodeSubscribers[subscriber] = {};
 				}
 				
-				self.NodeSubscribers[subscriber][eventName] = function(data){
-					if(self.debug) console.log('sending event to: '+subscriber);
-					var dataToSend = self.clipDataByField(data, fieldList, notFieldList);
-					self.sendEvent(subscriber, eventName, dataToSend);
+				var subscribeCallback = function(evtName){
+					return function(data){
+						if(self.debug) console.log('sending event to: '+subscriber);
+						var dataToSend = self.clipDataByField(data, fieldList, notFieldList);
+						self.sendEvent(subscriber, evtName, dataToSend);
+					}
 				}
+				
+				self.NodeSubscribers[subscriber][eventName] = subscribeCallback(eventName) 
 				
 				self.on(eventName, self.NodeSubscribers[subscriber][eventName]);
 				self.sendEvent(subscriber, 'Subscribed', {
-					event: eventName
+					subscribedEvent: eventName
 				});
 			}
 		}

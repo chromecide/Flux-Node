@@ -15,7 +15,7 @@ require(['FluxNode'], function(FN){ //successful load of dependencies
 	}, function(nd){
 		myNode = nd;
 		
-		myNode.on('tunnelready', function(destination){
+		myNode.on('Tunnel.Ready', function(destination){
 			myNode.ServerID = destination; //when connecting via a websocket for examples like this, we'll only ever have 1 tunnel open, which is to the server
 		});
 		

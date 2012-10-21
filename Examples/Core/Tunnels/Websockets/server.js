@@ -8,7 +8,7 @@ new FluxNode({
 	]
 }, function(myNode){
 	// when a FluxNode connects, send them a custom welcome message
-	myNode.on('tunnelready', function(destination, tunnel){
+	myNode.on('Tunnel.Ready', function(destination, tunnel){
 		myNode.sendEvent(destination, 'Welcome', {
 			username: 'Guest'
 		});
