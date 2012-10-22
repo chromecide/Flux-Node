@@ -469,7 +469,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				var mixinClass= false;
 				//try and load the mixin from the standard paths
 				try{
-					mixinClass = require(mixinName);	
+					mixinClass = require(mixinName);
 				}catch(err){
 					//nothing to see here, move along
 				}
