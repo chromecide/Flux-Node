@@ -154,9 +154,14 @@ function allowed(action, destination, topic, message, callback){
 }
 
 
-function send(destination, topic, message, callback){
+function send(destination, topic, message, inReplyTo, callback){
 	
 	var self = this;
+	
+	if((typeof inReplyTo)=='function'){
+		callback = inReplyTo;
+		inReplyTo = false;
+	}
 	
 	self.allowed('send', destination, topic, message, function(err, result){
 		if(err || !result){
@@ -175,7 +180,7 @@ function send(destination, topic, message, callback){
 				payload._message = {
 					id: generateID(),
 					sender: self.senderID,
-					topic: clnTopic
+					topic: clnTopic,
 				}
 			}else{
 				payload._message = {
@@ -190,8 +195,13 @@ function send(destination, topic, message, callback){
 				}
 			}
 			
+			if(inReplyTo){
+				payload._message.inReplyTo = inReplyTo;
+			}
+			
 			if(destination && (typeof destination=='object')){
 				destination.send(payload);
+				return payload._message.id;
 			}else{
 				switch(destination){
 					case '*':
