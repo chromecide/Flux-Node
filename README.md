@@ -77,6 +77,27 @@ Queries can be performed in a number of ways.
 
 Mixins are at the heart of Flux Singularity.  They extend the basic functionality of a FluxNode and include everything from Group Based Security to POP3 email functionality, and many many more.
 
+## Installing Flux Singularity
+
+### Pre-requisites
+
+The following applications and libraries need to be installed before setting up Flux Singularity.
+
+#### NodeJS
+
+
+### Flux Singularity Core
+
+#### NPM
+
+```
+Flux-Node will not be published to the npm repository until the first beta release.  Please see manual installation instructions below
+
+```
+
+####  Manual Installation
+
+
 
 
 ## Using Flux Singularity
@@ -124,6 +145,10 @@ var myNode = new FluxNode({
 	}
 });
 ```
+
+#### Stores
+
+
 
 ## More Information
 
