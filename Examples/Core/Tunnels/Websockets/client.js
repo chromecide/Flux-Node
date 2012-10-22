@@ -29,6 +29,10 @@ require(['FluxNode'], function(FN){ //successful load of dependencies
 		
 		myNode.on('Welcome', function(){
 			alert('The Server said Welcome');
+			
+			myNode.sendEvent(myNode.ServerID, 'GetList', {}, function(list){
+				console.log(list);
+			});
 		});
 	});	
 	

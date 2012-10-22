@@ -13,4 +13,15 @@ new FluxNode({
 			username: 'Guest'
 		});
 	});
+	
+	myNode.on('GetList', function(message, rawMessage){
+		myNode.sendEvent(rawMessage._message.sender, 'GetList.Response', [
+			'item1',
+			'item2',
+			'item3',
+			'item4',
+			'item5',
+			'item6',
+		]);
+	});
 });

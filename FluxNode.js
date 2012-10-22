@@ -119,7 +119,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			self.TunnelManager = new TunnelManager();
 			
 			console.log('SETTING SEND EVNT');
-			self.sendEvent = function(destinationId, topic, message){
+			self.sendEvent = function(destinationId, topic, message, callback){
 				console.log('sending event');
 				if(!destinationId || destinationId==self.id){
 					self.emit(topic, message);
