@@ -124,8 +124,20 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				if(!destinationId || destinationId==self.id){
 					self.emit(topic, message);
 				}else{
-					console.log(' - via TunnelManager');
-					self.TunnelManager.send(destinationId, topic, message);
+					var mId = self.TunnelManager.send(destinationId, topic, message);
+					if(callback){
+						var callbackListenerCreator = function(messageId, cb){
+							return function (message, rawMessage){
+								if(rawMessage._message.inReplyTo==messageId){
+									cb.call(self, message, rawMessage);
+								}else{
+									//re-add the listener
+									self.once(topic+'.Response', callbackListenerCreator(messageId, callback));
+								}
+							}	
+						}
+						self.once(topic+'.Response', callbackListenerCreator(mId, callback));
+					}
 				}
 			}
 			
