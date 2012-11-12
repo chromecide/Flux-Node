@@ -118,12 +118,15 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			if(self.debug) console.log('Configuring Tunnel Manager');
 			self.TunnelManager = new TunnelManager();
 			
-			self.sendEvent = function(destinationId, topic, message, callback){
-				console.log('sending event');
+			self.sendEvent = function(destinationId, topic, message, inReplyTo, callback){
+				if((typeof inReplyTo)=='function'){
+					callback = inReplyTo;
+					inReplyTo = false;
+				}
 				if(!destinationId || destinationId==self.id){
 					self.emit(topic, message);
 				}else{
-					var mId = self.TunnelManager.send(destinationId, topic, message);
+					var mId = self.TunnelManager.send(destinationId, topic, message, inReplyTo);
 					if(callback){
 						var callbackListenerCreator = function(messageId, cb){
 							return function (message, rawMessage){
