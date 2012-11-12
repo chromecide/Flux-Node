@@ -188,7 +188,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				stores = [rStore]; 
 			}
 		}
-		console.log(stores);
+		
 		if(!channels){
 			channels = [];
 			for(var i=0;i<stores.length;i++){
