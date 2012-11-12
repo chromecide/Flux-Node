@@ -156,6 +156,10 @@ function StoreBuilder(util, EventEmitter2, Store){
 			if((typeof channels)=='function'){
 				callback = channels;
 				channels= [self.defaultChannel];
+			}else{
+				if(!Array.isArray(channels)){
+					channels = [channels];
+				}
 			}
 		}
 		
@@ -221,7 +225,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				}
 			}	
 		}else{
-			//console.log('Channel '+channel+' not found');
+			console.log('Channel '+channel+' not found');
 		}
 		
 		for(var idx in retArray){
@@ -500,6 +504,10 @@ function StoreBuilder(util, EventEmitter2, Store){
 			if((typeof channels)=='function'){
 				callback = channels;
 				channels= [self.defaultChannel];
+			}else{
+				if(!Array.isArray(channels)){
+					channels = [channels];
+				}
 			}
 		}
 		

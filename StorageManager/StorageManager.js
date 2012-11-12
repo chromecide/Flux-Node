@@ -163,6 +163,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	
 	//TODO: FIX AND ADD SUPPORT FOR CHANNELS
 	StorageManager.prototype.find = function(query, fields, stores, channels, callback){
+		
 		var self = this;
 		var err = false;
 		var recs = [];
@@ -182,13 +183,12 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				stores.push(self.stores[strIdx]);
 			}
 		}else{
-			
 			if(!Array.isArray(stores)){
 				var rStore = self.getStore(stores);
 				stores = [rStore]; 
 			}
 		}
-		
+		console.log(stores);
 		if(!channels){
 			channels = [];
 			for(var i=0;i<stores.length;i++){
@@ -231,20 +231,27 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			var store = stores.shift();
 			
 			var storeChannels = channels[curStoreIdx];
-			store.find(query, fields, storeChannels, function(err, records){
-				recs = records;
-				if(!err){
-					if(recs.length==0){//keep looking
-						searchNextStore();
-					}else{
-						if(callback){
-							callback(err, recs);
+			if(store){
+				store.find(query, fields, storeChannels, function(err, records){
+					recs = records;
+					if(!err){
+						if(recs.length==0){//keep looking
+							searchNextStore();
+						}else{
+							if(callback){
+								callback(err, recs);
+							}
 						}
+					}else{
+						console.log(err);
 					}
-				}else{
-					console.log(err);
+				});
+			}else{
+				if(callback){
+					callback()
 				}
-			});
+			}
+			
 			curStoreIdx++;
 		}
 		
@@ -293,7 +300,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}
 		}
 		
-		
 		if(!channels){
 			channels = [];
 			for(var i=0;i<stores.length;i++){
@@ -334,19 +340,24 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}
 			var store = stores.shift();
 			
-			store.findOne(query, fields, channels[curStoreIdx], function(err, records){
-				recs = records;
-				if(!err){
-					if(recs.length==0){//keep looking
-						searchNextStore();
-					}else{
-						if(callback){
-							callback(err, recs);
+			if(store){
+				store.findOne(query, fields, channels[curStoreIdx], function(err, records){
+					recs = records;
+					if(!err){
+						if(recs.length==0){//keep looking
+							searchNextStore();
+						}else{
+							if(callback){
+								callback(err, recs);
+							}
 						}
 					}
-				}
-				curStoreIdx++;
-			});
+					curStoreIdx++;
+				});	
+			}else{
+				callback(false, false);
+			}	
+			
 		}
 		
 		searchNextStore();
