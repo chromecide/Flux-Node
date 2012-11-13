@@ -519,11 +519,13 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 							self[x] = mixinClass[x];
 						}
 					}
-					mixinClass.init.call(self, mixinParams);
-					self.emit('MixinAdded', mixinClass, mixinParams);
-					if(callback){
-						callback.call(self);	
-					}
+					mixinClass.init.call(self, mixinParams, function(){
+						if(callback){
+							callback.call(self);	
+						}
+						self.emit('MixinAdded', mixinClass, mixinParams);	
+					});
+					
 				},
 				function(){
 					console.log(arguments);
@@ -535,11 +537,12 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 								self[x] = mixinClass[x];
 							}
 						}
-						mixinClass.init.call(self, mixinParams);
-						self.emit('MixinAdded', mixinClass, mixinParams);
-						if(callback){
-							callback.call(self);	
-						}
+						mixinClass.init.call(self, mixinParams, function(){
+							self.emit('MixinAdded', mixinClass, mixinParams);
+							if(callback){
+								callback.call(self);	
+							}
+						});
 					});
 				});
 			}
