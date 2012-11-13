@@ -511,7 +511,8 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				
 			}else{
 				//if(self.debug) console.log('./mixins/'+mixinName+'.js');
-				require(['mixins/'+mixinName], function(mixinClass){
+				console.log(mixinName);
+				require([mixinName], function(mixinClass){
 					//if(self.debug) console.log(arguments);
 					for(var x in mixinClass){
 						if(x!='init'){
@@ -523,6 +524,23 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					if(callback){
 						callback.call(self);	
 					}
+				},
+				function(){
+					console.log(arguments);
+					console.log('FAILED LOAD');
+					require(['mixins/'+mixinName], function(mixinClass){
+						//if(self.debug) console.log(arguments);
+						for(var x in mixinClass){
+							if(x!='init'){
+								self[x] = mixinClass[x];
+							}
+						}
+						mixinClass.init.call(self, mixinParams);
+						self.emit('MixinAdded', mixinClass, mixinParams);
+						if(callback){
+							callback.call(self);	
+						}
+					});
 				});
 			}
 		}
