@@ -511,7 +511,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				
 			}else{
 				//if(self.debug) console.log('./mixins/'+mixinName+'.js');
-				console.log(mixinName);
 				require([mixinName], function(mixinClass){
 					//if(self.debug) console.log(arguments);
 					for(var x in mixinClass){
@@ -523,9 +522,8 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						if(callback){
 							callback.call(self);	
 						}
-						self.emit('MixinAdded', mixinClass, mixinParams);	
+						self.emit('MixinAdded', mixinClass, mixinParams);
 					});
-					
 				},
 				function(){
 					console.log(arguments);
