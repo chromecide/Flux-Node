@@ -528,7 +528,8 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				function(){
 					console.log(arguments);
 					console.log('FAILED LOAD');
-					require(['mixins/'+mixinName], function(mixinClass){
+					console.log(self);
+					require([self.FluxUI_Settings.path+'mixins/'+mixinName], function(mixinClass){
 						//if(self.debug) console.log(arguments);
 						for(var x in mixinClass){
 							if(x!='init'){
