@@ -24,9 +24,11 @@ function tcpTunnelBuilder(util, EventEmitter2, Tunnel){
 		self.close = function(){}
 		if(cfg){
 			var net = require('net');
-			var socket = net.connect(cfg.port, cfg.host, function(){	
+			var socket = net.connect(cfg.port, cfg.host, function(){
+				self.emit('Tunnel.Ready', self);	
 			});
 			self.setSocket(socket);
+			
 		}
 	}
 	

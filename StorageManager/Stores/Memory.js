@@ -113,6 +113,8 @@ function StoreBuilder(util, EventEmitter2, Store){
 	}
 	
 	function saveRecord(record, channel, callback){
+		console.log('SAVING RECORD');
+		console.log(record);
 		var self = this;
 		var err = false;
 		if(!record.id){
@@ -121,6 +123,15 @@ function StoreBuilder(util, EventEmitter2, Store){
 		
 		if(!self.records[channel]){
 			self.records[channel] = []
+		}else{
+			var chanRecords = self.records[channel];
+			for(var i=0;i<chanRecords.length;i++){
+				var existingRecord = chanRecords[i]; 
+				if(record.id==existingRecord.id){
+					chanRecords.splice(i,1);
+				}
+			}
+			self.records[channel] = chanRecords;
 		}
 		
 		var oldLength = self.records[channel].length;
@@ -138,10 +149,10 @@ function StoreBuilder(util, EventEmitter2, Store){
 	}
 	
 	function find(query, fields, channels, callback){
-		
+		console.log('find');
 		var self = this;
 		var err = false;
-		var queryType = typeof query;
+		var queryType = (typeof query);
 		var returnRecords = [];
 		
 		if(typeof fields =='function'){
@@ -155,10 +166,18 @@ function StoreBuilder(util, EventEmitter2, Store){
 		}else{
 			if((typeof channels)=='function'){
 				callback = channels;
-				channels= [self.defaultChannel];
+				channels = [self.defaultChannel];
+			}else{
+				if((typeof channels)=='string'){
+					channels = [channels];
+				}
 			}
 		}
-		
+		console.log('----');
+		console.log(channels);
+		console.log('----');
+		console.log(queryType);
+		console.log(query);
 		switch(queryType){
 			case 'string': //assume it's an id
 				for(var chanIdx in channels){
@@ -179,6 +198,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 			case 'object':
 				for(var chanIdx in channels){
 					var channel = channels[chanIdx];
+					
 					var retRecs = queryByObject.call(self, query, fields, channel, false);
 					for(var i=0;i<retRecs.length;i++){
 						returnRecords.push(retRecs[i]);	
@@ -209,7 +229,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 		var retArray = [];
 		
 		var queryFunctions = objectToQuery(query);
-		
+		console.log(queryFunctions);
 		if(self.records[channel]){
 			for(var recIdx=0;recIdx<self.records[channel].length;recIdx++){
 				if(maxRecs!=false && retArray.length==maxRecs){
@@ -221,7 +241,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				}
 			}	
 		}else{
-			//console.log('Channel '+channel+' not found');
+			console.log('Channel '+channel+' not found');
 		}
 		
 		for(var idx in retArray){
@@ -231,6 +251,9 @@ function StoreBuilder(util, EventEmitter2, Store){
 			}
 		}
 		
+		if(callback){
+			callback(false, retArray);
+		}
 		return retArray;
 	}
 	
@@ -238,7 +261,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 		var returnQuery = {};
 		
 		if(Array.isArray(object)){//OR query
-			//console.log('OR QUERY');
+			console.log('OR QUERY');
 		}else{
 			for(var key in object){
 				returnQuery[key] = [];
@@ -257,7 +280,6 @@ function StoreBuilder(util, EventEmitter2, Store){
 						objectVal = objectVal.eq;
 						var valFunc = function(oVal){
 							return function(record, val){
-								//console.log(val+' == '+oVal);
 								if(val==oVal){
 									//console.log(' - Yes');
 									return true;
@@ -445,7 +467,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 						
 						var valFunc = function(oVal){
 							return function(record, val){
-								if(oval==true){
+								if(oVal==true){
 									if(record[key]){
 										return true;	
 									}
@@ -465,13 +487,17 @@ function StoreBuilder(util, EventEmitter2, Store){
 					}
 					
 					if(!fieldProcessed){
-						returnQuery[key].push(function(record, val){
-							
-							if(record[key]==objectVal){
-								return true;
+						var valFunc = function(oVal){
+							return function(record, val){
+								if(val==oVal){
+									return true;
+								}
+								return false;
+									
 							}
-							return false;
-						});
+						}
+						
+						returnQuery[key].push(valFunc(objectVal));
 					}	
 				}
 				
@@ -482,6 +508,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 	}
 	
 	function findOne(query, fields, channels, callback){
+		console.log('findOne');
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
@@ -499,7 +526,11 @@ function StoreBuilder(util, EventEmitter2, Store){
 		}else{
 			if((typeof channels)=='function'){
 				callback = channels;
-				channels= [self.defaultChannel];
+				channels = [self.defaultChannel];
+			}else{
+				if((typeof channels)=='string'){
+					channels = [channels];
+				}
 			}
 		}
 		
@@ -518,11 +549,23 @@ function StoreBuilder(util, EventEmitter2, Store){
 			case 'object':
 				for(var chanIdx in channels){
 					var channel = channels[chanIdx];
-					var retRecs = queryByObject.call(self, fields, query, channel, 1);
-					for(var i=0;i<retRecs.length;i++){
-						returnRecords.push(retRecs[i]);
-					}
-					 
+					if(Array.isArray(query)){
+						while(query.length>0 && returnRecords.length==0){
+							var queryItem = query.shift();
+							var retRecs = queryByObject.call(self, queryItem, fields, channel, 1);
+							
+							if(retRecs && retRecs.length>0){
+								//for(var i=0;i<retRecs.length;i++){
+									returnRecords.push(retRecs[0].record);
+								//}
+							}	
+						}	
+					}else{
+						var retRecs = queryByObject.call(self, query, fields, channel, 1);
+						for(var i=0;i<retRecs.length;i++){
+							returnRecords.push(retRecs[i]);
+						}	
+					} 
 				}
 				break;
 			case 'function':
@@ -541,10 +584,11 @@ function StoreBuilder(util, EventEmitter2, Store){
 				}
 				break;
 		}
-		
+		console.log(returnRecords);
 		if(callback){
 			callback(err, returnRecords);
 		}
+		return returnRecords;
 	}
 	
 	function remove(query, channel, callback){

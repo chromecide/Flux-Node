@@ -1,21 +1,22 @@
 //FluxNode is an Instance of EventEmitter2 that has been extended with additional functionality
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 
+var paths = {
+		'util': './lib/util',
+		'FluxNode': './',
+		'TunnelManager': './TunnelManager',
+		'Tunnel': 'TunnelManager/Tunnel',
+		'Tunnels': './TunnelManager/Tunnels',
+		'StorageManager': './StorageManager',
+		'Store': 'StorageManager/Store',
+		'Stores': 'StorageManager/Stores',
+		'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
+		'mixins': './lib/mixins'
+	};
+
 if (typeof define === 'function' && define.amd) {
-	
 	require.config({
-		paths:{
-			'util': './lib/util',
-			'FluxNode': './',
-			'TunnelManager': './TunnelManager',
-			'Tunnel': 'TunnelManager/Tunnel',
-			'Tunnels': './TunnelManager/Tunnels',
-			'StorageManager': './StorageManager',
-			'Store': 'StorageManager/Store',
-			'Stores': 'StorageManager/Stores',
-			'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
-			'mixins': './lib/mixins'
-		}
+		paths:paths
 	});
 	
 	define(['util', 'EventEmitter2', 'TunnelManager/TunnelManager', 'StorageManager/StorageManager'], function(util, EventEmitter2, TunnelManager, StorageManager) {
@@ -33,8 +34,10 @@ if (typeof define === 'function' && define.amd) {
 
 //this wrapper allows us to deal with the difference in loading times between NodeJS and asyync browser loading
 function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
+	
 	//This is the actual Flux Node Constructor
 	function FluxNodeConstructor(cfg, cb){
+		
 		var self = this;
 		
 		self.NodeSubscribers = {};
@@ -48,6 +51,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		}
 		
 		evObj.call(self, cfg);
+		
 		
 		self._environment = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? 'nodejs' : 'browser');
 		
@@ -86,7 +90,9 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		if(self.debug) console.log('Configuring StorageManager');
 		
-		var storageManager = new StorageManager();
+		var storageManager = new StorageManager({
+			debug: self.debug
+		});
 		
 		storageManager.on('error', function(){
 			self.emit.apply('error', arguments);
@@ -100,15 +106,15 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			}
 		}else{
 			console.log('creating default store');
-			cfg.stores = [
-				{
-					type: 'Memory',
-					isDefault: true
-				}
-			]	
+			cfg.stores = [];
 		}
+		storageManager.on('StorageManager.Error', function(){
+			console.log('STORAGE MANAGER ERROR');
+			console.log(arguments);
+		});
 		
 		storageManager.once('StorageManager.Ready', function(err, SM){
+			
 			if(self.debug) console.log('StorageManager Ready');
 			self.StorageManager = SM;
 			self.StorageManager.on('StorageManager.StoreReady', function(err, store){
@@ -116,17 +122,26 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			});
 			
 			if(self.debug) console.log('Configuring Tunnel Manager');
-			self.TunnelManager = new TunnelManager();
+			self.TunnelManager = new TunnelManager({
+				debug: self.debug
+			});
 			
-			self.sendEvent = function(destinationId, topic, message, callback){
-				console.log('sending event');
+			self.sendEvent = function(destinationId, topic, message, inReplyTo, callback){
+				if((typeof inReplyTo)=='function'){
+					callback = inReplyTo;
+					inReplyTo = false;
+				}
+				
 				if(!destinationId || destinationId==self.id){
 					self.emit(topic, message);
 				}else{
-					var mId = self.TunnelManager.send(destinationId, topic, message);
+					var mId = self.TunnelManager.send(destinationId, topic, message, inReplyTo);
 					if(callback){
 						var callbackListenerCreator = function(messageId, cb){
 							return function (message, rawMessage){
+								console.log(rawMessage);
+								console.log(rawMessage._message.inReplyTo);
+								console.log(messageId);
 								if(rawMessage._message.inReplyTo==messageId){
 									cb.call(self, message, rawMessage);
 								}else{
@@ -135,6 +150,9 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 								}
 							}	
 						}
+						console.log('------');
+						console.log(mId);
+						console.log('------');
 						self.once(topic+'.Response', callbackListenerCreator(mId, callback));
 					}
 				}
@@ -172,13 +190,16 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 								if(typeof mixin == 'object'){
 									var mixinName = mixin.name;
 									var options = mixin.options;
-									self.mixin(mixinName, options, mixinLoop);
+									self.mixin(mixinName, options, function(){
+										mixinLoop();
+									});
 								}else{
-									self.mixin(mixin, {}, mixinLoop);	
+									self.mixin(mixin, {}, function(){
+										mixinLoop();
+									});	
 								}
 							}	
 						}else{
-							console.log('READY');
 							self.emit('FluxNode.Ready', self);
 							if(cb){
 								cb(self, cfg);
@@ -204,7 +225,20 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			
 		});
 		
+		if(cfg.paths){
+			console.log(cfg.paths);
+			for(var key in cfg.paths){
+				paths[key] = cfg.paths[key];
+			}
+			console.log(paths);
+			require.config({
+				paths: paths
+			});
+		}
+		
+		if(self.debug) console.log('Starting Configuration');
 		storageManager.configure({
+			debug: self.debug,
 			stores: cfg.stores
 		});
 		
@@ -212,6 +246,11 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 	}
 	
 		util.inherits(FluxNodeConstructor, evObj);
+		
+		FluxNodeConstructor.prototype.addPath = function(name, path){
+			paths[name] = path;
+			require.config({paths: paths});
+		}
 		
 		FluxNodeConstructor.prototype.addTunnel = function(tunnel){
 			var self = this;			
@@ -482,13 +521,14 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				try{
 					mixinClass = require(mixinName);
 				}catch(err){
-					//nothing to see here, move along
+					if(!mixinClass){
+						mixinClass = require('./lib/mixins/'+mixinName);
+						
+					}
 				}
 				
 				//fall back to the mixin folder
-				if(!mixinClass){
-					mixinClass = require('./lib/mixins/'+mixinName);
-				}
+				
 				
 				for(var x in mixinClass){
 					if(x!='init'){
@@ -507,19 +547,54 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				});
 				
 			}else{
-				//if(self.debug) console.log('./mixins/'+mixinName+'.js');
-				require(['mixins/'+mixinName], function(mixinClass){
-					//if(self.debug) console.log(arguments);
+				//first try finding the mixin as is
+				if(self.debug){console.log('Mixin: Checking without modification')}
+				require([mixinName], function(mixinClass){
 					for(var x in mixinClass){
 						if(x!='init'){
 							self[x] = mixinClass[x];
 						}
 					}
-					mixinClass.init.call(self, mixinParams);
-					self.emit('MixinAdded', mixinClass, mixinParams);
-					if(callback){
-						callback.call(self);	
-					}
+					mixinClass.init.call(self, mixinParams, function(){
+						self.emit('MixinAdded', mixinClass, mixinParams);
+						if(callback){
+							callback.call(self);	
+						}	
+					});
+				}, function(){
+					console.log(arguments);
+					if(self.debug) console.log('Mixin: Checking mixins Folder');
+					//couldn't find it, try a mixins folder
+					require(['mixins/'+mixinName], function(mixinClass){
+						for(var x in mixinClass){
+							if(x!='init'){
+								self[x] = mixinClass[x];
+							}
+						}
+						mixinClass.init.call(self, mixinParams);
+						self.emit('MixinAdded', mixinClass, mixinParams);
+						if(callback){
+							callback.call(self);	
+						}
+					}, function(){
+						if(self.debug) console.log('Mixin: Checking node_modules Folder');
+						//finally, try a node_modules folder
+						require(['node_modules/'+mixinName], function(mixinClass){
+							for(var x in mixinClass){
+								if(x!='init'){
+									self[x] = mixinClass[x];
+								}
+							}
+							mixinClass.init.call(self, mixinParams);
+							self.emit('MixinAdded', mixinClass, mixinParams);
+							if(callback){
+								callback.call(self);	
+							}
+						}, function(){
+							console.log('load error');
+							console.log(arguments)
+						});
+					});
 				});
 			}
 		}

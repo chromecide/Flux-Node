@@ -20,6 +20,8 @@ var mixinFunctions = {
 						name: 'Administrators'
 					}, function(err, groupRec){
 						console.log('Administrators Group Saved');
+						console.log(groupRec);
+						die;
 						thisNode.GroupSecurity_AddUser({
 							name: 'Administrator',
 							username: 'admin',

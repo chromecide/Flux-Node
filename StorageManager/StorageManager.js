@@ -38,6 +38,11 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			cfg = {};
 		}
 		self._config = cfg;
+		
+		if(cfg.debug===true){
+			self.debug =true;
+		}
+		
 		if(!cfg.stores || cfg.stores.length==0){
 			console.log('ADDING DEFAULT MEMSTORE');
 			cfg.stores = [{
@@ -64,7 +69,10 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			});	
 		});
 		
-		self.configure(cfg);
+		if(cfg){
+			self.configure(cfg);	
+		}
+		
 	}
 	
 		util.inherits(StorageManager, EventEmitter2);
@@ -72,8 +80,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	StorageManager.prototype.configure = function(cfg, callback){
 		var self = this;
 		var err = false;
-
+		
 		for(var key in cfg){
+			if(self.debug) console.log(key);
 			switch(key){
 				case 'stores':
 				case 'Stores':
@@ -82,7 +91,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 					var finishedStores = 0;		
 					
 					for(var storeIdx in stores){
+						if(self.debug) console.log(storeIdx);
 						var storeCfg = stores[storeIdx];
+						if(self.debug) console.log('Creating store');
 						self.createStore(storeCfg, function(createErr, store){
 							
 							if(!createErr){
@@ -105,6 +116,13 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 					}	
 					break;
 			}
+		}
+		if(!cfg.stores){
+			console.log('no stores');
+			if(callback){
+				callback.call(self, err, self._config);
+			}
+			self.emit('StorageManager.Ready', createErr, self);
 		}
 		
 	}
@@ -231,6 +249,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			var store = stores.shift();
 			
 			var storeChannels = channels[curStoreIdx];
+			
 			store.find(query, fields, storeChannels, function(err, records){
 				recs = records;
 				if(!err){
@@ -333,20 +352,25 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				return;
 			}
 			var store = stores.shift();
-			
-			store.findOne(query, fields, channels[curStoreIdx], function(err, records){
-				recs = records;
-				if(!err){
-					if(recs.length==0){//keep looking
-						searchNextStore();
-					}else{
-						if(callback){
-							callback(err, recs);
+			if(store){
+				store.findOne(query, fields, channels[curStoreIdx], function(err, records){
+					recs = records;
+					if(!err){
+						if(recs.length==0){//keep looking
+							searchNextStore();
+						}else{
+							if(callback){
+								callback(err, recs);
+							}
 						}
 					}
+					curStoreIdx++;
+				});	
+			}else{
+				if(callback){
+					callback({message: 'Invalid Store Supplied'}, false);
 				}
-				curStoreIdx++;
-			});
+			}
 		}
 		
 		searchNextStore();

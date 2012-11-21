@@ -37,6 +37,7 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 		}else{
 			self.emit('TunnelManager.Ready', self);
 		}
+		
 	}
 	
 		util.inherits(TunnelManager, EventEmitter2);
@@ -78,11 +79,13 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 }
 
 function configure(cfg, callback){
+	
 	if(!cfg){
 		cfg = {};
 	}
 	
 	var self = this;
+	
 	
 	self._config = cfg;
 	
@@ -107,7 +110,6 @@ function configure(cfg, callback){
 	}
 	
 	if(cfg.tunnels){
-		
 		function tunnelLoop(){
 			if(cfg.tunnels.length==0){
 				if(callback){
@@ -124,6 +126,7 @@ function configure(cfg, callback){
 				var newTunnel = new tunnelDef(tunnel.options);
 				newTunnel.remoteID = tunnel.destination;
 				newTunnel.on('Tunnel.Ready', function(){
+					console.log('registering tunnel');
 					self.registerTunnel(tunnel.destination, newTunnel, tunnelLoop);
 				});
 				
@@ -163,6 +166,8 @@ function send(destination, topic, message, inReplyTo, callback){
 		inReplyTo = false;
 	}
 	
+	var messageId = generateID();
+	
 	self.allowed('send', destination, topic, message, function(err, result){
 		if(err || !result){
 			if(callback){
@@ -171,6 +176,7 @@ function send(destination, topic, message, inReplyTo, callback){
 			return false;	
 		}else{
 			self.processData('send', destination, topic, message, function(clnDestination, clnTopic, clnMessage){
+			
 			var payload = {
 				topic: clnTopic,
 				message: clnMessage
@@ -178,13 +184,13 @@ function send(destination, topic, message, inReplyTo, callback){
 			
 			if(typeof destination == 'object'){ //it's a tunnel, so we already know where we are sending it
 				payload._message = {
-					id: generateID(),
+					id: messageId,
 					sender: self.senderID,
 					topic: clnTopic,
 				}
 			}else{
 				payload._message = {
-					id: generateID(),
+					id: messageId,
 					sender: self.senderID,
 					destination: destination,
 					topic: clnTopic
@@ -200,8 +206,10 @@ function send(destination, topic, message, inReplyTo, callback){
 			}
 			
 			if(destination && (typeof destination=='object')){
+				console.log('SENDING');
 				destination.send(payload);
-				return payload._message.id;
+				console.log(messageId);
+				return messageId;
 			}else{
 				switch(destination){
 					case '*':
@@ -231,7 +239,7 @@ function send(destination, topic, message, inReplyTo, callback){
 		});		
 		}
 	});
-	
+	return messageId;
 }
 
 function recieve(tunnelObj, message){

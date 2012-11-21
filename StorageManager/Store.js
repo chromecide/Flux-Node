@@ -186,7 +186,8 @@ function StoreBuilder(util, EventEmitter2){
 				}
 				break;
 			case 'function':
-				
+				console.log('validating by function');
+				console.log(validation.toString());
 				if(!validation(rec, rec[keyName])){
 					keyValid = false;
 				}
@@ -196,6 +197,7 @@ function StoreBuilder(util, EventEmitter2){
 				break;
 		}
 		
+		console.log(keyValid);
 		return keyValid;
 	}
 	
@@ -220,6 +222,7 @@ function StoreBuilder(util, EventEmitter2){
 						keyValid = false;
 					}
 					if(!keyValid){
+						//console.log('NOT ALL KEYS VALID');
 						allKeysValid = false;
 						break; //we don't need to do more testing, so break out of both loops
 					}
