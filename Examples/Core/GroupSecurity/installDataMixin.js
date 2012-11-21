@@ -4,7 +4,7 @@ var mixinFunctions = {
 		//add properties that are needed by this mixin
 		
 		//first let's see if the data has already been installed
-		GroupSecurity_Settings
+		console.log('INSTALLING DATA');
 		thisNode.StorageManager.findOne(
 			{
 				username: 'admin'
@@ -12,7 +12,7 @@ var mixinFunctions = {
 			thisNode.GroupSecurity_Settings.store,
 			thisNode.GroupSecurity_Settings.userChannel,
 			function(err, rec){
-				console.log(err);
+				console.log(arguments);
 				if(!rec){
 					console.log('Adding Group');
 					//Add some Groups

@@ -166,9 +166,10 @@ function StoreBuilder(util, EventEmitter2, Store){
 		}else{
 			if((typeof channels)=='function'){
 				callback = channels;
+
 				channels = [self.defaultChannel];
 			}else{
-				if((typeof channels)=='string'){
+				if(!Array.isArray(channels)){
 					channels = [channels];
 				}
 			}
@@ -528,7 +529,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				callback = channels;
 				channels = [self.defaultChannel];
 			}else{
-				if((typeof channels)=='string'){
+				if(!Array.isArray(channels)){
 					channels = [channels];
 				}
 			}

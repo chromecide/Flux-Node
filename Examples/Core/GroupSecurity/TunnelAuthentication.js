@@ -3,7 +3,7 @@ var FluxNode = require('../../../FluxNode').FluxNode;
 var SecureNode = new FluxNode({
 	debug:true,
 	stores:[
-		{
+		/*{
 			type: 'mongodb',
 			options:{
 				host: 'localhost',
@@ -11,7 +11,7 @@ var SecureNode = new FluxNode({
 				databaseName: 'tunnel_auth_test'
 			},
 			isDefault: true
-		}
+		}*/
 	],
 	mixins:[
 		{
@@ -19,9 +19,9 @@ var SecureNode = new FluxNode({
 			options:{
 				loginTimeout: 10,
 				method: 'permission',
-				store: {
+				/*store: {
 					databaseName: 'tunnel_auth_test'
-				},
+				},*/
 				protectedTopics:{
 					
 				},

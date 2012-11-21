@@ -131,7 +131,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					callback = inReplyTo;
 					inReplyTo = false;
 				}
-				
+
 				if(!destinationId || destinationId==self.id){
 					self.emit(topic, message);
 				}else{
@@ -547,6 +547,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				});
 				
 			}else{
+
 				//first try finding the mixin as is
 				if(self.debug){console.log('Mixin: Checking without modification')}
 				require([mixinName], function(mixinClass){
@@ -561,16 +562,19 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 							callback.call(self);	
 						}	
 					});
-				}, function(){
+				}, 
+				function(){
 					console.log(arguments);
-					if(self.debug) console.log('Mixin: Checking mixins Folder');
-					//couldn't find it, try a mixins folder
-					require(['mixins/'+mixinName], function(mixinClass){
+					console.log('FAILED LOAD');
+					console.log(self);
+					require([self.FluxUI_Settings.path+'mixins/'+mixinName], function(mixinClass){
+						//if(self.debug) console.log(arguments);
 						for(var x in mixinClass){
 							if(x!='init'){
 								self[x] = mixinClass[x];
 							}
 						}
+
 						mixinClass.init.call(self, mixinParams);
 						self.emit('MixinAdded', mixinClass, mixinParams);
 						if(callback){
@@ -579,20 +583,19 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					}, function(){
 						if(self.debug) console.log('Mixin: Checking node_modules Folder');
 						//finally, try a node_modules folder
-						require(['node_modules/'+mixinName], function(mixinClass){
+						require([self.FluxUI_Settings.path+'node_modules/'+mixinName], function(mixinClass){
 							for(var x in mixinClass){
 								if(x!='init'){
 									self[x] = mixinClass[x];
 								}
 							}
 							mixinClass.init.call(self, mixinParams);
+
+						mixinClass.init.call(self, mixinParams, function(){
 							self.emit('MixinAdded', mixinClass, mixinParams);
 							if(callback){
 								callback.call(self);	
 							}
-						}, function(){
-							console.log('load error');
-							console.log(arguments)
 						});
 					});
 				});
