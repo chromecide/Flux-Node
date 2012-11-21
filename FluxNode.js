@@ -178,12 +178,14 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					if(self.debug) console.log('Configuring Mixins');
 					var mixin = false;
 					var mixinLoop = function(){
+						
 						if(cfg.mixins.length>0){
 							mixin = cfg.mixins.shift();
 						}else{
 							mixin = false;
 						}
 						if(mixin){
+							
 							if(typeof mixin=='function'){
 								mixin(self);
 							}else{
@@ -523,12 +525,8 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				}catch(err){
 					if(!mixinClass){
 						mixinClass = require('./lib/mixins/'+mixinName);
-						
 					}
 				}
-				
-				//fall back to the mixin folder
-				
 				
 				for(var x in mixinClass){
 					if(x!='init'){
@@ -557,16 +555,17 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						}
 					}
 					mixinClass.init.call(self, mixinParams, function(){
-						self.emit('MixinAdded', mixinClass, mixinParams);
 						if(callback){
 							callback.call(self);	
-						}	
+						}
+						self.emit('MixinAdded', mixinClass, mixinParams);
 					});
-				}, 
+				},
 				function(){
 					console.log(arguments);
 					console.log('FAILED LOAD');
 					console.log(self);
+					console.log(mixinName);
 					require([self.FluxUI_Settings.path+'mixins/'+mixinName], function(mixinClass){
 						//if(self.debug) console.log(arguments);
 						for(var x in mixinClass){
@@ -583,7 +582,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					}, function(){
 						if(self.debug) console.log('Mixin: Checking node_modules Folder');
 						//finally, try a node_modules folder
-						require([self.FluxUI_Settings.path+'node_modules/'+mixinName], function(mixinClass){
+						require(['node_modules/'+mixinName], function(mixinClass){
 							for(var x in mixinClass){
 								if(x!='init'){
 									self[x] = mixinClass[x];
@@ -591,11 +590,14 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 							}
 							mixinClass.init.call(self, mixinParams);
 
-						mixinClass.init.call(self, mixinParams, function(){
 							self.emit('MixinAdded', mixinClass, mixinParams);
 							if(callback){
 								callback.call(self);	
 							}
+
+						}, function(){
+							console.log('load error');
+							console.log(arguments);
 						});
 					});
 				});
