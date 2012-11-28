@@ -2,17 +2,17 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 
 var paths = {
-	'util': './lib/util',
-	'FluxNode': './',
-	'TunnelManager': './TunnelManager',
-	'Tunnel': 'TunnelManager/Tunnel',
-	'Tunnels': './TunnelManager/Tunnels',
-	'StorageManager': './StorageManager',
-	'Store': 'StorageManager/Store',
-	'Stores': 'StorageManager/Stores',
-	'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
-	'mixins': './lib/mixins'
-};
+		'util': './lib/util',
+		'FluxNode': './',
+		'TunnelManager': './TunnelManager',
+		'Tunnel': 'TunnelManager/Tunnel',
+		'Tunnels': './TunnelManager/Tunnels',
+		'StorageManager': './StorageManager',
+		'Store': 'StorageManager/Store',
+		'Stores': 'StorageManager/Stores',
+		'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
+		'mixins': './lib/mixins'
+	};
 
 if (typeof define === 'function' && define.amd) {
 	require.config({
@@ -202,6 +202,11 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 								}
 							}	
 						}else{
+							self.on('FluxNode.Mixin', function(message, rawMessage){
+								console.log(message);
+								self.mixin(message.name, message.options);
+							});
+							
 							self.emit('FluxNode.Ready', self);
 							if(cb){
 								cb(self, cfg);
@@ -528,6 +533,11 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					}
 				}
 				
+				//fall back to the mixin folder
+				if(!mixinClass){
+					console.log("STILL NOT FOUND");
+				}
+				
 				for(var x in mixinClass){
 					if(x!='init'){
 						self[x] = mixinClass[x];
@@ -563,9 +573,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				},
 				function(){
 					console.log(arguments);
-					console.log('FAILED LOAD');
-					console.log(self);
-					console.log(mixinName);
+					
 					require([self.FluxUI_Settings.path+'mixins/'+mixinName], function(mixinClass){
 						//if(self.debug) console.log(arguments);
 						for(var x in mixinClass){
@@ -598,6 +606,9 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						}, function(){
 							console.log('load error');
 							console.log(arguments);
+							console.log('FAILED LOAD');
+							console.log(self);
+							console.log(mixinName);
 						});
 					});
 				});

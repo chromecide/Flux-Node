@@ -113,8 +113,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 	}
 	
 	function saveRecord(record, channel, callback){
-		console.log('SAVING RECORD');
-		console.log(record);
+		
 		var self = this;
 		var err = false;
 		if(!record.id){
@@ -149,7 +148,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 	}
 	
 	function find(query, fields, channels, callback){
-		console.log('find');
+		
 		var self = this;
 		var err = false;
 		var queryType = (typeof query);
@@ -174,11 +173,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				}
 			}
 		}
-		console.log('----');
-		console.log(channels);
-		console.log('----');
-		console.log(queryType);
-		console.log(query);
+		
 		switch(queryType){
 			case 'string': //assume it's an id
 				for(var chanIdx in channels){
@@ -230,7 +225,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 		var retArray = [];
 		
 		var queryFunctions = objectToQuery(query);
-		console.log(queryFunctions);
+		
 		if(self.records[channel]){
 			for(var recIdx=0;recIdx<self.records[channel].length;recIdx++){
 				if(maxRecs!=false && retArray.length==maxRecs){
@@ -263,6 +258,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 		
 		if(Array.isArray(object)){//OR query
 			console.log('OR QUERY');
+			console.log(object);
 		}else{
 			for(var key in object){
 				returnQuery[key] = [];
@@ -282,10 +278,8 @@ function StoreBuilder(util, EventEmitter2, Store){
 						var valFunc = function(oVal){
 							return function(record, val){
 								if(val==oVal){
-									//console.log(' - Yes');
 									return true;
 								}
-								//console.log(' - No');
 								return false;
 							}
 						}

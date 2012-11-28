@@ -44,7 +44,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		}
 		
 		if(!cfg.stores || cfg.stores.length==0){
-			console.log('ADDING DEFAULT MEMSTORE');
 			cfg.stores = [{
 				type: 'Memory',
 				options:{
@@ -82,7 +81,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		var err = false;
 		
 		for(var key in cfg){
-			if(self.debug) console.log(key);
 			switch(key){
 				case 'stores':
 				case 'Stores':
@@ -91,9 +89,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 					var finishedStores = 0;		
 					
 					for(var storeIdx in stores){
-						if(self.debug) console.log(storeIdx);
+						
 						var storeCfg = stores[storeIdx];
-						if(self.debug) console.log('Creating store');
+						
 						self.createStore(storeCfg, function(createErr, store){
 							
 							if(!createErr){
@@ -118,7 +116,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}
 		}
 		if(!cfg.stores){
-			console.log('no stores');
+			
 			if(callback){
 				callback.call(self, err, self._config);
 			}
