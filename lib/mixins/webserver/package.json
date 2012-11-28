@@ -1,0 +1,25 @@
+{
+  "name": "FNM-WebServer",
+  "version": "0.1.0",
+  "description": "A FluxNode Mixin to provide a wrapper around a node-static server",
+  "homepage": "https://github.com/chromecide/FNM-WebServer",
+  "keywords": [
+    "FluxNode",
+    "Mixin",
+    "Web Server",
+    "Static Website"
+  ],
+  "author": {
+    "name": "Justin Pradier",
+    "email": "chromecide@chromecide.com",
+    "url": "http://chromecide.com/"
+  },
+  "dependencies": {
+    "node-static": ">=0.6.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chromecide/FNM-WebServer.git"
+  },
+  "main": "index.js"
+}

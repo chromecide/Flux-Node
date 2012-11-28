@@ -2,17 +2,17 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 
 var paths = {
-		'util': './lib/util',
-		'FluxNode': './',
-		'TunnelManager': './TunnelManager',
-		'Tunnel': 'TunnelManager/Tunnel',
-		'Tunnels': './TunnelManager/Tunnels',
-		'StorageManager': './StorageManager',
-		'Store': 'StorageManager/Store',
-		'Stores': 'StorageManager/Stores',
-		'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
-		'mixins': './lib/mixins'
-	};
+	'util': './lib/util',
+	'FluxNode': './',
+	'TunnelManager': './TunnelManager',
+	'Tunnel': 'TunnelManager/Tunnel',
+	'Tunnels': './TunnelManager/Tunnels',
+	'StorageManager': './StorageManager',
+	'Store': 'StorageManager/Store',
+	'Stores': 'StorageManager/Stores',
+	'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
+	'mixins': './lib/mixins'
+};
 
 if (typeof define === 'function' && define.amd) {
 	require.config({
