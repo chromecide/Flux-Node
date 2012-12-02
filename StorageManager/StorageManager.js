@@ -79,7 +79,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	StorageManager.prototype.configure = function(cfg, callback){
 		var self = this;
 		var err = false;
-		
+		console.log(cfg);
 		for(var key in cfg){
 			switch(key){
 				case 'stores':
@@ -115,14 +115,16 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 					break;
 			}
 		}
+		
 		if(!cfg.stores){
 			
 			if(callback){
 				callback.call(self, err, self._config);
 			}
 			self.emit('StorageManager.Ready', createErr, self);
+		}else{
+			console.log('STORES');
 		}
-		
 	}
 	
 	StorageManager.prototype.factory = function(type, callback){
