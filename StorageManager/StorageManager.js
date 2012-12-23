@@ -77,6 +77,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		util.inherits(StorageManager, EventEmitter2);
 	
 	StorageManager.prototype.configure = function(cfg, callback){
+		console.log('CONFIGGING STORAGE MANAGER');
 		var self = this;
 		var err = false;
 		console.log(cfg);
@@ -123,7 +124,10 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}
 			self.emit('StorageManager.Ready', createErr, self);
 		}else{
-			console.log('STORES');
+			if(callback){
+				callback.call(self, err, self._config);
+			}
+			self.emit('StorageManager.Ready', createErr, self);
 		}
 	}
 	
@@ -177,6 +181,105 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				callback(err, records);
 			}
 		});
+	}
+	
+	/*
+	 * Usage:
+	 * 
+	 * Update a single attribute for an object instance
+	 * StorageManager.setRecordValue(myObject, 'MyAttribute','New Value', cbFunction);
+	 * StorageManager.setRecordValue(myObject, {'MyAttribute': 'New Value'}, cbFunction);
+	 * 
+	 * * Update a single attribute for multiple object instances
+	 * StorageManager.setRecordValue([myObject1, myObject2], 'MyAttribute','New Value', cbFunction);
+	 * 
+	 * * Update multiple attributes for an object instance
+	 * StorageManager.setRecordValue(myObject, ['MyAttribute1', 'MyAttribute2'], ['New MyAttribute1Value', 'New MyAttribute2Value'], cbFunction);
+	 * StorageManager.setRecordValue(myObject, {MyAttribute1: 'New MyAttribute1Value', MyAttribute2: 'New MyAttribute2 Value'}, cbFunction);
+	 * 
+	 * * Update multiple attributea for multiple object instances
+	 * StorageManager.setRecordValue([myObject1, myObject2], ['MyAttribute1', 'MyAttribute2'], ['New MyAttribute1Value', 'New MyAttribute2Value'], cbFunction);
+	 * StorageManager.setRecordValue([myObject1, myObject2], {MyAttribute1: 'New MyAttribute1Value', MyAttribute2: 'New MyAttribute2 Value'}, cbFunction);
+	 * 
+	 */
+	StorageManager.prototype.setRecordValue = function(records, keys, values, stores, channels, callback){
+		var self = this;
+		if((typeof values=='function')){
+			callback = values;
+			values = null;
+			stores = false;
+			channels = false;
+		}
+		
+		if((typeof stores=='function')){
+			callback = stores;
+			stores = false;
+			channels = false;
+		}
+		
+		if((typeof channels=='function')){
+			callback = channels;
+			channels = false;
+		}
+		
+		
+		if(!Array.isArray(records)){
+			records = [records];
+		}
+		
+		//if no store was supplied, we assume the user intended to use this as a convenience function
+		//otherwise, we can assume that "records" is a query object
+		if(!stores){
+			if((typeof keys)=='object'){
+				
+			}else{
+				var recordList = [];
+				for(var i=0;i<records.length;i++){
+					recordList[i]=records[i];
+				}
+				
+				function recordLoop(){
+					if(recordList.length==0){
+						if(callback){
+							callback(false, records);
+						}
+						return;
+					}
+					var keyList = [];
+					if(!Array.isArray(keys)){
+						keys = [keys];
+					}
+					
+					if(!Array.isArray(values)){
+						values = [values];
+					}
+					
+					var record = recordList.shift();
+					
+					for(var i=0;i<keys.length;i++){
+						var key = keys[i];
+						if(key.indexOf('.')>0){
+							var keyParts = key.split('.');
+							var attribute = keyParts.shift(); 
+							var subRecord = record[attribute];
+							if(!subRecord){
+								subRecord = {};
+							}
+							var subAttribute = keyParts.join('.');
+							
+							self.setRecordValue(subRecord, subattribute, values[i], function(err, records){
+								record[subAttribute] =  records[0];
+							});
+						}else{
+							record[key] = values[i];
+						}
+					}
+				}
+				
+				recordLoop();
+			}
+		}else{
+		}
 	}
 	
 	//TODO: FIX AND ADD SUPPORT FOR CHANNELS
@@ -302,7 +405,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}
 		}
 		
-		if(typeof channels =='function'){ //callback supplied as the third arg
+		if((typeof channels) =='function'){ //callback supplied as the third arg
 			callback = channels;
 			channels = false;
 		}
@@ -381,7 +484,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		searchNextStore();
 	}
 	
-	StorageManager.prototype.remove = function(query, stores, channel, callback){
+	StorageManager.prototype.remove = function(query, stores, channels, callback){
 		var self = this;
 		var err = false;
 		var recs = [];
@@ -534,6 +637,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		}
 		return newCollection;
 	}
+	
 	
 	return StorageManager;
 }

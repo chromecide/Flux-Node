@@ -366,6 +366,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			return data;
 		}
 		
+		
 		FluxNodeConstructor.prototype.clipDataByField = function(data, fieldList, notFieldList){
 			var self = this;
 			var clipData = {};
