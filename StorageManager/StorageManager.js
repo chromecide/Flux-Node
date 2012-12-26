@@ -54,6 +54,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				defaultChannel: 'master',
 				isDefault: true
 			}];
+		}else{
+			console.log('DEF SUPPLIED');
+			console.log(cfg.stores);
 		}
 		
 		self.factory('Memory', function(MemStore){
@@ -67,10 +70,10 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				defaultChannel: 'master'
 			});	
 		});
-		
+		/*
 		if(cfg){
 			self.configure(cfg);	
-		}
+		}*/
 		
 	}
 	
@@ -80,7 +83,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		console.log('CONFIGGING STORAGE MANAGER');
 		var self = this;
 		var err = false;
-		console.log(cfg);
+		
 		for(var key in cfg){
 			switch(key){
 				case 'stores':
@@ -122,12 +125,13 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			if(callback){
 				callback.call(self, err, self._config);
 			}
-			self.emit('StorageManager.Ready', createErr, self);
+			self.emit('StorageManager.Ready', err, self);
 		}else{
-			if(callback){
+			/*if(callback){
 				callback.call(self, err, self._config);
 			}
-			self.emit('StorageManager.Ready', createErr, self);
+			self.emit('StorageManager.Ready', err, self);*/
+			console.log('no stores');
 		}
 	}
 	
@@ -157,6 +161,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	}
 	
 	StorageManager.prototype.save = function(records, store, channel, callback){
+		console.log(arguments);
 		var self = this;
 		
 		if((typeof store=='function')){//the callback was passed as the second argument
@@ -173,6 +178,8 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 
 		if(store && store._environment){//a store object was supplied
 		}else{
+			console.log('getting default');
+			console.log(self);
 			store = self.getStore(store);
 		}
 		

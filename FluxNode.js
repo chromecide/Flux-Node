@@ -106,7 +106,16 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			}
 		}else{
 			console.log('creating default store');
-			cfg.stores = [];
+			cfg.stores = [{
+				type: 'Memory',
+				options:{
+					channels:[
+						'master'
+					]
+				},
+				defaultChannel: 'master',
+				isDefault: true
+			}];
 		}
 		storageManager.on('StorageManager.Error', function(){
 			console.log('STORAGE MANAGER ERROR');
@@ -341,7 +350,12 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					
 					return newValue;
 				}else{
-					return data[nameString];
+					if(data){
+						return data[nameString];	
+					}else{
+						return data;
+					}
+					
 				}
 			}else{
 				return;	
