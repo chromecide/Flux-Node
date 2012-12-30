@@ -92,7 +92,34 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 					var numStores = stores.length;
 					var finishedStores = 0;		
 					
-					for(var storeIdx in stores){
+					function storeCreateLoop(){
+						if(stores.length==0){
+							if(callback){
+								callback.call(self, false, cfg);
+							}
+							self.emit('StorageManager.Ready', false, self);
+							return;
+						}
+						
+						var storeCfg = stores.shift();
+						
+						self.createStore(storeCfg, function(createErr, store){
+							if(!createErr){
+								if(finishedStores==0 || storeCfg.isDefault===true){ //the first store to be added will be the default store, unless a later one has isDefault===true
+									console.log('SETTING DEFAULT STORE');
+									console.log(store);
+									self.defaultStore = store;
+								}	
+							}
+							storeCreateLoop();
+						});
+					}
+					
+					storeCreateLoop();
+					
+					/*for(var storeIdx in stores){
+						
+						
 						
 						var storeCfg = stores[storeIdx];
 						
@@ -100,6 +127,8 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 							
 							if(!createErr){
 								if(finishedStores==0 || storeCfg.isDefault===true){ //the first store to be added will be the default store, unless a later one has isDefault===true
+									console.log('SETTING DEFAULT STORE');
+									console.log(store);
 									self.defaultStore = store;
 								}	
 							}
@@ -115,7 +144,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 								self.emit('StorageManager.Ready', createErr, self);
 							}
 						});
-					}	
+					}	*/
 					break;
 			}
 		}
@@ -126,12 +155,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				callback.call(self, err, self._config);
 			}
 			self.emit('StorageManager.Ready', err, self);
-		}else{
-			/*if(callback){
-				callback.call(self, err, self._config);
-			}
-			self.emit('StorageManager.Ready', err, self);*/
-			console.log('no stores');
 		}
 	}
 	
@@ -177,8 +200,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		}
 
 		if(store && store._environment){//a store object was supplied
-		}else{			
+		}else{
 			store = self.getStore(store);
+			console.log(store);
 		}
 		
 		store.save(records, channel, function(err, records){
