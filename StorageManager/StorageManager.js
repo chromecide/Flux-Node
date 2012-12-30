@@ -161,7 +161,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	}
 	
 	StorageManager.prototype.save = function(records, store, channel, callback){
-		console.log(arguments);
+		
 		var self = this;
 		
 		if((typeof store=='function')){//the callback was passed as the second argument
@@ -177,9 +177,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		}
 
 		if(store && store._environment){//a store object was supplied
-		}else{
-			console.log('getting default');
-			console.log(self);
+		}else{			
 			store = self.getStore(store);
 		}
 		

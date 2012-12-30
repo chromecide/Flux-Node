@@ -206,9 +206,7 @@ function send(destination, topic, message, inReplyTo, callback){
 			}
 			
 			if(destination && (typeof destination=='object')){
-				console.log('SENDING');
 				destination.send(payload);
-				console.log(messageId);
 				return messageId;
 			}else{
 				switch(destination){

@@ -255,13 +255,13 @@ function StoreBuilder(util, EventEmitter2, Store){
 	
 	function objectToQuery(object, callback){
 		var returnQuery = {};
-		console.log(object);
+		
 		if(Array.isArray(object)){//OR query
 			console.log('OR QUERY');
 			console.log(object);
 		}else{
 			for(var key in object){
-				console.log(key);
+				
 				returnQuery[key] = [];
 				var fieldProcessed = false;
 				
@@ -270,7 +270,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				if(!Array.isArray(criteria)){
 					criteria = [criteria];
 				}
-				console.log(criteria);
+				
 				for(var critIdx in criteria){
 					var objectVal = criteria[critIdx];
 					//console.log(objectVal);
@@ -580,7 +580,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				}
 				break;
 		}
-		console.log(returnRecords);
+		
 		if(callback){
 			callback(err, returnRecords);
 		}
