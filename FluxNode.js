@@ -2,17 +2,17 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 
 var paths = {
-		'util': './lib/util',
-		'FluxNode': './',
-		'TunnelManager': './TunnelManager',
-		'Tunnel': 'TunnelManager/Tunnel',
-		'Tunnels': './TunnelManager/Tunnels',
-		'StorageManager': './StorageManager',
-		'Store': 'StorageManager/Store',
-		'Stores': 'StorageManager/Stores',
-		'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
-		'mixins': './lib/mixins'
-	};
+	'util': './lib/util',
+	'Flux-Node': './',
+	'TunnelManager': './TunnelManager',
+	'Tunnel': 'TunnelManager/Tunnel',
+	'Tunnels': './TunnelManager/Tunnels',
+	'StorageManager': './StorageManager',
+	'Store': 'StorageManager/Store',
+	'Stores': 'StorageManager/Stores',
+	'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
+	'mixins': './lib/mixins'
+};
 
 if (typeof define === 'function' && define.amd) {
 	require.config({
@@ -403,7 +403,10 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				if(nameString.indexOf('.')>-1){
 					var nameParts = nameString.split('.');
 					var currentAttr = nameParts.shift();
-					var currentValue = data[currentAttr];
+					var currentValue;
+					if(data){
+						currentValue = data[currentAttr];	
+					}
 					
 					var newValue = self.getDataValueByString(currentValue, nameParts.join('.'));
 					
