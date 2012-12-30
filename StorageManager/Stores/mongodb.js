@@ -105,7 +105,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 				];
 			}
 		}
-		var didErr = true;
+		var didErr = false;
 		var savedRecs = [];
 		function processRecord(){
 			
@@ -217,6 +217,10 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 			if((typeof channels)=='function'){
 				callback = channels;
 				channels= [self.defaultChannel];
+			}else{
+				if(!Array.isArray(channels)){
+					channels = [channels];
+				}
 			}
 		}
 		
@@ -261,6 +265,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 				var returnRecords = [];
 				var didErr = false;
 				function objectSearchLoop(){
+					
 					if(channels.length==0){
 						if(callback){
 							callback(err, returnRecords);
