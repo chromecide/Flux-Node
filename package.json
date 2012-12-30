@@ -15,7 +15,10 @@
     "url": "http://chromecide.com/"
   },
   "dependencies": {
-  	"eventemitter2":">=0.4.11"
+  	"eventemitter2":"0.4.x",
+  	"mongodb": "1.2.x",
+  	"mailparser": "0.2.x",
+  	"nodemailer": "0.3.x"
   },
   "repository": {
     "type": "git",
