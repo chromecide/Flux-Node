@@ -1,6 +1,6 @@
 {
   "name": "Flux-Node",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A distributed, event driven framework.",
   "homepage": "https://github.com/chromecide/Flux-Node",
   "keywords": [
