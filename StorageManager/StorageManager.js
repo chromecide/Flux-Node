@@ -7,9 +7,9 @@ if (typeof define === 'function' && define.amd) {
 } else {
 	var util = require('util'), 
 	EventEmitter2 = require('eventemitter2').EventEmitter2,
-	Store = require('./Store.js').Tunnel;
-	Collection = require('./Collection.js').Collection;
-	var MemoryStore = require('./Stores/Memory.js').Collection;
+	Store = require(__dirname+'/Store.js').Tunnel;
+	Collection = require(__dirname+'/Collection.js').Collection;
+	var MemoryStore = require(__dirname+'/Stores/Memory.js').Collection;
 	//svar fnConstruct = TunnelManager;
 	exports.StorageManager = StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemoryStore);
 }
