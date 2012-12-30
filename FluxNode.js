@@ -41,6 +41,8 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		var self = this;
 		
 		self.NodeSubscribers = {};
+		self._Settings = {};
+		self._SettingsMeta = {};
 		
 		if(!cfg){
 			cfg = {};
@@ -48,6 +50,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		if(cfg.debug){
 			self.debug = cfg.debug;
+			self.setSetting('FluxNode.Debug', true);
 		}
 		
 		evObj.call(self, cfg);
@@ -148,9 +151,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					if(callback){
 						var callbackListenerCreator = function(messageId, cb){
 							return function (message, rawMessage){
-								console.log(rawMessage);
-								console.log(rawMessage._message.inReplyTo);
-								console.log(messageId);
+								
 								if(rawMessage._message.inReplyTo==messageId){
 									cb.call(self, message, rawMessage);
 								}else{
@@ -212,7 +213,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 							}	
 						}else{
 							self.on('FluxNode.Mixin', function(message, rawMessage){
-								console.log(message);
+								
 								self.mixin(message.name, message.options);
 							});
 							
@@ -242,11 +243,11 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		});
 		
 		if(cfg.paths){
-			console.log(cfg.paths);
+			//console.log(cfg.paths);
 			for(var key in cfg.paths){
 				paths[key] = cfg.paths[key];
 			}
-			console.log(paths);
+			//console.log(paths);
 			require.config({
 				paths: paths
 			});
@@ -266,6 +267,64 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		FluxNodeConstructor.prototype.addPath = function(name, path){
 			paths[name] = path;
 			require.config({paths: paths});
+		}
+		
+		FluxNodeConstructor.prototype.addSetting = function(name, initialValue, validation, callback){
+			var self = this;
+			
+			self.setDataValueByString(self._Settings, name, initialValue);
+			self.setDataValueByString(self._SettingsMeta, name, validation);
+			
+			if(callback){
+				callback(name);
+			}
+		}
+		
+		FluxNodeConstructor.prototype.setSetting = function(name, newValue, callback){
+			var self = this;
+			var settingMeta = self.getDataValueByString(self._SettingsMeta, name);
+			if(settingMeta){
+				switch(typeof settingMeta){
+					case 'function':
+					
+						var func = settingMeta;
+						if(func(newValue)===true){
+							self.setDataValueByString(self._Settings, name, newValue);
+							if(callback){
+								callback(true);
+							}
+							return true;
+						}else{
+							self.emit('FluxNode.Error', {
+								message: 'Invalid Value Supplied for '+name
+							});
+						}
+						break;
+					default:
+						if(callback){
+							callback(false);
+						}
+						return false;
+						break;
+				}	
+			}else{
+				self.setDataValueByString(self._Settings, name, newValue);
+				if(callback){
+					callback(true);
+				}
+				return true;
+			}
+		}
+		
+		FluxNodeConstructor.prototype.getSetting = function(name, callback){
+			var self = this;
+			var settingVal = self.getDataValueByString(self._Settings, name);
+			
+			if(callback){
+				callback(false, settingVal);
+			}
+			
+			return settingVal;
 		}
 		
 		FluxNodeConstructor.prototype.addTunnel = function(tunnel){
@@ -587,7 +646,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					});
 				},
 				function(){
-					console.log(arguments);
 					
 					require([self.FluxUI_Settings.path+'mixins/'+mixinName], function(mixinClass){
 						//if(self.debug) console.log(arguments);
