@@ -56,13 +56,32 @@ function tcpTunnelBuilder(util, EventEmitter2, Tunnel){
 		var sck = this.socket;
 		//create a buffer to send the object with
 		
-		var bufferedMessage = new Buffer(JSON.stringify(message));
+		var bufferedMessage = new Buffer(JSON.stringify(message)+'\0');
 		sck.write(bufferedMessage);
 	}
 	
-	function recieve(dataBuffer){
+	function recieve(dataBuffer, internal){
 		var self = this;
-		self.emit('message', self, JSON.parse(dataBuffer.toString()));
+		
+		var dataString = dataBuffer.toString();
+		var messages = dataString.split('\0');
+		if(messages.length==0){
+			self.emit('message', self, JSON.parse(dataBuffer.toString().replace('\0', '')));	
+		}else{
+			for(var i=0;i<messages.length;i++){
+				try{
+					var msg=JSON.parse(messages[i]);
+					self.emit('message', self, msg);
+				}catch(e){
+					if(messages[i]){
+						console.log("TOO MANY MESAGES");
+						console.log(messages[i]);	
+					}
+				}
+				
+			}
+		}
+		
 		return true;
 	}
 	
