@@ -105,11 +105,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 						
 						self.createStore(storeCfg, function(createErr, store){
 							if(!createErr){
-								if(finishedStores==0 || storeCfg.isDefault===true){ //the first store to be added will be the default store, unless a later one has isDefault===true
-									console.log('SETTING DEFAULT STORE');
-									console.log(store);
+								if(storeCfg.isDefault===true){ //the first store to be added will be the default store, unless a later one has isDefault===true
 									self.defaultStore = store;
-								}	
+								}
 							}
 							storeCreateLoop();
 						});
@@ -201,6 +199,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 
 		if(store && store._environment){//a store object was supplied
 		}else{
+			console.log('GETTING STORE: ', store);
 			store = self.getStore(store);
 			console.log(store);
 		}
