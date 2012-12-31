@@ -103,6 +103,20 @@ An optional optional callback function to be called when the process of changing
 function(err, settingName, newValue, oldValue)
 ```
 
+__Example__
+
+```javascript
+var isSet = myNode.setSetting('MyApp.MySetting', 11); //isSet is true or false
+	
+//OR
+	
+myNode.setSetting('MyApp.MySetting', function(err, settingName, newValue, oldValue){
+	console.log('Setting "'+settingName+'" '+(err?'Failed':'Succeeded'));
+	console.log('New Value: ', newValue);
+	console.log('Old Value: ', oldValue);
+});
+```
+
 ### getSetting(name, callback)
 
 Retrieve the value of a FluxNode Setting.
@@ -116,12 +130,13 @@ The name of the setting to retrieve
 Optional function to be called when retrieval has been completed.
 
 ```javascript
-	function (currentValue)
+function (currentValue)
 ```
 
 __Example__
 
 ```javascript
+
 var settingValue = myNode.getSetting('MyApp.Setting');
 console.log(settingValue);
 
@@ -133,13 +148,31 @@ myNode.getSetting('MyApp.Setting', function(settingValue){
 ```
 ### addTunnel(tunnelDef, callback)
 
+Add a Tunnel to the current FluxNode instance.
+
+* __tunnelDef__ (Object, required)
+
+The definition of the tunnel to add.  For more information about Tunnel configuration, please see the readme in the TunnelManager directory.
+
+* __callback__ (functoin, optional)
+
+An optional function to be called when the process of adding the tunnel has been completed.
+
 ### doSubscribe(subscriber, eventList)
+
+Subscribe a remote FluxNode instance to events on the current FluxNode instance.  Events in _eventList_ will be forwarded to the remote FluxNode.
 
 ### doUnsubscribe(subscriber, eventList)
 
+Remove a subscription by remote FluxNode instance
+
 ### getDataValueByString(dataObject,name)
 
+Return a value from an object, using the path as a string to the value. (i.e. 'MyObject.Attribute')
+
 ### setDataValueByString(dataObject, name, value)
+
+Set the value of an object, using the path to the attribute name (i.e. 'MyObject.Attribute')
 
 ### clipDataByField(data, fieldList, notFieldList)
 
