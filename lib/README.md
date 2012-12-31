@@ -20,24 +20,68 @@ Flux Singularity Library
 
 This method can be used when using FluxNode in a browser environment, to add paths for use by RequireJS.
 
-#### name
+* __name__
 
 The name of the path to be added.
 
-#### path
+* __path__
 
 The path to be used
 
+__Example__
+
+The example below will allow you to "require" files within the supplied directory using the format "MyApp/MyFile". (RequireJS will automatically add the ".js")
 
 ```javascript
 	myNode.addPath('MyApp', '/path/to/myapp/files)
 ```
 
-The example above would allow you to "require" files within the supplied directory using the format "MyApp/MyFile". (RequireJS will automatically add the ".js")
-
 ### addSetting(name, initialValue, validator, callback)
 
+This method provides the ability to add a validated setting to the current FluxNode.
 
+* __name__ (String, required)
+
+The name of the setting	.  This can be in the form of "ObjectName.AttributeName".
+
+* __initialValue__ (Any, optional)
+
+The starting value of the new setting
+
+* __validator__ (function, optional)
+
+A function that returns a true or false value indictating the validity of a supplied value when using getSetting(see getSetting below). The validator function will be passed a single argument, being the new value.
+
+```javascript
+function (newValue)
+```
+
+* __callback__ (function, optional)
+
+This function, if supplied, will be called when the process of adding the setting has been completed. 
+
+```javascript
+function (settingName)
+```
+
+__Example__
+
+```javascript
+myNode.addSetting(
+	'MyApp.MySetting', 
+	null, 
+	function(newValue){
+		if(newValue>10){
+			return true;
+		}else{
+			return false;
+		}
+	},
+	function(settingName){
+		console.log('Setting Added: '+settingName);
+	}
+);
+```
 
 ### setSetting(name, newValue, callback)
 

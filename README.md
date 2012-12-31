@@ -92,7 +92,6 @@ The following applications and libraries need to be installed before setting up 
 
 ```
 npm install git://github.com/chromecide/Flux-Node.git
-
 ```
 
 
