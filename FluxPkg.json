@@ -1,0 +1,159 @@
+{
+  "name": "Flux-Node",
+  "version": "0.1.1",
+  "description": "A distributed, event driven framework.",
+  "homepage": "https://github.com/chromecide/Flux-Node",
+  "keywords": [
+    "FluxNode",
+    "events",
+    "event-driven",
+    "framework"
+  ],
+  "author": {
+    "name": "Justin Pradier",
+    "email": "chromecide@chromecide.com",
+    "url": "http://chromecide.com/"
+  },
+  "cfg":{
+  	"debug": {
+  		"type": "Boolean",
+  		"description": "Determines whether debug information will be sent to the console",
+  		"required": false 
+  	},
+  	"id": {
+  		"type": "String",
+  		"description": "The ID of the FluxNode being created",
+  		"required": false
+  	},
+  	"listeners": {
+  		"type": "Config Array",
+  		"description": "A list of listener configuration objects",
+  		"required": false
+  	},
+  	"stores": {},
+  	"tunnels": {},
+  	"mixins": {},
+  	"paths": {}
+  },
+  "events": {
+  	"error":{},
+  	"Store.Ready": {
+  		"parameters": {
+  			"error": {
+  				"type": "false or object",
+  				"description": "If false, means"
+  			}
+  			"store": "The store instance that is now ready"
+  		}
+  	},
+  	"Tunnel.Ready": {},
+  	"Tunnel.Closed": {},
+  	"FluxNode.Error": {
+  		"parameters": {
+  			"number": "The number of the errorthat occurred, or -1 for Unknown Errors",
+  			"message": "A description of the error that occurred"
+  		}
+  	},
+  	"FluxNode.Ready": {},
+  	"Mixin.Ready":{}
+  },
+  "listeners": {
+  
+  },
+  "methods": {
+  	"addPath":{
+  		"description": "Used by the browser to add paths for RequireJS.  When requireing files the name is used, followed by the path.",
+  		"parameters":{
+  			"name": {
+  				"type":"String",
+  				"required": true,
+  				"description": "The name used when referencing files within this path (i.e. FluxNode)"
+  			},
+  			"path": {
+  				"type":"String",
+  				"required": true,
+  				"description": "The path to use."
+  			}
+  		}
+  	},
+  	"addSetting": {
+  		"description": "A convenience function for adding a validated setting to the current FluxNode",
+  		"parameters": {
+  			"name": {
+  				"type": "String",
+  				"required": true,
+  				"description": "The name of the setting.  This can be a nested object.(i.e. \"MyApp.Setting1\")"
+  			},
+  			"initialValue":{
+  				"type": "Any",
+  				"required": false,
+  				"description": "The initial value the Setting should have"
+  			},
+  			"validation": {
+  				"type": "function",
+  				"required": false,
+  				"description": "A function, that returns true or false, indicating the validity of the supplied value when using FluxNode.setSetting",
+  				"parameters":{
+  					"newValue": {
+  						"type": "Any",
+  						"required": false,
+  						"description": "The new value that has been supplied and requires validation."
+  					}
+  				}
+  			},
+  			"callback": {
+  				"type": "function",
+  				"required": false,
+  				"description": "This function will be called when the process of adding the setting has been completed",
+  				"parameters":{
+  					"name": {
+  						"type": "String",
+  						"description": "The name of the Setting that was added"}
+  				}
+  			}
+  		}
+  	},
+  	"setSetting":{
+  		"description": "Sets the value of a setting created with FluxNode.addSetting",
+  		"parameters":{
+  			"name": {
+  				"type": "String",
+  				"required": true,
+  				"description": "The name of the setting whose value is to be set.  This can be a nested object attribute by using the format \"MyApp.Setting1\""
+  			},
+  			"newValue":{
+  				"type": "Any",
+  				"required": false,
+  				"description": "The new value to update the Setting to"
+  			},
+  			"callback":{
+  				"type": "function",
+  				"required": false,
+  				"description": "this function will be called when the process of setting the new value has been completed",
+  				"parameters": {
+  					"success": {
+  						"type": "Boolean",
+  						"description": "true or false value indicating whether the new value was successfully set"
+  					},
+  					"name": {
+  						"type": "String",
+  						"description": "The name of the setting that was changed"
+  					},
+  					"newValue": {
+  						"type": "Any",
+  						"description": "The new value that the setting has ben set to" 
+  					},
+  					"oldValue": {
+  						"type": "Any",
+  						"description": "The value that the setting had before being changed" 
+  					}
+  				}
+  			}
+  		}
+  	}
+  },
+  "builtin_objects":{
+  	"TunnelManager":{},
+  	"StorageManager":{}
+  }
+}

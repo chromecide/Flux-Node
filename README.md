@@ -91,13 +91,9 @@ The following applications and libraries need to be installed before setting up 
 #### NPM
 
 ```
-Flux-Node will not be published to the npm repository until the first beta release.  Please see manual installation instructions below
+npm install git://github.com/chromecide/Flux-Node.git
 
 ```
-
-####  Manual Installation
-
-
 
 
 ## Using Flux Singularity
@@ -108,7 +104,9 @@ FluxNode can be used both in NodeJS and the browser, although some mixins may on
 
 #### Creating a Node
 ```javascript
-var myNode = new FluxNode({});
+new FluxNode({}, function(myNode){
+	//myNode is now ready for use
+});
 ```
 
 #### Mixins
@@ -116,17 +114,22 @@ var myNode = new FluxNode({});
 FluxNode provides a basic core of functionality for a distributed event system.  Mixins Provide a simple mechanism for extending that functionality with custom properties and methods.
 
 ```javascript
-var myNode = new FluxNode({
-	mixins:[
-		{
-			name: 'TCPServer',
-			options:{
-				host: 'localhost',
-				port: 8080
+new FluxNode(
+	{
+		mixins:[
+			{
+				name: 'TCPServer',
+				options:{
+					host: 'localhost',
+					port: 8080
+				}
 			}
-		}
-	]
-});
+		]
+	},
+	function(myNode){
+		//myNode is now ready for use
+	}
+);
 ```
 
 #### Tunnels
@@ -135,15 +138,20 @@ Tunnels are the communication connections between FluxNodes.  They provide a wra
 is connected via TCP, or Websockets. 
 
 ```javascript
-var myNode = new FluxNode({
-	tunnels:{
-		"RemoteNodeIDHere":{
-			type: "TCP",
-			host: "localhost",
-			port: 8080
+new FluxNode(
+	{
+		tunnels:{
+			"RemoteNodeIDHere":{
+				type: "TCP",
+				host: "localhost",
+				port: 8080
+			}
 		}
+	},
+	function(myNode){
+		myNode.sendEvent("RemoteNodeIDHere", "Hello.World", {message:"Hello World!!!"})
 	}
-});
+);
 ```
 
 #### Stores
