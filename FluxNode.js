@@ -130,7 +130,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			if(self.debug) console.log('StorageManager Ready');
 			self.StorageManager = SM;
 			self.StorageManager.on('StorageManager.StoreReady', function(err, store){
-				self.emit('StorageManager.StoreReady', err, store);
+				self.emit('Store.Ready', err, store);
 			});
 			
 			if(self.debug) console.log('Configuring Tunnel Manager');
@@ -291,7 +291,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						if(func(newValue)===true){
 							self.setDataValueByString(self._Settings, name, newValue);
 							if(callback){
-								callback(true);
+								callback(true, name, newValue, oldValue);
 							}
 							return true;
 						}else{
@@ -570,7 +570,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			return clipData;
 		}
 		
-		FluxNodeConstructor.prototype.routeMessage = function(topic, data){
+		/*FluxNodeConstructor.prototype.routeMessage = function(topic, data){
 			var self = this;
 			if(topic.indexOf('.')>-1){
 				var topicParts = topic.split('.');
@@ -586,7 +586,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						break;
 				}
 			}
-		}
+		}*/
 		
 		FluxNodeConstructor.prototype.generateID = function(){
 			var newID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -645,7 +645,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						if(callback){
 							callback.call(self);	
 						}
-						self.emit('MixinAdded', mixinClass, mixinParams);
+						self.emit('Mixin.Ready', mixinClass, mixinParams);
 					});
 				},
 				function(){
@@ -658,7 +658,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						}
 
 						mixinClass.init.call(self, mixinParams);
-						self.emit('MixinAdded', mixinClass, mixinParams);
+						self.emit('Mixin.Ready', mixinClass, mixinParams);
 						if(callback){
 							callback.call(self);	
 						}
@@ -673,17 +673,22 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 							}
 							mixinClass.init.call(self, mixinParams);
 
-							self.emit('MixinAdded', mixinClass, mixinParams);
+							self.emit('Mixin.Ready', mixinClass, mixinParams);
 							if(callback){
 								callback.call(self);	
 							}
 
 						}, function(){
+							self.emit('FluxNode.Error', {
+								number: 50000,
+								message: "Failed to load: "+mixinName
+							});
 							console.log('load error');
 							console.log(arguments);
 							console.log('FAILED LOAD');
 							console.log(self);
 							console.log(mixinName);
+							self.emit('FluxNode.Error', mixinName, mixinParams);
 						});
 					});
 				});
