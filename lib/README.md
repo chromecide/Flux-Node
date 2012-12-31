@@ -68,16 +68,16 @@ __Example__
 
 ```javascript
 myNode.addSetting(
-	'MyApp.MySetting', 
-	null, 
-	function(newValue){
+	'MyApp.MySetting',  	//Setting Name
+	null, 					//Initial Value		
+	function(newValue){		// Validator function
 		if(newValue>10){
 			return true;
 		}else{
 			return false;
 		}
 	},
-	function(settingName){
+	function(settingName){ //Callback function
 		console.log('Setting Added: '+settingName);
 	}
 );
@@ -85,10 +85,52 @@ myNode.addSetting(
 
 ### setSetting(name, newValue, callback)
 
+This method provides the ability to set the value of a FluxNode Setting.  If the setting was created using the addSetting function, and a validator function was supplied, the value will be validated before changing the current setting value.
+
+* __name__ (String, required)
+
+The name of the setting that is to be updated
+
+* __newValue__ (Any, optional)
+
+The new value to update the setting value to
+
+* __callback__ (function, optional)
+
+An optional optional callback function to be called when the process of changing the setting has been completed
+
+```javascript
+function(err, settingName, newValue, oldValue)
+```
 
 ### getSetting(name, callback)
 
+Retrieve the value of a FluxNode Setting.
 
+* __name__ (String, required)
+
+The name of the setting to retrieve
+
+* __callback__ (function, optional)
+
+Optional function to be called when retrieval has been completed.
+
+```javascript
+	function (currentValue)
+```
+
+__Example__
+
+```javascript
+var settingValue = myNode.getSetting('MyApp.Setting');
+console.log(settingValue);
+
+// OR
+
+myNode.getSetting('MyApp.Setting', function(settingValue){
+	console.log(settingValue))
+});
+```
 ### addTunnel(tunnelDef, callback)
 
 ### doSubscribe(subscriber, eventList)
