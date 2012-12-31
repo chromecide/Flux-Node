@@ -13,6 +13,16 @@ Flux Singularity Library
 	});
 ```
 
+#### Configuration Options
+
+* __debug__
+* __id__
+* __listeners__
+* __stores__
+* __tunnels__
+* __mixins__
+* __paths__
+
 ## Methods
 
 
@@ -110,11 +120,15 @@ var isSet = myNode.setSetting('MyApp.MySetting', 11); //isSet is true or false
 	
 //OR
 	
-myNode.setSetting('MyApp.MySetting', function(err, settingName, newValue, oldValue){
-	console.log('Setting "'+settingName+'" '+(err?'Failed':'Succeeded'));
-	console.log('New Value: ', newValue);
-	console.log('Old Value: ', oldValue);
-});
+myNode.setSetting(
+	'MyApp.MySetting', 	//Setting Name
+	11, 				//New Value
+	function(err, settingName, newValue, oldValue){ //callback function
+		console.log('Setting "'+settingName+'" '+(err?'Failed':'Succeeded'));
+		console.log('New Value: ', newValue);
+		console.log('Old Value: ', oldValue);
+	}
+);
 ```
 
 ### getSetting(name, callback)
@@ -154,7 +168,7 @@ Add a Tunnel to the current FluxNode instance.
 
 The definition of the tunnel to add.  For more information about Tunnel configuration, please see the readme in the TunnelManager directory.
 
-* __callback__ (functoin, optional)
+* __callback__ (function, optional)
 
 An optional function to be called when the process of adding the tunnel has been completed.
 
@@ -193,18 +207,36 @@ Send a message directly to another FluxNode
 	myNode.sendEvent(myOtherNodeID, 'Subscribe', {events:[]})
 ```
 
+### emit(topic, message);
+
+Emit an event that can be subscribed to
+
+```
+	var myNode = new FluxNode({}, function(myNode){
+		myNode.on('MyEvent', function(message, rawMessage){
+			console.log('My Event Fired: '+message.subject);
+		});
+	
+		myNode.emit('MyEvent', {
+			subject: 'Hello World'
+		});
+	});
+```
+
 ### on(topic, function(message, rawMessage))
 
 Subscribe to an event on a local FluxNode
 
 ```
-	var myNode = new FluxNode({});
-	
+new FluxNode({}, function(myNode){
 	myNode.on('MyEvent', function(message, rawMessage){
 		console.log('My Event Fired');
 		console.log(message); //this is the message as sent by the original caller
 		console.log(rawMessage); //this is the raw Message object as used by FluxNode and may include sender and destination information
 	});
+	
+	myNode.emit('MyEvent', 'Hello World');
+});
 ```
 
 ### off(topic, function)
@@ -212,43 +244,25 @@ Subscribe to an event on a local FluxNode
 stop listening to an event on a local FluxNode
 
 ```
-	new FluxNode({}, function(){
+	new FluxNode({}, function(myNode){
+		
+		function printMessage(message){
+			console.log('My Event Fired: '+message.subject);
+		}
 	
-	});
-
-	var myNode = new FluxNode({});
+		myNode.on('MyEvent', printMessage);
 	
-	function printMessage(message){
-		console.log('My Event Fired: '+message.subject);
-	}
+		myNode.emit('MyEvent', {
+			subject: 'Hello World'
+		});
 	
-	myNode.on('MyEvent', printMessage);
+		myNode.off('MyEvent', printMessage);
 	
-	myNode.emit('MyEvent', {
-		subject: 'Hello World'
-	});
-	
-	myNode.off('MyEvent', printMessage);
-	
-	myNode.emit('MyEvent', {
-		subject: 'Hello World'
-	});
-```
-
-### emit(topic, message);
-
-Emit an event that can be subscribed to
-
-```
-	var myNode = new FluxNode({});
-	
-	myNode.on('MyEvent', function(message, rawMessage){
-		console.log('My Event Fired: '+message.subject);
+		myNode.emit('MyEvent', {
+			subject: 'Hello World'
+		});
 	});
 	
-	myNode.emit('MyEvent', {
-		subject: 'Hello World'
-	});
 ```
 
 ## Events
@@ -259,13 +273,21 @@ The following Events are emitted by a default instance of a FluxNode (no mixins)
 
 ### FluxNode.Error
 
+### FluxNode.Ready
+
+### StorageManager.Ready
+
 ### Store.Ready
+
+### TunnelManager.Ready
 
 ### Tunnel.Ready
 
 ### Tunnel.Closed
 
 ### Mixin.Ready
+
+Fired when a Mixin has been added and all initialisation for that mixin has been completed.
 
 ## Listeners
 
