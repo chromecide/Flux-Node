@@ -15,13 +15,18 @@ Flux Singularity Library
 
 #### Configuration Options
 
-* __debug__
-* __id__
-* __listeners__
-* __stores__
-* __tunnels__
-* __mixins__
-* __paths__
+All configuration parameters are optional, with default values listed below
+
+* __debug__ (Boolean, defaults to false)
+* __id__	(String, default is automatically generated id)
+* __name__ (String, defaults to "FluxNode")
+* __host__ (String, defaults to false)
+* __port__ (Number, defaults to false)
+* __listeners__ (Object, defaults to {})
+* __stores__	(Array of Store configurations, defaults to [{type:'memory', isDefault: true}])
+* __tunnels__  (Array of store configurations, defaults to [])
+* __mixins__	(Array of mixin configuration objects, defaults to [])
+* __paths__		(Key-Value object)
 
 ## Methods
 
@@ -160,6 +165,14 @@ myNode.getSetting('MyApp.Setting', function(settingValue){
 	console.log(settingValue))
 });
 ```
+### removeSettingValue(name, [callback])
+
+Removes the value of a setting. (Will return _undefined_ if retrieved).
+
+### removeSetting(name, [callback])
+
+Removes a setting and its associated value.
+
 ### addTunnel(tunnelDef, callback)
 
 Add a Tunnel to the current FluxNode instance.
@@ -187,6 +200,10 @@ Return a value from an object, using the path as a string to the value. (i.e. 'M
 ### setDataValueByString(dataObject, name, value)
 
 Set the value of an object, using the path to the attribute name (i.e. 'MyObject.Attribute')
+
+### removeDataValueByString(dataObject, name, value)
+
+Removes a property from an object, using the path to the attribute name (i.e. 'MyObject.Attribute')
 
 ### clipDataByField(data, fieldList, notFieldList)
 
