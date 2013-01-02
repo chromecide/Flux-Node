@@ -55,7 +55,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		evObj.call(self, cfg);
 		
-		
 		self._environment = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? 'nodejs' : 'browser');
 		
 		if(cfg.id){
@@ -67,6 +66,19 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			var thisId = self.generateID(); 
 			if(self.debug) console.log('setting id: '+thisId);
 			self.id = thisId;
+		}
+		
+		
+		if(cfg.name){
+			self.name = cfg.name;
+		}
+		
+		if(cfg.host){
+			self.host = cfg.host;
+		}
+		
+		if(cfg.port){
+			self.port = cfg.port;
 		}
 		
 		if(self.debug) console.log('Starting FluxNode: '+self.id);
@@ -327,6 +339,29 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			return settingVal;
 		}
 		
+		FluxNodeConstructor.prototype.removeSettingValue = function(name, callback){
+			var self = this;
+			var settingVal = self.removeDataValueByString(self._Settings, name);
+			
+			if(callback){
+				callback(false, settingVal);
+			}
+			
+			return settingVal;
+		}
+		
+		FluxNodeConstructor.prototype.removeSetting = function(name, callback){
+			var self = this;
+			var settingVal = self.removeDataValueByString(self._Settings, name);
+			var settingMeta = self.removeDataValueByString(self._SettingsMeta, name);
+			
+			if(callback){
+				callback(false, settingVal && settingMeta);
+			}
+			
+			return settingVal && settingMeta;
+		}
+		
 		FluxNodeConstructor.prototype.addTunnel = function(tunnel){
 			var self = this;			
 			var tunnelDef = self.TunnelManager.factory(tunnel.type).Tunnel;
@@ -442,6 +477,35 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			return data;
 		}
 		
+		FluxNodeConstructor.prototype.removeDataValueByString = function(data, nameString){
+			var self = this;
+			
+			if(nameString!=''){
+				if(nameString.indexOf('.')>-1){
+					var nameParts = nameString.split('.');
+					var currentAttr = nameParts.shift();
+					var currentValue;
+					if(data){
+						currentValue = data[currentAttr];	
+					}
+					
+					var newValue = self.removeDataValueByString(currentValue, nameParts.join('.'));
+					
+					return newValue;
+				}else{
+					if(data){
+						delete data[nameString];
+						return true;	
+					}else{
+						delete data;
+						return true;
+					}
+					
+				}
+			}else{
+				return;	
+			}
+		}
 		
 		FluxNodeConstructor.prototype.clipDataByField = function(data, fieldList, notFieldList){
 			var self = this;
