@@ -310,7 +310,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		}
 	}
 	
-	//TODO: FIX AND ADD SUPPORT FOR CHANNELS
+	
 	StorageManager.prototype.find = function(query, fields, stores, channels, callback){
 		
 		var self = this;
