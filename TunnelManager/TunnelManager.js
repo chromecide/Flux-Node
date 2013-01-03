@@ -105,6 +105,10 @@ function configure(cfg, callback){
 		self.senderID = cfg.sender;
 	}
 	
+	if(cfg.senderName){
+		self.name = cfg.senderName;
+	}
+	
 	if(cfg.allowed){
 		self.allowed = cfg.allowed;
 	}
@@ -262,10 +266,16 @@ function recieve(tunnelObj, message){
 						case 'init': //introductions
 							var remoteID = message._message.sender;
 							tunnelObj.initiated = true;
+							
 							if(message.message.allowRelay===true){
 								allowRelay = true;
 								tunnelObj.allowRelay = true;
 							}
+							
+							if(message.message.name){
+								tunnelObj.name = message.message.name;
+							}
+							
 							tunnelObj.remoteId = remoteID;
 							if(!tunnels[remoteID]){
 								tunnels[remoteID] = tunnelObj;
@@ -273,8 +283,7 @@ function recieve(tunnelObj, message){
 							self.emit('Tunnel.Ready', remoteID, tunnelObj);
 							break;
 						default:
-							self.emit('message', message);	
-							
+							self.emit('message', message);
 							break;
 					}	
 				}else{
@@ -317,6 +326,7 @@ function registerTunnel(remoteID, tunnelObj, callback){
 		});
 		
 		self.send(tunnelObj, 'init', {
+			name: self.name,
 			allowRelay: allowRelay
 		});
 	}else{
@@ -331,7 +341,8 @@ function registerTunnel(remoteID, tunnelObj, callback){
 		});
 		
 		self.send(tunnelObj, 'init', {
-			allowRelay: allowRelay
+			allowRelay: allowRelay,
+			name: self.name
 		});
 		
 		tunnels[tunnelObj.remoteID] = tunnelObj;
