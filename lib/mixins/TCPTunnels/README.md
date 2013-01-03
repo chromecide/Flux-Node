@@ -41,6 +41,10 @@ All configuration parameters are optional, with default values listed below
 
 ## Methods
 
+### TCPTunnels_Connect
+
+Creates a new tcp tunnel
+
 ## Events
 
 ## Listeners
