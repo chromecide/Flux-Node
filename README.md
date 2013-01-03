@@ -117,7 +117,7 @@ new FluxNode(
 	{
 		mixins:[
 			{
-				name: 'TCPServer',
+				name: 'TCPTunnels',
 				options:{
 					host: 'localhost',
 					port: 8080
