@@ -159,11 +159,19 @@ new FluxNode(
 
 ## More Information
 
-More Examples for using FluxNode can be found in the Examples and Apps folders.
 
 More detailed information about the API can be found in the README in the lib folder
 
 Information about mixins can be found in READMEs for the individual mixins found in '/lib/mixins'
+
+* [FluxNode API](https://github.com/chromecide/Flux-Node/tree/master/lib/)
+* __Mixins__
+  * [TCPTunnels](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/TCPTunnels) 
+  * [MDNS](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/fs_mdns)
+
+
+More Examples for using FluxNode can be found in the Examples and Apps folders.
+
 
 
 Twitter: @chromecide
