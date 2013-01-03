@@ -1,9 +1,9 @@
-Flux-Node/lib/mixins/TCPTunnels
+Flux-Node/lib/mixins/Ticker
 =========
 
-TCP Tunnel FluxNode Connections
+Interval Ticker
 ---------
-Provides functionality to allow remote nodes to connect and communicate with a node via TCP
+Provides functionality to for a Tick event to be emitted at a preset interval
 
 
 ### Mixin
