@@ -50,9 +50,9 @@ All configuration parameters are optional, with default values listed below
 
 	The duration for the default Ticker
 	
-* __tickers__ (Array, see Ticker_createTicker below)
+* __tickers__ (Array, defaults to [])
 
-	An array of Ticker configuration objects
+	An array of Ticker configuration objects.  See the documentation for the _Ticker.Create_ event below for Ticker config format.
 	
 ## Methods
 
