@@ -168,7 +168,7 @@ Information about mixins can be found in READMEs for the individual mixins found
 * __Mixins__
   * [MDNS](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/fs_mdns)
   * [TCPTunnels](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/TCPTunnels) 
-  * [Ticker](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/ticker) 
+  * [Tickers](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/tickers) 
 
 More Examples for using FluxNode can be found in the Examples and Apps folders.
 
