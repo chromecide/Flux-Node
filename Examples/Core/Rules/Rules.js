@@ -72,7 +72,7 @@ function run(){
 				name: 'fs_mdns'
 			},
 			{
-				name:'ticker',
+				name:'tickers',
 				options: {
 					name: 'SecondsTicker',
 					interval: 5000
