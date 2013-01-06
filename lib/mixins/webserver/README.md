@@ -1,9 +1,9 @@
 Flux-Node/lib/mixins/Webserver
 =========
 
-TCP Tunnel FluxNode Connections
+Static HTTP Server
 ---------
-Provides functionality to allow remote nodes to connect and communicate with a node via TCP
+Provides functionality to server static files via http.
 
 
 ### Mixin
