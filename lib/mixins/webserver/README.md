@@ -1,27 +1,81 @@
-FNM-WebServer
-=============
+Flux-Node/lib/mixins/Webserver
+=========
 
-A FluxNode Mixin to provide a wrapper around a node-static server
+TCP Tunnel FluxNode Connections
+---------
+Provides functionality to allow remote nodes to connect and communicate with a node via TCP
 
-## Functions
 
-The following functions are added to a FluxNode by this mixin
+### Mixin
 
-* FNMWebServer_startServer
-* FNMWebServer_stopServer
-* FNMWebServer_restartServer
+```javascript
+	new FluxNode({
+		mixins: [
+			{
+				name: 'webserver',
+				options: {
+					autoStart: true,
+					webroot: '/path/to/webroot',
+					namedPaths: {
+						MyApp: '/path/to/directory/outside/of/webroot' //these files can be included in html by using the path "MyApp/my.file"
+					}
+				}
+			}
+		]
+	}, function(myNode){
+		//myNode is now ready and running with a webserver ready to accept http requests
+		console.log(myNode);
+	});
+	
+	//OR
+	
+	new FluxNode({}, function(myNode){
+		myNode.mixin('webserver', {autoStart: true}, function(mixinInfo){
+			//myNode is now ready and running with a webserver ready to accept http requests
+		});
+	});
+```
 
-## Emitted Events
+#### Configuration Options
 
-The following events may be emitted by this mixin
+All configuration parameters are optional, with default values listed below
 
-* FNMWebServer.RequestReceived
-* FNMWebServer.ResponseSent
+* host (String, defaults to "localhost")
 
-## Listened Events
+* port (Number, defaults to 8080)
 
-The following events are listened for by this mixin
+* autoStart (Boolean, defaults to false)
 
-* FNMWebServer.Start
-* FNMWebServer.Stop
-* FNMWebServer.Restart
+## Methods
+
+### Webserver_startServer()
+
+Starts the Webserver.
+
+### Webserver_stopServer()
+
+Stops the Webserver.
+
+## Events
+
+### Webserver.Started
+
+Emitted when the Webserver has been Started.
+
+### Webserver.Stopped
+
+Emitted when the Webserver has been Stopped.
+
+### Webserver.RequestRecieved
+
+Emitted when the Webserver recieves a http request
+
+### Webserver.ResponseSent
+
+Emitted when the Webserver has sent a response.
+
+## Listeners
+
+### Webserver.Start
+
+### Webserver.Stop
