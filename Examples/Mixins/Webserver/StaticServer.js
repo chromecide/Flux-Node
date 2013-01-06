@@ -1,16 +1,18 @@
-var FluxNode = require('../../FluxNode').FluxNode;
+var FluxNode = require('../../../FluxNode').FluxNode;
 
 var WebNode = new FluxNode({
 	mixins:[
 		{
-			name: 'FNM-WebServer',
+			name: 'webserver',
 			options:{
-				port:8080
+				port:8080,
+				autoStart: true,
+				webroot: __dirname+'/webroot/'
 			}
 		}
 	]
 }, function(nd){
 	var thisNode = nd;
 	
-	thisNode.FNMWebserver_startServer();
+	thisNode.Webserver_startServer();
 }); 
