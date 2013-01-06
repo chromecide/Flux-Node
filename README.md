@@ -169,7 +169,8 @@ Information about mixins can be found in READMEs for the individual mixins found
   * [MDNS](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/fs_mdns)
   * [TCPTunnels](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/TCPTunnels) 
   * [Tickers](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/tickers) 
-  * [WebsocketTunnels](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/WebsocketTunnels) 
+  * [WebsocketTunnels](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/WebsocketTunnels)
+  * [Webserver](https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/webserver) 
 
 More Examples for using FluxNode can be found in the Examples and Apps folders.
 
