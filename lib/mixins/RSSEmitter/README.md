@@ -38,7 +38,19 @@ Polls RSS Feeds and emits Article events when new articles are recieved.
 	//OR
 	
 	new FluxNode({}, function(myNode){
-		myNode.mixin('webserver', {autoStart: true}, function(mixinInfo){
+		myNode.mixin('RSSEmitter', {
+			feeds:[
+				{
+					id: 'SlashdotYRO', //this is used in the event name e.g. "RSSEmitter.SlashdotYRO.Article.Received"
+					name: 'Slashdot - Your Rights Online',
+					url: 'http://rss.slashdot.org/Slashdot/slashdotYourRightsOnline',
+					interval: 1800, //check every 30 minutes
+					options: {
+						autoStart: true
+					}
+				}
+			]
+		}, function(mixinInfo){
 			//myNode is now ready and running and will emit a "RSSEmitter.SlashdotYRO.Article.Received" when a new article is recieved
 			myNode.on("RSSEmitter.SlashdotYRO.Article.Received", function(article){
 				console.log(article.article.title+' (from '+article.feed.name+')');
