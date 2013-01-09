@@ -53,7 +53,12 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			self.setSetting('FluxNode.Debug', true);
 		}
 		
-		evObj.call(self, cfg);
+		var evCfg = {
+			wildcard: true, // should the event emitter use wildcards.
+      		delimiter: '.'
+		};
+		
+		evObj.call(self, evCfg);
 		
 		self._environment = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? 'nodejs' : 'browser');
 		
