@@ -71,6 +71,14 @@ Moves a file
 
 Deletes a file
 
+### FileManager_watch
+
+Monitors a file or directory for changes
+
+### FileManager_unwatch
+
+Stops monitoring of a file or directory for changes
+
 ## Events
 
 ### FileManager.Directory.Created
@@ -105,6 +113,16 @@ Deletes a file
 
 ### FileManager.File.DeleteError
 
+### FileManager.Watch.[WatchID].Accessed
+
+### FileManager.Watch.[WatchID].Changed
+
+### FileManager.Watch.[WatchID].Deleted
+
+### FileManager.Watch.[WatchID].FileAdded
+
+### FileManager.Watch.[WatchID].FileDeleted
+
 ## Listeners
 
 ### FileManager.Directory.Create
@@ -122,3 +140,7 @@ Deletes a file
 ### FileManager.File.Move
 
 ### FileManager.File.Delete
+
+### FileManager.Watch
+
+### FileManager.Unwatch
