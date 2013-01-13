@@ -50,6 +50,29 @@ new FluxNode({
 																		thisNode.FileManager_deleteFile(examplePath+'/FluxNodeTest2/SubDir1/test.txt', function(err, errors){
 																			if(!err){
 																				console.log('FILE REMOVED');
+																				thisNode.FileManager_watch('Test', examplePath+'/FluxNodeTest2/SubDir1/test2.txt', function(err, errors){
+																					thisNode.on('FileManager.Watch.Test.Accessed', function(){
+																						console.log('FILE ACCESSED');
+																					});
+																					
+																					thisNode.on('FileManager.Watch.Test.Changed', function(){
+																						console.log('FILE CHANGED');
+																					});
+																					
+																					thisNode.on('FileManager.Watch.Test.FileAdded', function(){
+																						console.log('FILE ADDED');
+																					});
+																					
+																					thisNode.on('FileManager.Watch.Test.FileDeleted', function(){
+																						console.log('FILE DELETED');
+																					});
+																					
+																					thisNode.on('FileManager.Watch.Test.Deleted', function(){
+																						console.log('FILE DELETED');
+																					});
+																					
+																				});
+																				
 																			}else{
 																				console.log(errors);
 																			}
