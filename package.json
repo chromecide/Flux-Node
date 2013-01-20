@@ -20,7 +20,8 @@
   	"mailparser": "0.2.x",
   	"mdns": "1.1.x",
   	"nodemailer": "0.3.x",
-  	"socket.io": "0.9.x"
+  	"socket.io": "0.9.x",
+  	"http-proxy": "0.8.x"
   },
   "repository": {
     "type": "git",
