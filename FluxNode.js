@@ -101,12 +101,38 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			self.doUnsubscribe(data._message.sender, data.message.events);
 		});
 		
+		//process any non-builtin config items as if they were inteneded to be part of the FluxNode
+		
+		for(key in cfg){
+			switch(key){
+				//built ins
+				case 'debug':
+				case 'listeners':
+				case 'mixins':
+				case 'stores':
+				case 'tunnels':
+				case 'settings':
+					break;
+				default:
+					console.log('ADDING: '+key);
+					self[key] = cfg[key];
+					break;
+			}
+		}
+		
+		if(cfg.settings){
+			for(var settingKey in cfg.settings){
+				self.setSetting(settingKey, cfg.settings[settingKey]);
+			}
+		}
+		
 		if(cfg.listeners){
 			if(self.debug) console.log('Configuring Listeners');
 			for(var topic in cfg.listeners){
 				self.on(topic, cfg.listeners[topic]);
 			}
 		}
+		
 		
 		if(self.debug) console.log('Configuring StorageManager');
 		
