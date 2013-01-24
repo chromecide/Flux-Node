@@ -27,6 +27,11 @@ new FluxNode({
 			if(advert.type.name=='FluxNode'){
 				console.log('FluxNode Dissappeared');
 			}
+		},
+		'Tunnel.Ready': function(destinationId, tunnel){
+			var thisNode = this;
+			console.log('Found FluxNode: '+tunnel.name+'(ID: '+destinationId+')');
+			thisNode.sendEvent(destinationId, 'Hello', {message: 'Hellow There'});
 		}
 	},
 	mixins:[
