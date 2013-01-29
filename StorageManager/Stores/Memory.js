@@ -20,7 +20,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 		
 		var self = this;
 		Store.apply(this, cfg);
-		console.log('BACK');
+		
 		self.configureStore = configureStore;
 		self.save = save;
 		self.find = find;
