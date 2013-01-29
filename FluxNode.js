@@ -43,6 +43,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		self.NodeSubscribers = {};
 		self._Settings = {};
 		self._SettingsMeta = {};
+		self._mixins = {};
 		
 		if(!cfg){
 			cfg = {};
@@ -698,97 +699,126 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			
 			if(self._environment=='nodejs'){
 				var mixinClass= false;
-				//try and load the mixin from the standard paths
-				try{
-					mixinClass = require(mixinName);
-				}catch(err){
+				if(!self._mixins[mixinName]){
+					//try and load the mixin from the standard paths
+					try{
+						mixinClass = require(mixinName);
+					}catch(err){
+						if(!mixinClass){
+							mixinClass = require('./lib/mixins/'+mixinName);
+						}
+					}
+					
+					//fall back to the mixin folder
 					if(!mixinClass){
-						mixinClass = require('./lib/mixins/'+mixinName);
+						console.log("STILL NOT FOUND");
 					}
-				}
 				
-				//fall back to the mixin folder
-				if(!mixinClass){
-					console.log("STILL NOT FOUND");
-				}
-				
-				for(var x in mixinClass){
-					if(x!='init'){
-						self[x] = mixinClass[x];
+					self._mixins[mixinName] = {
+						name: mixinName,
+						params: mixinParams
 					}
-				}
-				
-				if(!mixinParams){
-					mixinParams = {};
-				}
-				
-				mixinClass.init.call(self, mixinParams, function(){
-					if(callback){
-						callback.call(self);	
-					}	
-				});
-				
-			}else{
-
-				//first try finding the mixin as is
-				if(self.debug){console.log('Mixin: Checking without modification')}
-				require([mixinName], function(mixinClass){
+					
 					for(var x in mixinClass){
 						if(x!='init'){
 							self[x] = mixinClass[x];
 						}
 					}
+					
+					if(!mixinParams){
+						mixinParams = {};
+					}
+					
 					mixinClass.init.call(self, mixinParams, function(){
 						if(callback){
 							callback.call(self);	
-						}
-						self.emit('Mixin.Ready', mixinClass, mixinParams);
-					});
-				},
-				function(){
-					require(['mixins/'+mixinName], function(mixinClass){
-						//if(self.debug) console.log(arguments);
+						}	
+					});	
+				}else{
+					console.log('Already Mixed In: '+name);
+					if(callback){
+						callback.call(self);
+					}
+				}
+			}else{
+				if(!self._mixins[mixinName]){
+					//first try finding the mixin as is
+					if(self.debug){console.log('Mixin: Checking without modification')}
+					require([mixinName], function(mixinClass){
 						for(var x in mixinClass){
 							if(x!='init'){
 								self[x] = mixinClass[x];
 							}
 						}
-
-						mixinClass.init.call(self, mixinParams);
-						self.emit('Mixin.Ready', mixinClass, mixinParams);
-						if(callback){
-							callback.call(self);	
-						}
-					}, function(){
-						if(self.debug) console.log('Mixin: Checking node_modules Folder');
-						//finally, try a node_modules folder
-						require(['node_modules/'+mixinName], function(mixinClass){
+						mixinClass.init.call(self, mixinParams, function(){
+							self._mixins[mixinName] = {
+								name: mixinName,
+								params: mixinParams
+							}
+							if(callback){
+								callback.call(self);	
+							}
+							self.emit('Mixin.Ready', mixinClass, mixinParams);
+						});
+					},
+					function(){
+						require(['mixins/'+mixinName], function(mixinClass){
+							//if(self.debug) console.log(arguments);
 							for(var x in mixinClass){
 								if(x!='init'){
 									self[x] = mixinClass[x];
 								}
 							}
+	
 							mixinClass.init.call(self, mixinParams);
-
+							self._mixins[mixinName] = {
+								name: mixinName,
+								params: mixinParams
+							}
 							self.emit('Mixin.Ready', mixinClass, mixinParams);
 							if(callback){
 								callback.call(self);	
 							}
-
+							
 						}, function(){
-							self.emit('FluxNode.Error', {
-								number: 50000,
-								message: "Failed to load: "+mixinName
+							if(self.debug) console.log('Mixin: Checking node_modules Folder');
+							//finally, try a node_modules folder
+							require(['node_modules/'+mixinName], function(mixinClass){
+								for(var x in mixinClass){
+									if(x!='init'){
+										self[x] = mixinClass[x];
+									}
+								}
+								mixinClass.init.call(self, mixinParams);
+	
+								self._mixins[mixinName] = {
+									name: mixinName,
+									params: mixinParams
+								}
+	
+								self.emit('Mixin.Ready', mixinClass, mixinParams);
+								if(callback){
+									callback.call(self);	
+								}
+	
+							}, function(){
+								self.emit('FluxNode.Error', {
+									number: 50000,
+									message: "Failed to load: "+mixinName
+								});
+								console.log('load error');
+								console.log(arguments);
+								console.log('FAILED LOAD');
+								console.log(self);
+								console.log(mixinName);
+								self.emit('FluxNode.Error', mixinName, mixinParams);
 							});
-							console.log('load error');
-							console.log(arguments);
-							console.log('FAILED LOAD');
-							console.log(self);
-							console.log(mixinName);
-							self.emit('FluxNode.Error', mixinName, mixinParams);
 						});
 					});
-				});
+				}else{
+					console.log('Already Mixed In: '+name);
+					callback.call(self);
+				}
 			}
 		}
 		
