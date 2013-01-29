@@ -37,7 +37,12 @@ function wsTunnelBuilder(util, EventEmitter2, Tunnel){
 			self.status = 'disconnected';
 			self.emit('disconnect', self);
 		});
-		
+			
+		self.status = 'pending';
+		self.send({
+			topic: 'init',
+			id: self.localId
+		})
 		if(cb){
 			cb(self, socket);
 		}
@@ -52,7 +57,28 @@ function wsTunnelBuilder(util, EventEmitter2, Tunnel){
 	function recieve(data){
 		var self = this;
 		var message = JSON.parse(data);
-		self.emit('message', self, message);
+		switch(message.topic){
+			case 'init':
+				self.remoteId = message.id;
+				self.send({
+					topic: 'init_response',
+					id: self.localId
+				});
+				self.status = 'ready';
+				self.emit('Tunnel.Ready', self);
+				break;
+			case 'init_reponse':
+				self.remoteId = message.id;
+				self.status = 'ready';
+				self.emit('Tunnel.Ready', self);
+				break;
+			default:
+				if(self.status=='ready'){
+					self.emit('message', self, message);			
+				}
+				break;
+		}
+		
 	}
 	
 	function close(){

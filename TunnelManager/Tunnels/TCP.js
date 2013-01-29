@@ -46,9 +46,17 @@ function tcpTunnelBuilder(util, EventEmitter2, Tunnel){
 			self.emit('disconnect', self);
 		});
 		
+		self.status = 'pending';
+		
+		self.send({
+			topic: 'init',
+			id: self.localId
+		});
+		
 		if(cb){
 			cb(self, socket);
 		}
+		
 		return true;
 	}
 	
@@ -68,14 +76,48 @@ function tcpTunnelBuilder(util, EventEmitter2, Tunnel){
 		if(messages.length==0){
 			self.emit('message', self, JSON.parse(dataBuffer.toString().replace('\0', '')));	
 		}else{
-			for(var i=0;i<messages.length;i++){
+			for(var i=0;i<messages.length-1;i++){
 				try{
 					var msg=JSON.parse(messages[i]);
-					self.emit('message', self, msg);
+					if(messages[i]!=''){
+						if(msg.topic){
+							switch(msg.topic){
+								case 'init':
+									//we need to store the remoteId
+									self.remoteId = msg.id;
+									//now send a response
+									self.send({
+										topic: 'init_response',
+										message:{
+											id: self.localId
+										}
+									});
+									self.status = 'ready';
+									self.emit('Tunnel.Ready', self);
+									break;
+								case 'init_response':
+									//we need to store the remoteId
+									self.remoteId = msg.message.id;
+									self.status = 'ready';
+									self.emit('Tunnel.Ready', self);
+									break;
+								default:
+									if(self.status=='ready'){
+										self.emit('message', self, msg);	
+									}else{
+										console.log('TUNNEL NOT READY');
+									}
+									
+									break;
+							}	
+						}	
+					}
 				}catch(e){
+					console.log(e);
 					if(messages[i]){
 						console.log("TOO MANY MESAGES");
-						console.log(messages[i]);	
+						console.log(messages[i]);
+						var msg=JSON.parse(messages[i]);	
 					}
 				}
 				

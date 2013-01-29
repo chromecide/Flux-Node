@@ -13,7 +13,7 @@ if (typeof define === 'function' && define.amd) {
 	exports.TunnelManager = TunnelManagerBuilder(util, EventEmitter2, Tunnel);
 }
 
-var debug = true;
+var debug = false;
 var allowRelay = false;
 var tunnels = {};
 var rulesTable = [
