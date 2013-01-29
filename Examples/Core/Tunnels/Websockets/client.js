@@ -9,7 +9,7 @@ require(['FluxNode'], function(FN){ //successful load of dependencies
 	new FluxNode({
 		mixins:[
 			{
-				name: 'websockets'
+				name: 'WebSocketTunnels/'
 			}
 		]
 	}, function(nd){

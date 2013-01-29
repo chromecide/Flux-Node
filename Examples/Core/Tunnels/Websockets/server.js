@@ -3,7 +3,15 @@ var FluxNode = require('../../../../FluxNode').FluxNode;
 new FluxNode({
 	mixins:[
 		{
-			name: 'websockets'
+			name: 'WebsocketTunnels'
+		},
+		{
+			name: 'Webserver',
+			options: {
+				port:8081,
+				webroot: __dirname,
+				autoStart: true
+			}
 		}
 	]
 }, function(myNode){
