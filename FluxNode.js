@@ -152,7 +152,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				smCallback = cfg.stores.pop();
 			}
 		}else{
-			console.log('creating default store');
 			cfg.stores = [{
 				type: 'Memory',
 				options:{

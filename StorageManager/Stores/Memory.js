@@ -16,10 +16,11 @@ if (typeof define === 'function' && define.amd) {
 
 function StoreBuilder(util, EventEmitter2, Store){
 	
-	function MemoryStore(cfg){
+	function MemoryStore(cfg, callback){
 		
 		var self = this;
-		Store.call(this, cfg);
+		Store.apply(this, cfg);
+		console.log('BACK');
 		self.configureStore = configureStore;
 		self.save = save;
 		self.find = find;
@@ -28,21 +29,29 @@ function StoreBuilder(util, EventEmitter2, Store){
 		self.indexList = {};
 		
 		self.defaultChannel = {};
+		
 		if(cfg){
-			self.configureStore(cfg);
+			self.configureStore(cfg, function(){
+				self.status = 'ready';
+		
+				self.emit('Store.Ready', false, self);
+				if(callback){
+					callback(cfg, self);
+				}
+			});
+		}else{
+			self.status = 'ready';
+		
+			self.emit('Store.Ready', false, self);
+			if(callback){
+				callback(cfg, self);
+			}
 		}
-		self.status = 'ready';
-		
-		// this is here because the store is ready instantly, any code within the new FluxNode callback will never recieve the event,
-		setTimeout(function(){
-			self.emit('Store.Ready', false, self);	
-		}, 1000);
-		
 	}
 	
 		util.inherits(MemoryStore, Store);
 	
-	function configureStore(cfg){
+	function configureStore(cfg, callback){
 		var self = this;
 		
 		if(cfg.defaultChannel){
@@ -62,6 +71,9 @@ function StoreBuilder(util, EventEmitter2, Store){
 		
 		if(cfg.data){
 			self.records = data;
+		}
+		if(callback){
+			callback();
 		}
 	}
 	

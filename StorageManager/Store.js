@@ -14,11 +14,12 @@ if (typeof define === 'function' && define.amd) {
 
 function StoreBuilder(util, EventEmitter2){
 
-	function Store(cfg){
+	function Store(cfg, callback){
 		var self = this;
 		self._environment = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? 'nodejs' : 'browser');
 		self.collections = [];
 		self.records = [];
+		
 		EventEmitter2.call(
 			self,
 			{
@@ -36,6 +37,10 @@ function StoreBuilder(util, EventEmitter2){
 					self[key] = cfg[key];
 					break;
 			}
+		}
+		
+		if(callback){
+			callback(cfg, self);
 		}
 	}
 	

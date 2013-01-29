@@ -44,7 +44,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		}
 		
 		if(!cfg.stores || cfg.stores.length==0){
-			cfg.stores = [{
+			/*cfg.stores = [{
 				type: 'Memory',
 				options:{
 					channels:[
@@ -53,13 +53,13 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				},
 				defaultChannel: 'master',
 				isDefault: true
-			}];
+			}];*/
 		}else{
 			console.log('DEF SUPPLIED');
 			console.log(cfg.stores);
 		}
 		
-		self.factory('Memory', function(MemStore){
+		/*self.factory('Memory', function(MemStore){
 			self.trashStore = new MemStore({
 				type: 'Memory',
 				options:{
@@ -69,7 +69,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 				},
 				defaultChannel: 'master'
 			});	
-		});
+		});*/
 		/*
 		if(cfg){
 			self.configure(cfg);	
@@ -93,10 +93,12 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 					var finishedStores = 0;		
 					
 					function storeCreateLoop(){
+						
 						if(stores.length==0){
 							if(callback){
 								callback.call(self, false, cfg);
 							}
+							
 							self.emit('StorageManager.Ready', false, self);
 							return;
 						}
@@ -115,45 +117,14 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 					
 					storeCreateLoop();
 					
-					/*for(var storeIdx in stores){
-						
-						
-						
-						var storeCfg = stores[storeIdx];
-						
-						self.createStore(storeCfg, function(createErr, store){
-							
-							if(!createErr){
-								if(finishedStores==0 || storeCfg.isDefault===true){ //the first store to be added will be the default store, unless a later one has isDefault===true
-									console.log('SETTING DEFAULT STORE');
-									console.log(store);
-									self.defaultStore = store;
-								}	
-							}
-							
-							finishedStores++;
-							if(err!==false){
-								err = createErr;
-							}
-							if(finishedStores==numStores || err){
-								if(callback){
-									callback.call(self, err, self._config);
-								}
-								self.emit('StorageManager.Ready', createErr, self);
-							}
-						});
-					}	*/
 					break;
 			}
 		}
 		
-		if(!cfg.stores){
-			
-			if(callback){
-				callback.call(self, err, self._config);
-			}
-			self.emit('StorageManager.Ready', err, self);
+		if(callback){
+			callback.call(self, err, self._config);
 		}
+		self.emit('StorageManager.Ready', err, self);
 	}
 	
 	StorageManager.prototype.factory = function(type, callback){
@@ -557,27 +528,58 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	StorageManager.prototype.createStore = function(cfg, callback){
 		var self = this;
 		//try{
-			
-			self.factory(cfg.type, function(storeDef){
-				var newStore = new storeDef(cfg.options);
-			
-				newStore.once('Store.Ready', function(err, store){
-						
-					if(!cfg.id){
-						cfg.id = generateID();
-					}
-					 
-					if(cfg.id){
-						self.registerStore(cfg.id, newStore, callback);
-					}else{
-						if(callback && (typeof callback)=='function'){
-							callback(false, newStore);
+			console.log('creating store: '+cfg.type);
+			if(cfg.type){
+				self.factory(cfg.type, function(storeDef){
+					console.log(storeDef);
+					new storeDef(cfg.options, function(cfg, newStore){
+						if(newStore.status=='ready'){
+							console.log('ready');
+							if(!cfg.id){
+								cfg.id = generateID();
+							}
+							 
+							if(cfg.id){
+								console.log('JGHGHGH');
+								self.registerStore(cfg.id, newStore, callback);
+							}else{
+								if(callback && (typeof callback)=='function'){
+									callback(false, newStore);
+								}
+							}
+							
+							self.emit('StorageManager.StoreReady', false, newStore);
+							
+						}else{
+							console.log(newStore);
+							console.log('WAITING');
+							console.log(cfg);
+							newStore.once('Store.Ready', function(err, store){
+								console.log('READY');
+								if(!cfg.id){
+									cfg.id = generateID();
+								}
+								 
+								if(cfg.id){
+									console.log('JGHGHGH');
+									self.registerStore(cfg.id, newStore, callback);
+								}else{
+									if(callback && (typeof callback)=='function'){
+										callback(false, newStore);
+									}
+								}
+								self.emit('StorageManager.StoreReady', err, store);
+							});	
 						}
-					}
-					self.emit('StorageManager.StoreReady', err, store);
-				});
-				
-			});
+					});
+				});	
+			}else{
+				if(callback){
+					callback(true, {
+						message: 'No type supplied'
+					});
+				}
+			}
 				
 		/*}catch(e){
 			console.log(e);
@@ -594,7 +596,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 	StorageManager.prototype.registerStore = function(id, store, callback){
 		var self = this;
 		self.stores[id] = store;
-		
+		console.log('registering store');
 		
 		store.on('Store.RecordSaved', function(err, records){
 			self.emit('StorageManager.RecordSaved', err, records);
@@ -603,9 +605,8 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 		self.emit('StorageManager.StoreRegistered', store);
 		
 		if(callback){
-			if((typeof callback)=='function'){
-				callback(false, store);
-			}	
+			console.log('calling back');
+			callback(false, store);	
 		}
 	}
 	
