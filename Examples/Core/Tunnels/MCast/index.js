@@ -1,12 +1,20 @@
 var FluxNode = require('../../../../FluxNode').FluxNode;
-var currentMessageNum = 1;
+
 new FluxNode({
 	id: 'Node3',
+	//debug: true,
 	listeners:{
 		'Tunnel.Ready': function(destination, tunnel){
 			var thisNode = this;
-			thisNode.sendEvent(destination, 'MESSAGE TEST-'+currentMessageNum, {});
-			currentMessageNum++;
+			if(!thisNode.currentMessageNum){
+				thisNode.currentMessageNum = 1;
+			}
+			
+			thisNode.sendEvent(destination, 'MessageTest', {
+				number: thisNode.currentMessageNum
+			});
+			
+			thisNode.currentMessageNum++;
 		}
 	},
 	mixins:[
