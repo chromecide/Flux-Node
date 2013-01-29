@@ -4,16 +4,16 @@ var NodePort = 9000;
 var FluxNode = require('../../../../FluxNode.js').FluxNode;
 	
 new FluxNode({
-	name: 'Flux Node 1',
+	id: 'FluxNode1',
 	listeners:{
 		'TCPTunnels.Listening': function(){
 			console.log('Listening for FluxNode Connections');
 		},
 		'Tunnel.Ready': function(destination, tunnel){
-			console.log('Tunnel Ready for: '+tunnel.name+' ('+destination+')');
+			console.log('Tunnel Ready for: '+destination);
 		},
 		'Tunnel.Closed': function(destination){
-			console.log('Tunnel Closed for: '+tunnel.name+' ('+destination+')');
+			console.log('Tunnel Closed for: '+destination);
 		},
 		'MyCustomMessage': function(message, rawMessage){
 			console.log(message);

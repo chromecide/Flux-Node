@@ -7,11 +7,11 @@ var remotePort = 9000;
 var FluxNode = require('../../../../FluxNode.js').FluxNode;
 	
 new FluxNode({
-	name: 'Flux Node 2',
+	id: 'FluxNode2',
 	listeners:{
 		'Tunnel.Ready': function(destination, tunnel){
 			var thisNode = this;
-			console.log('Tunnel Ready for: '+tunnel.name+' ('+destination+')');
+			console.log('Tunnel Ready for: '+destination);
 			//send a custom message
 			thisNode.sendEvent(destination, 'MyCustomMessage', {
 				MyMessage: 'MyValue',
@@ -19,7 +19,7 @@ new FluxNode({
 			});
 		},
 		'Tunnel.Closed': function(destination){
-			console.log('Tunnel Closed for: '+tunnel.name+' ('+destination+')');
+			console.log('Tunnel Closed for: '+destination);
 		}
 	},
 	mixins:[
