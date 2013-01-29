@@ -13,7 +13,7 @@ if (typeof define === 'function' && define.amd) {
 	exports.TunnelManager = TunnelManagerBuilder(util, EventEmitter2, Tunnel);
 }
 
-var debug = false;
+var debug = true;
 var allowRelay = false;
 var tunnels = {};
 var rulesTable = [
@@ -63,7 +63,7 @@ function TunnelManagerBuilder(util, EventEmitter2, Tunnel){
 				
 				//fallback to the tunnels directory
 				if(!tunnelDef){
-					console.log(__dirname+'/Tunnels/'+type);
+					//console.log(__dirname+'/Tunnels/'+type);
 					tunnelDef = require(__dirname+'/Tunnels/'+type);	
 				}
 				
@@ -130,7 +130,7 @@ function configure(cfg, callback){
 				var newTunnel = new tunnelDef(tunnel.options);
 				newTunnel.remoteID = tunnel.destination;
 				newTunnel.on('Tunnel.Ready', function(){
-					console.log('registering tunnel');
+					//console.log('registering tunnel');
 					self.registerTunnel(tunnel.destination, newTunnel, tunnelLoop);
 				});
 				
@@ -190,6 +190,7 @@ function send(destination, topic, message, inReplyTo, callback){
 				payload._message = {
 					id: messageId,
 					sender: self.senderID,
+					destination: destination.remoteId,
 					topic: clnTopic,
 				}
 			}else{
@@ -202,6 +203,8 @@ function send(destination, topic, message, inReplyTo, callback){
 				
 				if(tunnels[destination]){
 					destination = tunnels[destination];
+				}else{
+					console.log('DEST TUNNEL NOT FOUND');
 				}
 			}
 			
@@ -247,7 +250,7 @@ function send(destination, topic, message, inReplyTo, callback){
 function recieve(tunnelObj, message){
 	var self = this;
 	if(!message._message){//not a valid FluxNode message
-		console.log(arguments);
+		//console.log(arguments);
 		return false;
 	}
 	self.allowed('recieve', tunnelObj, message.topic, message, function(err, result){
@@ -264,6 +267,33 @@ function recieve(tunnelObj, message){
 				if(!message._message.destination || message._message.destination==self.senderID){ //addressed to me, or there is no destination(i.e. everyone)
 					switch(message.topic){
 						case 'init': //introductions
+						console.log('INIT');
+							var remoteID = message._message.sender;
+							tunnelObj.initiated = true;
+							
+							if(message.message.allowRelay===true){
+								allowRelay = true;
+								tunnelObj.allowRelay = true;
+							}
+							
+							if(message.message.name){
+								tunnelObj.name = message.message.name;
+							}
+							
+							tunnelObj.remoteId = remoteID;
+							if(!tunnels[remoteID]){
+								tunnels[remoteID] = tunnelObj;
+								
+							}
+							self.send(remoteID, 'init_response', {
+								name: self.name,
+								allowRelay: allowRelay
+							});
+						
+							self.emit('Tunnel.Ready', remoteID, tunnelObj);
+							break;
+						case 'init_response':
+							console.log('INIT RESPONSE');
 							var remoteID = message._message.sender;
 							tunnelObj.initiated = true;
 							
@@ -312,11 +342,20 @@ function registerTunnel(remoteID, tunnelObj, callback){
 	var self = this;
 	
 	if(tunnels[remoteID]){
+		console.log('disconnecting');
 		deregisterTunnel(remoteID);
 	}
 	
 	if(!remoteID){//we need to do some comms with the other end to introduce ourselves
 		tunnelObj.localId = self.senderID;
+		if(tunnelObj.status=='ready'){
+			self.emit('Tunnel.Ready', remoteID, tunnelObj);
+		}else{
+			tunnelObj.on('Tunnel.Ready', function(tunnelObj){
+				self.emit('Tunnel.Ready', remoteID, tunnelObj);	
+			});	
+		}
+		
 		tunnelObj.on('message', function(tunnelObj, message){
 			self.recieve(tunnelObj, message);
 		});
@@ -325,13 +364,10 @@ function registerTunnel(remoteID, tunnelObj, callback){
 			self.deregisterTunnel(tunnel.remoteId);
 		});
 		
-		self.send(tunnelObj, 'init', {
-			name: self.name,
-			allowRelay: allowRelay
-		});
 	}else{
 		tunnelObj.localId = self.senderID;
 		tunnelObj.remoteId = remoteID;
+		
 		tunnelObj.on('message', function(tunnelObj, message){
 			self.recieve(tunnelObj, message);
 		});
@@ -340,12 +376,16 @@ function registerTunnel(remoteID, tunnelObj, callback){
 			self.deregisterTunnel(remoteID);
 		});
 		
-		self.send(tunnelObj, 'init', {
-			allowRelay: allowRelay,
-			name: self.name
-		});
+		tunnels[remoteID] = tunnelObj;
 		
-		tunnels[tunnelObj.remoteID] = tunnelObj;
+		
+		if(tunnelObj.status=='ready'){
+			self.emit('Tunnel.Ready', remoteID, tunnelObj);
+		}else{
+			tunnelObj.on('Tunnel.Ready', function(tunnelObj){
+				self.emit('Tunnel.Ready', remoteID, tunnelObj);	
+			});	
+		}
 	}
 	
 	if(callback){
