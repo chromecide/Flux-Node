@@ -15,8 +15,8 @@ new FluxNode({
 					{
 						name: 'FluxNode',
 						options:{
-							events: '*',
-							multicast: '224.0.0.43'
+							events: [],
+							//multicast: '224.0.0.43'
 						}
 					}
 				]
@@ -24,7 +24,8 @@ new FluxNode({
 		}
 	]
 }, function(thisNode){
-	setInterval(function(name, message){
+	
+	/*setInterval(function(name, message){
 		thisNode.MCast_sendMessage(name, message);
 	}, 1000, 'FluxNode', {
 		topic: thisNode.id+'.mcast.heartbeat',
@@ -32,5 +33,5 @@ new FluxNode({
 			port: 8080,
 			type: 'tcp'
 		}
-	});
+	});*/
 });
