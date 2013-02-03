@@ -32,6 +32,8 @@ if (typeof define === 'function' && define.amd) {
 			name = name.name;
 		}
 		
+		this.name = name;
+		
 		if(fields){
 			if(Array.isArray(fields)){
 				for(var i=0;i<fields.length;i++){
@@ -152,11 +154,30 @@ if (typeof define === 'function' && define.amd) {
 	}
 	
 	model.prototype.addField = function(name, fieldCfg, callback){
+		
+		if((typeof name)=='object'){
+			if((typeof fieldCfg)=='function'){
+				callback = fieldCfg;
+			}
+			fieldCfg = name;
+			name = name.name;
+		}
+		
 		this._fields[name] = fieldCfg;
+		if(callback){
+			callback(false, fieldCfg);
+		}
 	}
 	
 	model.prototype.removeField = function(name, validator, callback){
 		delete this._fields[name];
+	}
+	
+	model.prototype.getField = function(name, callback){
+		if(callback){
+			callback(false, this._fields[name]);
+		}
+		return this._fields[name];
 	}
 	
 	model.prototype.getFields = function(){

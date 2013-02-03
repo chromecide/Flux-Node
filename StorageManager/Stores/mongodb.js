@@ -8,19 +8,29 @@ if (typeof define === 'function' && define.amd) {
 } else {
 	var util = require('util'), 
 	EventEmitter2 = require('EventEmitter2').EventEmitter2,
-	Store = require('../Store').Store,
-	Mongo = require('mongodb');
-	var fnConstruct = StoreBuilder(util, EventEmitter2, Store, Mongo);
+	StoreCtr = require('../Store').Store,
+	channelCtr = require('../Channel.js').Channel,
+	modelCtr = require('../Model.js').Model,
+	recordCtr = require('../Record.js').Record,
+	Mongo = require('mongodb')
+	;
+	
+	var fnConstruct = StoreBuilder(util, EventEmitter2, StoreCtr, channelCtr, modelCtr, recordCtr, Mongo);
+	
 	exports.Store = fnConstruct;
 }
 
-function StoreBuilder(util, EventEmitter2, Store, mongo){
+function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, mongo){
 
-	function MongoDBStore(cfg){
+	function MongoDBStore(cfg, callback){
 		var self = this;
 		self._environment = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? 'nodejs' : 'browser');
 		
 		self.configureStore = configureStore;
+		self.getChannel = getChannel;
+		self.addChannel = addChannel;
+		self.removeChannel = removeChannel;
+		
 		self.save = save;
 		self.find = find;
 		self.findOne = findOne;
@@ -41,8 +51,28 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		
 		try{
 			self.db.open(function(err, db) {
+				
 				if(!err) {
-					self.emit('Store.Ready', err, self);
+					//make sure the database has the required built-in tables
+					db.collection('_models', function(err, coll){
+						coll.find({name:'_model'}).toArray(function(err, items){
+							if(items.length==0){
+								coll.insert({name: '_model'}, {w:1}, function(err, savedItems){
+									self.status = 'ready';
+									self.emit('Store.Ready', err, self);
+									if(callback){
+										callback(cfg, self);
+									}	
+								});
+							}else{
+								self.status = 'ready';
+								self.emit('Store.Ready', err, self);
+								if(callback){
+									callback(cfg, self);
+								}		
+							}
+						});
+					});
 				}else{
 					console.log(err);
 				}
@@ -80,6 +110,81 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		}else{
 			self.port = 27017;
 		}
+	}
+	
+	function getChannel(name, callback){
+		var db = this.db;
+		var self = this;
+		
+		var collection = db.collection(name);
+		
+		db.collection('_models').find({channel: name}).toArray(function(err, items){
+			var chanCfg = {
+				name: collection.collectionName,
+				store: self
+			};
+			 
+			if(items.length>0){
+				
+				chanCfg.model = new Model(items[0]);	
+			}
+			
+			var chan = new Channel(chanCfg);
+			if(callback){
+				callback(false, chan);
+			}
+		});
+		
+	}
+	
+	function addChannel(name, callback){
+		var self = this;
+		var db = self.db;
+		var channelObj = name;
+		if((name instanceof Channel)==false){
+			if((typeof name)=='string'){
+				name = {
+					name: name
+				}
+			}
+			channelObj = new Channel(name);
+		}
+		
+		db.createCollection(channelObj.name, function(err, chan){
+			var model = channelObj.getModel(); 
+			if(model){
+				db.collection('_models').find({
+					name: model.name,
+					channel: channelObj.name
+				}).toArray(function(err, modelDefs){
+					if(modelDefs.length==0){
+						db.collection('_models').insert({
+							name:model.name,
+							channel: channelObj.name,
+							fields: model.getFields()
+						}, function(err, recs){
+							console.log('==========');
+							if(callback){
+								callback(err, channelObj);
+							}
+						});
+					}else{
+						if(callback){
+							callback(err, channelObj);
+						}
+					}
+				});
+			}else{
+				if(callback){
+					callback(err, channelObj);
+				}	
+			}
+			
+		});
+	}
+	
+	function removeChannel(){
+		
 	}
 	
 	function save(records, channels, callback){
@@ -205,6 +310,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		var err = false;
 		var queryType = typeof query;
 		var returnRecords = [];
+		
 		if(typeof fields =='function'){
 			callback = fields;
 			fields = {};
@@ -264,6 +370,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 			case 'object':
 				var returnRecords = [];
 				var didErr = false;
+				
 				function objectSearchLoop(){
 					
 					if(channels.length==0){
@@ -280,6 +387,7 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 							didErr = true;
 						}else{
 							for(var i=0;i<recs.length;i++){
+								
 								returnRecords.push(recs[i]);
 							}
 						}
@@ -323,8 +431,13 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 			if(query._map){//map reduce
 				
 			}else{ //find by attribute
-				
-				self.db.collection(channel, function(err, collection){
+				var channelName = channel
+				if(channel instanceof Channel){
+					channelName = channel.name;	
+				}else{
+					channel = false;
+				}
+				self.db.collection(channelName, function(err, collection){
 					var mQuery = objectToQuery(query);
 					var queryOpts = {};
 					if(maxRecs && maxRecs>0){
@@ -335,15 +448,38 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 						var retArr = [];
 						if(cursor){
 							cursor.toArray(function(err, arr){
-								for(var idx in arr){
-									retArr[idx] = {
-										err: false,
-										record: arr[idx]
+								if(!channel){
+									self.getChannel(channelName, function(err, chan){
+										for(var idx in arr){
+											var newRec = new Record({
+												data: arr[idx],
+												channel: chan
+											});
+											retArr[idx] = {
+												err: false,
+												record: newRec
+											}
+										}
+										
+										if(callback){
+											callback(err, retArr);
+										}
+									});
+								}else{
+									for(var idx in arr){
+										var newRec = new Record({
+											data: arr[idx],
+											channel: channel
+										});
+										retArr[idx] = {
+											err: false,
+											record: newRec
+										}
 									}
-								}
-								
-								if(callback){
-									callback(err, retArr);
+									
+									if(callback){
+										callback(err, retArr);
+									}	
 								}
 							});	
 						}else{
@@ -364,6 +500,10 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		if(Array.isArray(object)){//OR query
 			console.log('OR QUERY');
 		}else{
+			if(object instanceof Record){
+				object = object._data;
+			}
+			
 			for(var key in object){
 				returnQuery[key] = {};
 				var fieldProcessed = false;
@@ -526,8 +666,34 @@ function StoreBuilder(util, EventEmitter2, Store, mongo){
 		return false;
 	}
 	
-	function remove(query){
+	function remove(query, channel, callback){
+		console.log('removing record');
 		
+		var db = this.db;
+		queryType = (typeof query);
+		var oQuery = false;
+		switch(queryType){
+			case 'string':
+				oQuery = {
+					id: query
+				};
+				break;
+			case 'object':
+				oQuery = objectToQuery(query);	
+				break;
+		}
+		
+		
+		if((typeof channel)=='string'){
+		}else{
+			channel = channel.name;
+		}
+		
+		db.collection(channel).remove(oQuery, {w:1}, function(err, result) {
+			if(callback){
+				callback(err, result);
+			}
+		});
 		return false;
 	}
 	

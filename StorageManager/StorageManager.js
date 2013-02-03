@@ -537,6 +537,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, Record, M
 			console.log('creating store: '+cfg.type);
 			if(cfg.type){
 				self.factory(cfg.type, function(storeDef){
+					
 					new storeDef(cfg.options, function(err, newStore){
 						if(newStore.status=='ready'){
 							if(!cfg.id){
@@ -607,7 +608,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, Record, M
 		self.emit('StorageManager.StoreRegistered', store);
 		
 		if(callback){
-			console.log('calling back');
 			callback(false, store);	
 		}
 	}

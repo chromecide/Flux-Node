@@ -50,13 +50,6 @@ storageManager.createStore({
 		enabled:true
 	}, 'default');
 	
-	MemStore.save({
-		DisplayName: 'SRI',
-		emailAddress: 'funkiwangchung@gmail.com',
-		password: 'abc123',
-		enabled:true
-	}, 'default');
-	
 	MemStore.findOne({emailAddress: 'chromecide@gmail.com', password: 'abc123'}, {}, 'default', function(err, records){
 		for(var i=0;i<records.length;i++){
 			var record = records[i].record;

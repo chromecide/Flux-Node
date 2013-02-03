@@ -41,6 +41,9 @@ function ChannelBuilder(util, EventEmitter2){
 			self.setModel(cfg.model);
 		}
 		
+		if(cfg.store){
+			self.setStore(cfg.store);
+		}
 		EventEmitter2.call(
 			self,
 			{
@@ -101,6 +104,7 @@ function ChannelBuilder(util, EventEmitter2){
 	
 	Channel.prototype.getModel = function(callback){
 		var model = this._model;
+		
 		if(callback){
 			callback(false, model);
 		}
@@ -168,6 +172,7 @@ function ChannelBuilder(util, EventEmitter2){
 	Channel.prototype.remove = function(record, callback){
 		if(!this._store){
 			console.log('CHANNEL HAS NO STORE');
+			console.log(this);
 			return false;
 		}
 		
@@ -177,7 +182,12 @@ function ChannelBuilder(util, EventEmitter2){
 	}
 	
 	Channel.prototype.find = function(query, callback){
+		if(!this._store){
+			console.log('CHANNEL HAS NO FIND STORE');
+			return false;
+		}
 		
+		this._store.find(query);
 	}
 	
 	Channel.prototype.findOne = function(query, callback){
