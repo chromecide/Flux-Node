@@ -1,27 +1,37 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2', 'StorageManager/Store'], function(util, EventEmitter2, Store) {
+	define(['util', 'EventEmitter2', 'StorageManager/Store', 'StorageManager/Channel', 'StorageManager/Model', 'StorageManager/Record'], function(util, EventEmitter2, Store, Channel, Model, Record) {
 		var fnConstruct = StoreBuilder(util, EventEmitter2, Store);
 		return fnConstruct;
 	});		
 } else {
 	var util = require('util'), 
 	EventEmitter2 = require('eventemitter2').EventEmitter2,
-	Store = require('../Store').Store;
+	StoreCtr = require('../Store').Store,
+	channelCtr = require('../Channel.js').Channel,
+	modelCtr = require('../Model.js').Model,
+	recordCtr = require('../Record.js').Record
+	;
 	
-	var fnConstruct = StoreBuilder(util, EventEmitter2, Store);
+	var fnConstruct = StoreBuilder(util, EventEmitter2, StoreCtr, channelCtr, modelCtr, recordCtr);
 	exports.Store = fnConstruct;
 }
 
-function StoreBuilder(util, EventEmitter2, Store){
+function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 	
 	function MemoryStore(cfg, callback){
 		
 		var self = this;
+		
 		Store.apply(this, cfg);
 		
 		self.configureStore = configureStore;
+		
+		self.addChannel = addChannel;
+		self.getChannel = getChannel;
+		self.removeChannel = removeChannel;
+		
 		self.save = save;
 		self.find = find;
 		self.findOne = findOne;
@@ -77,12 +87,43 @@ function StoreBuilder(util, EventEmitter2, Store){
 		}
 	}
 	
-	function addChannel(channelName){
-		var self = this;
-		if(!self.records[channelName]){
-			self.records[channelName] = [];
+	/*
+	 * Channel Functions
+	 */
+	
+	function getChannel(channelName){
+		if(!channelName){
+			return this._channels;
+		}
+		//console.log(this._channels[channelName]);
+		return this._channels[channelName];
+	}
+	
+	function addChannel(name, callback){
+		var channelObj = name;
+		if((typeof channelName)=='string'){
+			channelObj = new Channel({
+				name: channelName
+			});
+		}else{
+			if((name instanceof Channel)==false){
+				channelObj = new Channel(name);
+			}
+		}
+		name = channelObj.name;
+		if(!this._channels[name]){
+			channelObj.setStore(this);
+			this._channels[name] = channelObj;
+			this._records[name] = [];
 		}
 	}
+	
+	function removeChannel(channelName){
+		delete this._channels[channelName];
+	}
+	/*
+	 * End Channel Functions
+	 */
 	
 	function save(records, channel, callback){
 		var self = this;
@@ -100,6 +141,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 				channel = self.defaultChannel;
 			}
 		}
+		
 		var ReturnRecords = [];
 		
 		function doSaveRecords(){
@@ -128,25 +170,37 @@ function StoreBuilder(util, EventEmitter2, Store){
 		
 		var self = this;
 		var err = false;
-		if(!record.id){
-			record.id = self.generateID();
+		if((typeof channel)=='string'){
+			channel = self.getChannel(channel);	
 		}
 		
-		if(!self.records[channel]){
-			self.records[channel] = []
+		if((record instanceof Record)==false){
+			record = new Record({
+				channel: channel, 
+				data: record
+			});
+		}
+		
+		if(!record.get('id')){
+			record.set('id', record.generateId());
+		}
+		
+		if(!self._records[channel.name]){
+			self._records[channel.name] = [];
 		}else{
-			var chanRecords = self.records[channel];
+			var chanRecords = self._records[channel.name];
 			for(var i=0;i<chanRecords.length;i++){
 				var existingRecord = chanRecords[i]; 
-				if(record.id==existingRecord.id){
+				if(record.get('id')==existingRecord.id){
 					chanRecords.splice(i,1);
 				}
 			}
-			self.records[channel] = chanRecords;
+			self._records[channel.name] = chanRecords;
 		}
 		
-		var oldLength = self.records[channel].length;
-		var newLength = self.records[channel].push(record);
+		var oldLength = self._records[channel.name].length;
+		
+		var newLength = self._records[channel.name].push(record._data);
 		
 		if(newLength!=oldLength+1){
 			err = true;	
@@ -209,6 +263,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 					
 					var retRecs = queryByObject.call(self, query, fields, channel, false);
 					for(var i=0;i<retRecs.length;i++){
+						
 						returnRecords.push(retRecs[i]);	
 					}
 					 
@@ -237,19 +292,29 @@ function StoreBuilder(util, EventEmitter2, Store){
 		var retArray = [];
 		
 		var queryFunctions = objectToQuery(query);
+		//console.log(queryFunctions.emailAddress.toString());
+		if((typeof channel)=='string'){
+			channel = self.getChannel(channel);
+		}
 		
-		if(self.records[channel]){
-			for(var recIdx=0;recIdx<self.records[channel].length;recIdx++){
+		if(self._records[channel.name]){
+			for(var recIdx=0;recIdx<self._records[channel.name].length;recIdx++){
 				if(maxRecs!=false && retArray.length==maxRecs){
 					break;
 				}else{
-					if(self.validateRecord(self.records[channel][recIdx], queryFunctions)){
-						retArray.push(self.records[channel][recIdx]);
+					if(self.validateRecord(self._records[channel.name][recIdx], queryFunctions)){
+					
+						var newRec = new Record({
+							channel: channel,
+							data: self._records[channel.name][recIdx]
+						});
+
+						retArray.push(newRec);//self._records[channel.name][recIdx]);
 					}	
 				}
 			}	
 		}else{
-			console.log('Channel '+channel+' not found');
+			console.log('Channel '+channel.name+' not found');
 		}
 		
 		for(var idx in retArray){
@@ -516,7 +581,7 @@ function StoreBuilder(util, EventEmitter2, Store){
 	}
 	
 	function findOne(query, fields, channels, callback){
-		console.log('findOne');
+		
 		var self = this;
 		var err = false;
 		var queryType = typeof query;
@@ -601,18 +666,26 @@ function StoreBuilder(util, EventEmitter2, Store){
 	
 	function remove(query, channel, callback){
 		var self = this;
+		if(query instanceof Record){
+			//console.log(query);
+			var recId = query.get('id');
+			query = recId;
+		}
+		
 		var queryType = typeof query;
+		
 		switch(queryType){
 			case 'string': //assume it's an id
-				for(var recIdx in self.records[channel]){
-					if(self.records[Channel][recIdx].id==query){
-						delete self.records[Channel][recIdx];
+				for(var recIdx in self._records[channel.name]){
+					if(self._records[channel.name][recIdx].id==query){
+						self._records[channel.name].splice(recIdx, 1);
 						break; //there is only going to be one item with the supplied ID
 					}
 				}
 				break;
 			case 'object':
-				returnRecords = queryByObject.call(self, query, channel, 1);
+				
+				returnRecords = queryByObject.call(self, query, {}, channel, 1);
 				for(var recIdx in returnRecords){
 					self.remove(returnRecords[recIdx].id, channel, callback);
 				}

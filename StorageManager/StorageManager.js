@@ -1,20 +1,22 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2', 'StorageManager/Store', 'StorageManager/Collection', 'Stores/Memory'], function(util, EventEmitter2, Store, Collection, MemStore) {
+	define(['util', 'EventEmitter2', 'StorageManager/Store', 'StorageManager/Collection', 'StorageManager/Record', 'StorageManager/Model','Stores/Memory'], function(util, EventEmitter2, Store, Collection, Record, Model, MemStore) {
 		return StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore);
 	});		
 } else {
 	var util = require('util'), 
 	EventEmitter2 = require('eventemitter2').EventEmitter2,
-	Store = require(__dirname+'/Store.js').Tunnel;
+	Store = require(__dirname+'/Store.js').Store;
 	Collection = require(__dirname+'/Collection.js').Collection;
+	Record = require(__dirname+'/Record.js').Record;
+	Model = require(__dirname+'/Model.js').Model;
 	var MemoryStore = require(__dirname+'/Stores/Memory.js').Collection;
 	//svar fnConstruct = TunnelManager;
-	exports.StorageManager = StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemoryStore);
+	exports.StorageManager = StorageManagerBuilder(util, EventEmitter2, Store, Collection, Record, Model, MemoryStore);
 }
 
-function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore){
+function StorageManagerBuilder(util, EventEmitter2, Store, Collection, Record, Model, MemStore){
 	
 	var StorageManager = function(cfg){
 		
@@ -31,6 +33,10 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			
 		};
 		
+		self.Store = Store;
+		self.Collection = Collection;
+		self.Record = Record;
+		self.Model = Model
 		self.stores = {};
 		self.collections = [];
 		
@@ -56,7 +62,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			}];*/
 		}else{
 			console.log('DEF SUPPLIED');
-			console.log(cfg.stores);
+			//console.log(cfg.stores);
 		}
 		
 		/*self.factory('Memory', function(MemStore){
@@ -170,9 +176,9 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 
 		if(store && store._environment){//a store object was supplied
 		}else{
-			console.log('GETTING STORE: ', store);
+			//console.log('GETTING STORE: ', store);
 			store = self.getStore(store);
-			console.log(store);
+			//console.log(store);
 		}
 		
 		store.save(records, channel, function(err, records){
@@ -531,16 +537,13 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 			console.log('creating store: '+cfg.type);
 			if(cfg.type){
 				self.factory(cfg.type, function(storeDef){
-					console.log(storeDef);
-					new storeDef(cfg.options, function(cfg, newStore){
+					new storeDef(cfg.options, function(err, newStore){
 						if(newStore.status=='ready'){
-							console.log('ready');
 							if(!cfg.id){
 								cfg.id = generateID();
 							}
 							 
 							if(cfg.id){
-								console.log('JGHGHGH');
 								self.registerStore(cfg.id, newStore, callback);
 							}else{
 								if(callback && (typeof callback)=='function'){
@@ -561,7 +564,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore)
 								}
 								 
 								if(cfg.id){
-									console.log('JGHGHGH');
 									self.registerStore(cfg.id, newStore, callback);
 								}else{
 									if(callback && (typeof callback)=='function'){

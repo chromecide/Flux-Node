@@ -1,24 +1,28 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2'], function(util, EventEmitter2) {
-		var fnConstruct = StoreBuilder(util, EventEmitter2);
+	define(['util', 'EventEmitter2', 'Channel', 'Record'], function(util, EventEmitter2, Channel) {
+		var fnConstruct = StoreBuilder(util, EventEmitter2, Channel);
 		return fnConstruct;
 	});		
 } else {
 	var util = require('util'), 
-	EventEmitter2 = require('eventemitter2').EventEmitter2;
-	var fnConstruct = StoreBuilder(util, EventEmitter2);
+	EventEmitter2 = require('eventemitter2').EventEmitter2,
+	ChannelCtr = require(__dirname+'/Channel.js').Channel,
+	ModelCtr = require(__dirname+'/Model.js').Model,
+	RecordCtr = require(__dirname+'/Record.js').Record
+	;
+	var fnConstruct = StoreBuilder(util, EventEmitter2, ChannelCtr, ModelCtr, RecordCtr);
 	exports.Store = fnConstruct;
 }
 
-function StoreBuilder(util, EventEmitter2){
+function StoreBuilder(util, EventEmitter2, Channel, Record){
 
 	function Store(cfg, callback){
 		var self = this;
 		self._environment = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? 'nodejs' : 'browser');
-		self.collections = [];
-		self.records = [];
+		self._channels = {};
+		self._records = [];
 		
 		EventEmitter2.call(
 			self,
@@ -31,7 +35,7 @@ function StoreBuilder(util, EventEmitter2){
 		for(var key in cfg){
 			switch(key){
 				case 'channels':
-					//console.log(cfg.channels);
+					//console.log(cfg.channels);	
 					break;
 				default:
 					self[key] = cfg[key];
@@ -46,6 +50,53 @@ function StoreBuilder(util, EventEmitter2){
 	
 		util.inherits(Store, EventEmitter2);
 		
+		
+	Store.prototype.addChannel = function(name, channel, callback){
+		if((typeof name)!='string'){ //a channel object or config was supplied
+			if((typeof channel)=='function'){
+				callback = channel;
+			}
+			channel = name;
+			name = channel.name;
+		}
+		
+		if(channel instanceof Channel){
+			this.channels[name] = channel;
+		}else{
+			var channel = new Channel()
+			console.log('NOT A CHANNEL INSTANCE');
+		}
+	}
+	
+	Store.prototype.getChannel = function(name, callback){
+		var chan = this.channels[name];
+		if(callback){
+			callback(chan?false:true, chan);
+		}
+		return chan;
+	}
+	
+	Store.prototype.removeChannel = function(name, callback){
+		delete this.channels[name];
+		
+		if(callback){
+			callback(false); //no error
+		}
+		
+		return true;
+	}
+	
+	Store.prototype.newRecord = function(chanName, cfg, callback){
+		var channel = this.getChannel(chanName);
+		var newRec = channel.newRecord(cfg);
+		
+		if(callback){
+			callback(newRec?false:true, newRec);
+		}
+		
+		return newRec;
+	}
+	
 	Store.prototype.generateID = function(){
 		var newID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 		    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
