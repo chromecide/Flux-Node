@@ -79,9 +79,12 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, MySQL)
 		
 		this.connection.connect();
 		
-		if(callback){
-			callback(false, cfg);
-		}
+		this.loadChannelDefinitions(function(){
+			if(callback){
+				callback(false, cfg);
+			}	
+		});
+		
 	}
 	
 	/*
