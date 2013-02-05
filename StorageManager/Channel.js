@@ -163,9 +163,11 @@ function ChannelBuilder(util, EventEmitter2){
 	}
 	
 	Channel.prototype.save = function(record, callback){
-		if(!this._engine){
-			console.log('NO ENGINE SUPPLIED FOR CHANNEL: '+this.name);
+		if(!this._store){
+			console.log('NO STORE SUPPLIED FOR CHANNEL: '+this.name);
 			return false;
+		}else{
+			this._store.save(record, this, callback);
 		}
 	}
 	
