@@ -29,8 +29,9 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, MySQL)
 		
 		self.configureStore = configureStore;
 		
-		self.addChannel = addChannel;
+		self.getChannels = getChannels;
 		self.getChannel = getChannel;
+		self.addChannel = addChannel;
 		self.removeChannel = removeChannel;
 		
 		self.save = save;
@@ -102,6 +103,14 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, MySQL)
 		return this._channels[channelName];
 	}
 	
+	function getChannels(callback){
+		
+		if(callback){
+			callback(false, this._channels);
+		}
+		return this._channels;
+	}
+	
 	function addChannel(name, callback){
 		
 		var channelObj = name;
@@ -132,9 +141,29 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, MySQL)
 	 * End Channel Functions
 	 */
 	
-	function rawQuery(sqlString, callback){
+	function rawQuery(sqlString, model, callback){
+		if((typeof model)=='function'){
+			callback = model;
+			model = false;
+		}
+		
+		var returnRecords = [];
 		this.connection.query({sql: sqlString}, function(err, results){
-			console.log(results);
+			for(var i=0;i<results.length;i++){
+				var newRecord = new Record({
+					data: results[i],
+					model: model
+				});
+				
+				returnRecords.push({
+					err: false,
+					record: newRecord
+				});
+			}
+			
+			if(callback){
+				callback(false, returnRecords);
+			}
 		});
 	}
 	
@@ -163,7 +192,9 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, MySQL)
 				self.connection.query('SHOW COLUMNS FROM '+tableName, function(err, cols){
 					for(var i=0;i<cols.length;i++){
 						var typeSet = false;
-						
+						if(cols[i].Key=='PRI'){
+							model._idField = cols[i].Field;
+						}
 						var fieldCfg = {
 							name: cols[i].Field,
 							validators:{}
@@ -225,15 +256,88 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, MySQL)
 	}
 	
 	function save(records, channel, callback){
-		if(callback){
-			callback(true, {
-				message: 'MYSQL Save not Implemented'
+		var self = this;
+		var savedRecords = [];
+		
+		if(!Array.isArray(records)){
+			records = [records];
+		}
+		
+		var error = false;
+		
+		function saveLoop(){
+			if(records.length==0){
+				if(callback){
+					callback(error, savedRecords);
+				}
+				return;
+			}
+			
+			var record = records.shift();
+			saveRecord.call(self, record, channel, function(err, savedRec){
+				if(err){
+					error = true;
+				}else{
+					savedRecords.push({
+						error: err,
+						record:savedRec
+					});
+				}
+				
+				saveLoop();
 			});
 		}
+		
+		saveLoop();
+		
 		return false;
 	}
 	
 	function saveRecord(record, channel, callback){
+		var self = this;
+		var model = channel.getModel();
+		
+		//first we need to see if the id exists in the collection
+		if(record.get(model._idField)){
+			var qry = {};
+			qry[model._idField] = record.get(model._idField);
+			
+			self.find(qry, {}, channel, function(err, recs){
+				
+				//if a record exists we need to to an update
+				if(recs.length==1){
+					var sqlString = objectToUpdate.call(self, record, channel);
+					console.log(sqlString);
+					self.connection.query(sqlString, {}, function(err, result){
+						console.log(err);
+						record._changed = {};
+						if(callback){
+							callback(err, record);
+						}
+					});	
+				}else{ //otherwise do an insert
+					var sqlString = objectToInsert.call(self, record, channel);
+					self.connection.query(sqlString, {}, function(err, result){
+						record._changed = {};
+						if(callback){
+							callback(err, record);
+						}
+					});	
+				}			
+			});
+		}else{
+			var model = channel.getModel();
+			var newId = model.generateId();
+			record.set(model._idField, newId);
+			var sqlString = objectToInsert.call(self, record, channel);
+			
+			self.connection.query(sqlString, {}, function(err, result){
+				record._changed = {};
+				if(callback){
+					callback(err, record);
+				}
+			});
+		}
 		
 	}
 	
@@ -282,7 +386,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, MySQL)
 				}
 				break;
 			case 'object':
-			console.log('OBJ');
+			
 				for(var chanIdx in channels){
 					var channel = channels[chanIdx];
 					queryByObject.call(self, query, fields, channel, false, function(err, records){
@@ -499,7 +603,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, MySQL)
 					if(objectVal.eq || !fieldProcessed){
 						objectVal = objectVal.eq?objectVal.eq:objectVal;
 						sql+=key+'=';
-						console.log(keyObj);
+						
 						if(keyObj.validators.boolean){
 							sql+=objectVal?1:0;
 						}else{
@@ -518,6 +622,117 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, MySQL)
 			}
 			
 		}
+		if(callback){
+			callback(false, sql);
+		}
+		return sql;
+	}
+	
+	function objectToInsert(object, channel, callback){
+		var self = this;
+		var returnQuery = {};
+		var emptyObj = {};
+		
+		
+		var sql = 'INSERT INTO '+channel.name+'(';
+		//console.log(object);
+		var model = object.getModel();
+		
+		var fieldSql = '';
+		var valueSql = '';
+		var isFirst = true; 
+		var fieldList = model.getFields();
+		for(var key in fieldList){
+			if(key!=model._idField){
+				var value = object.get(key);
+				
+				if(!isFirst){
+					fieldSql+=', ';
+					valueSql+=', ';
+				}else{
+					isFirst = false;
+				}
+				
+				fieldSql += key;
+				
+				if(fieldList[key].validators.date){
+					if(value){
+						value = value.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+					}
+				}
+				
+				valueSql += self.connection.escape(value);
+			}else{ //only add the id in if it was supplied
+				var value = object.get(key);
+				
+				if(value){
+					if(!isFirst){
+						fieldSql+=', ';
+						valueSql+=', ';
+					}else{
+						isFirst = false;
+					}
+					
+					fieldSql += key;
+					
+					if(fieldList[key].validators.date){
+						if(value){
+							value = value.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+						}
+					}
+					
+					valueSql += self.connection.escape(value);
+						
+				}
+			}
+		}
+		
+		sql+=fieldSql+') VALUES ('+valueSql+');';
+		
+		if(callback){
+			callback(false, sql);
+		}
+		return sql;
+	}
+	
+	function objectToUpdate(object, channel, callback){
+		var self = this;
+		var returnQuery = {};
+		var emptyObj = {};
+		
+		
+		var sql = 'UPDATE '+channel.name+' SET ';
+		//console.log(object);
+		var model = object.getModel();
+		
+		var whereSql = ' WHERE '+model._idField+'='+self.connection.escape(object.get(model._idField));
+		var valueSql = '';
+		var isFirst = true; 
+		var fieldList = model.getFields();
+		for(var key in fieldList){
+			if(key!=model._idField){
+				if(object._changed[key]){
+					var value = object.get(key);
+				
+					if(!isFirst){
+						valueSql+=', ';
+					}else{
+						isFirst = false;
+					}
+					
+					if(fieldList[key].validators.date){
+						if(value){
+							value = value.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+						}
+					}
+					
+					valueSql += key+'='+self.connection.escape(value);	
+				}
+			}
+		}
+		
+		sql+=valueSql+whereSql;
+		
 		if(callback){
 			callback(false, sql);
 		}
