@@ -200,7 +200,7 @@ function send(destination, topic, message, inReplyTo, callback){
 					destination: destination,
 					topic: clnTopic
 				}
-				
+				console.log(tunnels);
 				if(tunnels[destination]){
 					destination = tunnels[destination];
 				}else{
@@ -349,12 +349,16 @@ function registerTunnel(remoteID, tunnelObj, callback){
 	if(!remoteID){//we need to do some comms with the other end to introduce ourselves
 		tunnelObj.localId = self.senderID;
 		if(tunnelObj.status=='ready'){
-			self.emit('Tunnel.Ready', remoteID, tunnelObj);
+			
+			tunnels[tunnelObj.remoteId] = tunnelObj;
+			self.emit('Tunnel.Ready', tunnelObj.remoteId, tunnelObj);
 		}else{
 			tunnelObj.on('Tunnel.Ready', function(tunnelObj){
-				self.emit('Tunnel.Ready', remoteID, tunnelObj);	
+				tunnels[tunnelObj.remoteId] = tunnelObj;
+				self.emit('Tunnel.Ready', tunnelObj.remoteId, tunnelObj);	
 			});	
 		}
+		
 		
 		tunnelObj.on('message', function(tunnelObj, message){
 			self.recieve(tunnelObj, message);

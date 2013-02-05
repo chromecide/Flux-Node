@@ -13,7 +13,7 @@ if (typeof define === 'function' && define.amd) {
 		if((typeof check)!='number'){
 			isValid = false;
 		}else{
-			if(!isNaN(check)){
+			if(isNaN(check)){
 				isValid = false;
 			}else{
 				if(options){
