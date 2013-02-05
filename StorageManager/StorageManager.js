@@ -545,6 +545,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, Record, M
 							}
 							 
 							if(cfg.id){
+								newStore.id = cfg.id;
 								self.registerStore(cfg.id, newStore, callback);
 							}else{
 								if(callback && (typeof callback)=='function'){
@@ -555,16 +556,14 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, Record, M
 							self.emit('StorageManager.StoreReady', false, newStore);
 							
 						}else{
-							console.log(newStore);
-							console.log('WAITING');
-							console.log(cfg);
 							newStore.once('Store.Ready', function(err, store){
-								console.log('READY');
+								
 								if(!cfg.id){
 									cfg.id = generateID();
 								}
 								 
 								if(cfg.id){
+									newStore.id = cfg.id;
 									self.registerStore(cfg.id, newStore, callback);
 								}else{
 									if(callback && (typeof callback)=='function'){
@@ -612,7 +611,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, Record, M
 		}
 	}
 	
-	StorageManager.prototype.getStore = function(cfg){
+	StorageManager.prototype.getStore = function(cfg, callback){
 		var self = this;
 		
 		if(!cfg){//return the default store
@@ -634,12 +633,17 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Collection, Record, M
 		}
 		
 		for(var storeId in self.stores){
-			//console.log(self.stores[storeId]);
-			if(self.trashStore.validateRecord(self.stores[storeId], cfg)){
+			var str = self.stores[storeId];
+			if(str.validateRecord(str, cfg)){
+				if(callback){
+					callback(false, self.stores[storeId]);
+				}
 				return self.stores[storeId];
 			}
 		}
-		
+		if(callback){
+			callback(false, false);
+		}
 		return false;
 	}
 

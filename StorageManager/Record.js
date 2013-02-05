@@ -34,7 +34,8 @@ function RecordBuilder(util, EventEmitter2){
 		if(cfg.data){
 			for(var key in cfg.data){
 				self.set(key, cfg.data[key]);
-			}	
+			}
+			self._changed = {};
 		}
 		
 		EventEmitter2.call(
@@ -60,6 +61,15 @@ function RecordBuilder(util, EventEmitter2){
 		return newID;
 	}
 	
+	Record.prototype.getModel = function(callback){
+		
+		if(callback){
+			callback(false, this._model);//no error
+		}
+		
+		return this._model
+	}
+	
 	Record.prototype.setModel = function(model, callback){
 		this._model = model;
 		if(callback){
@@ -82,6 +92,7 @@ function RecordBuilder(util, EventEmitter2){
 	}
 	
 	Record.prototype.set = function(fieldName, fieldValue, callback){
+		
 		var self = this;
 		if(!this._model){
 			var oldValue = this._data[fieldName];
@@ -106,6 +117,11 @@ function RecordBuilder(util, EventEmitter2){
 					if(callback){
 						callback(oldValue, fieldValue);
 					}
+				}else{
+					console.log('NOT SETTING: '+fieldName);
+					if(callback){
+						callback(this._model);
+					}
 				}
 			});
 		}
@@ -120,14 +136,13 @@ function RecordBuilder(util, EventEmitter2){
 		return value;
 	}
 	
-	Record.prototype.save = function(){
+	Record.prototype.save = function(callback){
 		if(!this._channel){
+			console.log('NO CHANNEL FOR', this);
 			return false;
 		}
-		if(!this._data.id){
-			this.set('id', this.generateId());
-		}
-		this._channel.save(this);
+		
+		this._channel.save(this, callback);
 	}
 	
 	Record.prototype.remove = function(){

@@ -15,23 +15,39 @@ if (typeof define === 'function' && define.amd) {
 	exports.Model = model;
 }
 	//strict means ONLY the supplied fields are allowed.  if a supplied object has other fields, they will be ignored
-	function model(name, fields, callback){
+	function model(name, fields, options, callback){
 		this._fields = {
-			id: {
-				validators: {
-					required:{}
-				}
-			}
+			
 		};
+		
+		this._idField = false;
 		
 		if((typeof name)=='object'){
 			if((typeof fields=='function')){
 				callback = fields;
 			}	
 			fields = name.fields;
+			options = name.options;
 			name = name.name;
+		}else{
+			if((typeof options)=='function'){
+				callback=options;
+				options = false;
+			}
 		}
 		
+		if(options){
+			if(options.idField){
+				this._idField = options.idField;
+			}else{
+				this._idField = 'id';
+				this.fields.id= {
+					validators: {
+						required:{}
+					}
+				}
+			}
+		}
 		this.name = name;
 		
 		if(fields){
@@ -66,6 +82,14 @@ if (typeof define === 'function' && define.amd) {
 		'string': valString,
 		'email': valEmail
 	};
+	
+	model.prototype.generateID = model.prototype.generateId = function(){
+		var newID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+		    return v.toString(16);
+		});
+		return newID;
+	}
 	
 	model.prototype.validate = function(record){
 		var fieldList = [];
@@ -128,7 +152,7 @@ if (typeof define === 'function' && define.amd) {
 				validation = validations[validationName];
 				if((typeof validation)!='function'){
 					if(self._validators[validationName]){
-						validation = self._validators[validationName]
+						validation = self._validators[validationName];
 					}else{
 						//load the validator function
 						console.log('TODO: LOAD OTHER VALIDATIONS FROM FILE');
