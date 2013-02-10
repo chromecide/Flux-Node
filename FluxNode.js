@@ -45,6 +45,9 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		self._SettingsMeta = {};
 		self._mixins = {};
 		
+		self._eventInfo = {};
+		self._listenerInfo = {};
+		
 		if(!cfg){
 			cfg = {};
 		}
@@ -393,6 +396,45 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			}
 			
 			return settingVal && settingMeta;
+		}
+		
+		/**
+		 * Event Information
+		 */
+		FluxNodeConstructor.prototype.addEventInfo(mixinName, eventName, eventDescription, eventParams, callback){
+			if(!this._eventInfo[mixinName]){
+				this._eventInfo[mixinName]={};
+			}
+			
+			if(!this._eventInfo[mixinName][eventName]){
+				this._eventInfo[mixinName][eventName] = {
+					mixin:mixinName,
+					name: eventName,
+					description: eventDescription,
+					params: eventParams
+				}
+			}
+			
+			if(callback){
+				callback(this._eventInfo[mixinName][eventName]);
+			}
+			
+			return this._eventInfo[mixinName][eventName];
+		}
+		
+		FluxNodeConstructor.prototype.removeEventInfo(mixinName, eventName, callback){
+			delete this._eventInfo[mixinName][eventName];
+			if(callback){
+				callback();	
+			}
+		}
+		
+		FluxNodeConstructor.prototype.addListenerInfo(mixinName, listenerName, listenerDescription, listenerParams, callback){
+			
+		}
+		
+		FluxNodeConstructor.prototype.removeListenerInfo(mixinName, listenerName, callback){
+			
 		}
 		
 		FluxNodeConstructor.prototype.addTunnel = function(tunnel){
