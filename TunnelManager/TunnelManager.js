@@ -200,7 +200,7 @@ function send(destination, topic, message, inReplyTo, callback){
 					destination: destination,
 					topic: clnTopic
 				}
-				console.log(tunnels);
+				
 				if(tunnels[destination]){
 					destination = tunnels[destination];
 				}else{
