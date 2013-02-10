@@ -45,6 +45,8 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		self._SettingsMeta = {};
 		self._mixins = {};
 		
+		self._middleware = {};
+		
 		self._eventInfo = {};
 		self._listenerInfo = {};
 		
@@ -172,6 +174,13 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		});
 		
 		storageManager.once('StorageManager.Ready', function(err, SM){
+			//add the event info for the Storage Manager
+			self.addEventInfo('FluxNode', 'Store.Ready', 'Emitted when a new Store is Ready', {
+				store: {
+					name: 'Store',
+					description: 'The Store that was just added'
+				}
+			});
 			
 			if(self.debug) console.log('StorageManager Ready');
 			self.StorageManager = SM;
@@ -219,7 +228,12 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			self.TunnelManager.once('TunnelManager.Ready', function(){
 				
 				self.TunnelManager.on('message', function(message){
-					self.emit(message.topic, message.message, message);
+					//first check the middle ware
+					self.processMiddleware('FluxNode', 'TunnelManager.Message', [message._message.sender, message.topic, message.message], function(success){
+						if(success){
+							self.emit(message.topic, message.message, message);		
+						}
+					});
 				});
 				
 				self.TunnelManager.on('Tunnel.Ready', function(destination, tunnel){
@@ -401,7 +415,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		/**
 		 * Event Information
 		 */
-		FluxNodeConstructor.prototype.addEventInfo(mixinName, eventName, eventDescription, eventParams, callback){
+		FluxNodeConstructor.prototype.addEventInfo = function(mixinName, eventName, eventDescription, eventParams, callback){
 			if(!this._eventInfo[mixinName]){
 				this._eventInfo[mixinName]={};
 			}
@@ -422,19 +436,93 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			return this._eventInfo[mixinName][eventName];
 		}
 		
-		FluxNodeConstructor.prototype.removeEventInfo(mixinName, eventName, callback){
+		FluxNodeConstructor.prototype.removeEventInfo = function(mixinName, eventName, callback){
 			delete this._eventInfo[mixinName][eventName];
 			if(callback){
 				callback();	
 			}
 		}
 		
-		FluxNodeConstructor.prototype.addListenerInfo(mixinName, listenerName, listenerDescription, listenerParams, callback){
+		FluxNodeConstructor.prototype.addListenerInfo = function(mixinName, listenerName, listenerDescription, listenerParams, callback){
+			if(!this._listenerInfo[mixinName]){
+				this._listenerInfo[mixinName]={};
+			}
+			
+			if(!this._listenerInfo[mixinName][listenerName]){
+				this._listenerInfo[mixinName][listenerName] = {
+					mixin:mixinName,
+					name: listenerName,
+					description: listenerDescription,
+					params: listenerParams
+				}
+			}
+			
+			if(callback){
+				callback(this._listenerInfo[mixinName][listenerName]);
+			}
+			
+			return this._listenerInfo[mixinName][listenerName];	
+		}
+		
+		FluxNodeConstructor.prototype.removeListenerInfo = function(mixinName, listenerName, callback){
 			
 		}
 		
-		FluxNodeConstructor.prototype.removeListenerInfo(mixinName, listenerName, callback){
+		FluxNodeConstructor.prototype.registerMiddleware = function(mixinName, actionName, middlewareFunc, callback){
+			if(!this._middleware[mixinName]){
+				this._middleware[mixinName]={};
+			}
 			
+			if(!this._middleware[mixinName][actionName]){
+				this._middleware[mixinName][actionName] = [];
+			}
+			
+			this._middleware[mixinName][actionName].push(middlewareFunc);
+			if(callback){
+				callback();
+			}
+		}
+		
+		FluxNodeConstructor.prototype.getMiddleware = function(mixinName, actionName, params){
+			return this._middleware[mixinName][actionName]?this._middleware[mixinName][actionName]:[];
+		}
+		
+		FluxNodeConstructor.prototype.processMiddleware = function(mixinName, actionName, params, callback){
+			
+			var middleware = this.getMiddleware(mixinName, actionName);
+			
+			var cont = true;
+			
+			if(!params){
+				params = [];
+			}
+			
+			params.push(function(success){
+				cont = success;
+				if(cont){
+					doNextMiddleFunc();
+				}else{
+					if(callback){
+						callback(false);
+					}
+				}
+			});
+			
+			var doNextMiddleFunc = function(){
+				if(middleware.length==0){
+					if(callback){
+						callback(cont);
+					}
+					return;
+				}
+				var middleFunc = middleware.shift();
+				
+				middleFunc.apply(this, params);	
+			}
+			
+			doNextMiddleFunc();
+			
+			return cont;
 		}
 		
 		FluxNodeConstructor.prototype.addTunnel = function(tunnel){
