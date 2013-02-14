@@ -443,6 +443,22 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			}
 		}
 		
+		FluxNodeConstructor.prototype.getEventInfo = function(mixinName, eventName, callback){
+			var returnInfo = {};
+			if(!mixinName){//return everything
+				returnInfo = this._eventInfo;
+			}else{
+				if(!eventName){
+					returnInfo = this._eventInfo[mixinName];
+				}else{
+					returnInfo = this._eventInfo[mixinName][eventName];
+				}
+			}
+			if(callback){
+				callback(false, returnInfo);
+			}
+		}
+		
 		FluxNodeConstructor.prototype.addListenerInfo = function(mixinName, listenerName, listenerDescription, listenerParams, callback){
 			if(!this._listenerInfo[mixinName]){
 				this._listenerInfo[mixinName]={};
