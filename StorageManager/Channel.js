@@ -44,6 +44,7 @@ function ChannelBuilder(util, EventEmitter2){
 		if(cfg.store){
 			self.setStore(cfg.store);
 		}
+		
 		EventEmitter2.call(
 			self,
 			{
@@ -58,7 +59,7 @@ function ChannelBuilder(util, EventEmitter2){
 		}
 		
 		if(callback){
-			callback(self, cfg);
+			callback(false, self, cfg);
 		}
 	}
 	
