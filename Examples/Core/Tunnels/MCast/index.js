@@ -34,6 +34,5 @@ new FluxNode({
 		}
 	]
 }, function(thisNode){
-	
 	console.log('STARTED');
 });

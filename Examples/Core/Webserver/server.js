@@ -11,6 +11,6 @@ new FluxNode({
 			}
 		}
 	]
-}, function(){
+}, function(thisNode){
 	console.log('Server Started');
 });

@@ -67,7 +67,8 @@ if (typeof define === 'function' && define.amd) {
 				
 		if(callback){
 			callback(false, {
-				model: this
+				model: this,
+				options: options
 			});
 		}
 	}
