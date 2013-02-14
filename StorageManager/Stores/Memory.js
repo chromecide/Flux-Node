@@ -39,7 +39,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 		self.indexList = {};
 		
 		self.defaultChannel = {};
-		
+		//self._records = {};
 		if(cfg){
 			self.configureStore(cfg, function(){
 				self.status = 'ready';
@@ -70,17 +70,21 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 			self.defaultChannel = 'master';
 		}
 		
-		if(cfg.options){
-			if(cfg.options.channels){
-				for(var channelIdx in cfg.options.channels){
-					var channelName = cfg.options.channels[channelIdx];
-					self.records[channelName]=[];
+		if(cfg){
+			if(cfg.channels){
+				for(var channelIdx in cfg.channels){
+					var channelCfg = cfg.channels[channelIdx];
+					
+					self.addChannel(channelCfg,function(){
+						
+					});
 				}
+				
 			}
 		}
 		
 		if(cfg.data){
-			self.records = data;
+		//	self._records = data;
 		}
 		if(callback){
 			callback();
@@ -293,6 +297,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 		
 		var queryFunctions = objectToQuery(query);
 		//console.log(queryFunctions.emailAddress.toString());
+		
 		if((typeof channel)=='string'){
 			channel = self.getChannel(channel);
 		}
@@ -665,30 +670,47 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 	}
 	
 	function remove(query, channel, callback){
+		
 		var self = this;
+		
+		if((typeof channel)=='string'){
+			channel = self.getChannel(channel);
+		}
 		if(query instanceof Record){
 			//console.log(query);
 			var recId = query.get('id');
 			query = recId;
 		}
 		
-		var queryType = typeof query;
+		var queryType = (typeof query);
 		
 		switch(queryType){
 			case 'string': //assume it's an id
+				console.log(channel);
+				var removedRecords = [];
 				for(var recIdx in self._records[channel.name]){
 					if(self._records[channel.name][recIdx].id==query){
+						removedRecords.push(self._records[channel.name][recIdx]);  
 						self._records[channel.name].splice(recIdx, 1);
 						break; //there is only going to be one item with the supplied ID
 					}
 				}
+				if(callback){
+					callback(false, removedRecords);
+				}
 				break;
 			case 'object':
+				if(query instanceof Record){
+					self.remove(query.get('id'), callback);
+				}else{
+					returnRecords = queryByObject.call(self, query, {}, channel, 1);
 				
-				returnRecords = queryByObject.call(self, query, {}, channel, 1);
-				for(var recIdx in returnRecords){
-					self.remove(returnRecords[recIdx].id, channel, callback);
+					for(var recIdx in returnRecords){
+						self.remove(returnRecords[recIdx].record.get('id'), channel, callback);
+					}	
 				}
+				
+				
 				break;
 			case 'function':
 				for(var recIdx in self.records[channels]){
