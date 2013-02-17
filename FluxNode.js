@@ -207,25 +207,75 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					var mId = self.TunnelManager.send(destinationId, topic, message, inReplyTo);
 					if(callback){
 						var callbackListenerCreator = function(messageId, cb){
-							return function (message, rawMessage){
+							return function (message){
 								
-								if(rawMessage._message.inReplyTo==messageId){
-									cb.call(self, message, rawMessage);
+								if(message._message.inReplyTo==messageId){
+									cb.call(self, message.message, message._message);
 								}else{
 									//re-add the listener
-									self.once(topic+'.Response', callbackListenerCreator(messageId, callback));
+									self.TunnelManager.once('message', callbackListenerCreator(mId, callback));
 								}
 							}	
 						}
-						console.log('------');
-						console.log(mId);
-						console.log('------');
-						self.once(topic+'.Response', callbackListenerCreator(mId, callback));
+						self.TunnelManager.once('message', callbackListenerCreator(mId, callback));
 					}
 				}
 			}
 			
 			self.TunnelManager.once('TunnelManager.Ready', function(){
+				self.addEventInfo('FluxNode', 'Tunnel.Ready', 'Emitted when a new Tunnel is Ready', {
+					destinationId: {
+						name: 'destinationId',
+						description: 'The ID of the remote FluxNode',
+						validators:{
+							string:{}
+						}
+					},
+					tunnel: {
+						name: 'tunnel',
+						description: 'The Tunnel Object that is ready'
+					}
+				});
+				
+				self.addEventInfo('FluxNode', 'Tunnel.Closed', 'Emitted when a Tunnel has Closed', {
+					destinationId: {
+						name: 'destinationId',
+						description: 'The ID of the remote FluxNode',
+						validators:{
+							string:{}
+						}
+					}
+				});
+				
+				self.addEventInfo('FluxNode', 'Mixin.Ready', 'Emitted when a Mixin has been added and configured Ready', {
+					name: {
+						name: 'name',
+						description: 'The name of the Mixin that is ready',
+						validators:{
+							string:{}
+						}
+					},
+					config: {
+						name: 'config',
+						description: 'The configuration options that were supplied for this mixin'
+					}
+				});
+				
+				self.addEventInfo('FluxNode', 'FluxNode.Ready', 'Emitted when a FluxNode has initialised and is Ready', {});
+				
+				self.addEventInfo('FluxNode', 'FluxNode.Error', 'Emitted when a FluxNode Experiences an Error', {
+					name: {
+						name: 'name',
+						description: 'The name of the Mixin that is ready',
+						validators:{
+							string:{}
+						}
+					},
+					config: {
+						name: 'config',
+						description: 'The configuration options that were supplied for this mixin'
+					}
+				});
 				
 				self.TunnelManager.on('message', function(message){
 					//first check the middle ware
@@ -445,15 +495,28 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		FluxNodeConstructor.prototype.getEventInfo = function(mixinName, eventName, callback){
 			var returnInfo = {};
-			if(!mixinName){//return everything
+			
+			if((typeof mixinName) =='function'){
+				callback = mixinName;
+				eventName = false;
+				mixinName = false;
+			}
+			
+			if((typeof eventName)=='function'){
+				callback = eventName;
+				eventName = false;
+			}
+			
+			if(!mixinName){
 				returnInfo = this._eventInfo;
 			}else{
 				if(!eventName){
 					returnInfo = this._eventInfo[mixinName];
 				}else{
 					returnInfo = this._eventInfo[mixinName][eventName];
-				}
+				}	
 			}
+			
 			if(callback){
 				callback(false, returnInfo);
 			}
@@ -484,6 +547,35 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			
 		}
 		
+		FluxNodeConstructor.prototype.getListenerInfo = function(mixinName, eventName, callback){
+			var returnInfo = {};
+			
+			if((typeof mixinName) =='function'){
+				callback = mixinName;
+				eventName = false;
+				mixinName = false;
+			}
+			
+			if((typeof eventName)=='function'){
+				callback = eventName;
+				eventName = false;
+			}
+			
+			if(!mixinName){
+				returnInfo = this._listenerInfo;
+			}else{
+				if(!eventName){
+					returnInfo = this._listenerInfo[mixinName];
+				}else{
+					returnInfo = this._listenerInfo[mixinName][eventName];
+				}	
+			}
+			
+			if(callback){
+				callback(false, returnInfo);
+			}
+		}
+		
 		FluxNodeConstructor.prototype.registerMiddleware = function(mixinName, actionName, middlewareFunc, callback){
 			if(!this._middleware[mixinName]){
 				this._middleware[mixinName]={};
@@ -500,7 +592,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		}
 		
 		FluxNodeConstructor.prototype.getMiddleware = function(mixinName, actionName, params){
-			return this._middleware[mixinName][actionName]?this._middleware[mixinName][actionName]:[];
+			return (this._middleware[mixinName] && this._middleware[mixinName][actionName])?this._middleware[mixinName][actionName]:[];
 		}
 		
 		FluxNodeConstructor.prototype.processMiddleware = function(mixinName, actionName, params, callback){
