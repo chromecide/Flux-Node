@@ -12,9 +12,27 @@ var newModel = new Model('person', {
 		}
 	},
 	Surname: {
-		validators:{
+		validators: {
 			required: {},
 			string: {}
+		}
+	},
+	attributes: {
+		validators: {
+			object: {
+				fields: {
+					dateofbirth:{
+						validators:{
+							date:{}
+						}
+					},
+					gender:{
+						validators:{
+							string:{}
+						}
+					}
+				}
+			}
 		}
 	}
 });
@@ -26,7 +44,10 @@ var rec = new Record({
 
 rec.set('FirstName', 'Justin');
 rec.set('Surname', 'Pradier');
-
+rec.set('attributes', {
+	dateofbirth: new Date(),
+	gender: 'M'
+});
 console.log(rec);
 console.log(newModel);
 
