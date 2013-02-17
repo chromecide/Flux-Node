@@ -1,4 +1,4 @@
-var NodeHost = '10.0.0.16'; 
+var NodeHost = '0.0.0.0'; //this needs to be set the local IP for windows machines
 var NodePort = 9001;
 
 var remoteHost = '10.0.0.16';
@@ -16,6 +16,8 @@ new FluxNode({
 			thisNode.sendEvent(destination, 'MyCustomMessage', {
 				MyMessage: 'MyValue',
 				AnotherProperty: 1234
+			}, function(message){
+				console.log(message);
 			});
 		},
 		'Tunnel.Closed': function(destination){
