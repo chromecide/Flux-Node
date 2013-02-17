@@ -1,8 +1,8 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2', 'StorageManager/Store', 'StorageManager/Collection', 'StorageManager/Record', 'StorageManager/Model','Stores/Memory'], function(util, EventEmitter2, Store, Collection, Record, Model, MemStore) {
-		return StorageManagerBuilder(util, EventEmitter2, Store, Collection, MemStore);
+	define(['util', 'EventEmitter2', 'StorageManager/Store', 'StorageManager/Collection', 'StorageManager/Channel', 'StorageManager/Record', 'StorageManager/Model','Stores/Memory'], function(util, EventEmitter2, Store, Collection, ChannelCtr, Record, Model, MemStore) {
+		return StorageManagerBuilder(util, EventEmitter2, Store, ChannelCtr, Collection, Record, Model, MemStore);
 	});		
 } else {
 	var util = require('util'), 
@@ -88,7 +88,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 		util.inherits(StorageManager, EventEmitter2);
 	
 	StorageManager.prototype.configure = function(cfg, callback){
-		console.log('CONFIGGING STORAGE MANAGER');
 		var self = this;
 		var err = false;
 		
@@ -534,7 +533,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 	StorageManager.prototype.createStore = function(cfg, callback){
 		var self = this;
 		//try{
-			console.log('creating store: '+cfg.type);
+			
 			if(cfg.type){
 				self.factory(cfg.type, function(storeDef){
 					
@@ -598,7 +597,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 	StorageManager.prototype.registerStore = function(id, store, callback){
 		var self = this;
 		self.stores[id] = store;
-		console.log('registering store');
 		
 		store.on('Store.RecordSaved', function(err, records){
 			self.emit('StorageManager.RecordSaved', err, records);

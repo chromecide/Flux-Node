@@ -1,7 +1,7 @@
 exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined' && typeof exports !== 'undefined' ? exports : window);
 	
 if (typeof define === 'function' && define.amd) {
-	define(['util', 'EventEmitter2', 'Channel', 'Record'], function(util, EventEmitter2, Channel) {
+	define(['util', 'EventEmitter2', 'StorageManager/Channel', 'StorageManager/Record'], function(util, EventEmitter2, Channel, Record) {
 		var fnConstruct = StoreBuilder(util, EventEmitter2, Channel);
 		return fnConstruct;
 	});		

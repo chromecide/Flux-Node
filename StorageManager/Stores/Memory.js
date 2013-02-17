@@ -2,7 +2,7 @@ exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined
 	
 if (typeof define === 'function' && define.amd) {
 	define(['util', 'EventEmitter2', 'StorageManager/Store', 'StorageManager/Channel', 'StorageManager/Model', 'StorageManager/Record'], function(util, EventEmitter2, Store, Channel, Model, Record) {
-		var fnConstruct = StoreBuilder(util, EventEmitter2, Store);
+		var fnConstruct = StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record);
 		return fnConstruct;
 	});		
 } else {
