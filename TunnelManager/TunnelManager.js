@@ -267,7 +267,6 @@ function recieve(tunnelObj, message){
 				if(!message._message.destination || message._message.destination==self.senderID){ //addressed to me, or there is no destination(i.e. everyone)
 					switch(message.topic){
 						case 'init': //introductions
-						console.log('INIT');
 							var remoteID = message._message.sender;
 							tunnelObj.initiated = true;
 							
@@ -342,8 +341,8 @@ function registerTunnel(remoteID, tunnelObj, callback){
 	var self = this;
 	
 	if(tunnels[remoteID]){
-		console.log('disconnecting');
-		deregisterTunnel(remoteID);
+		//console.log('disconnecting');
+		self.deregisterTunnel(remoteID);
 	}
 	
 	if(!remoteID){//we need to do some comms with the other end to introduce ourselves
@@ -355,7 +354,7 @@ function registerTunnel(remoteID, tunnelObj, callback){
 		}else{
 			tunnelObj.on('Tunnel.Ready', function(tunnelObj){
 				tunnels[tunnelObj.remoteId] = tunnelObj;
-				self.emit('Tunnel.Ready', tunnelObj.remoteId, tunnelObj);	
+				self.emit('Tunnel.Ready', tunnelObj.remoteId, tunnelObj);
 			});	
 		}
 		

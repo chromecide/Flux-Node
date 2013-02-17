@@ -24,7 +24,7 @@ function TunnelBuilder(util, EventEmitter2){
 		util.inherits(Tunnel, EventEmitter2);
 		
 		Tunnel.prototype.initTunnel = function(params){
-			console.log('Initting');
+			
 			this.send('init', params);
 		}
 		
