@@ -11,6 +11,7 @@ if (typeof define === 'function' && define.amd) {
 	var valRequired = require(__dirname+'/field_validators/required.js').validator;
 	var valString = require(__dirname+'/field_validators/string.js').validator;
 	var valEmail = require(__dirname+'/field_validators/email.js').validator;
+	var valObject = require(__dirname+'/field_validators/object.js').validator;
 	
 	exports.Model = model;
 }
@@ -81,7 +82,8 @@ if (typeof define === 'function' && define.amd) {
 		'number': valNumber,
 		'required': valRequired,
 		'string': valString,
-		'email': valEmail
+		'email': valEmail,
+		'object': valObject
 	};
 	
 	model.prototype.generateID = model.prototype.generateId = function(){
@@ -92,11 +94,33 @@ if (typeof define === 'function' && define.amd) {
 		return newID;
 	}
 	
-	model.prototype.validate = function(record){
-		var fieldList = [];
+	model.prototype.validate = function(record, fieldListObject, callback){
 		
-		for(var key in this._fields){
-			fieldList.push(key);
+		var self = this;
+		var fieldList = [];
+		var isValid = false;
+		
+		if((typeof fieldListObject)=='function'){
+			callback = fieldList;
+			fieldList = false; 
+		}
+		
+		if(!fieldListObject){
+			fieldList = [];
+			for(var key in this._fields){
+				fieldList.push(key);
+			}
+		}else{
+			if(Array.isArray(fieldListObject)){
+				fieldList = fieldListObject;
+			}else{
+				for(var key in fieldListObject){
+					var itemObj = fieldListObject[key];
+					itemObj.name = key;
+					fieldList.push(itemObj);
+				}	
+			}
+			
 		}
 		
 		function validateLoop(){
@@ -108,7 +132,17 @@ if (typeof define === 'function' && define.amd) {
 			}
 			
 			var fieldName = fieldList.shift();
-			this.validateField(field, record.get(fieldName), function(valid){
+			var field;
+			if((typeof fieldName)=='object'){
+				field = fieldName;
+				fieldName = field.name;
+			}else{
+				field = fieldName;
+			}
+			var checkValue = record.get?record.get(fieldName):record[fieldName];
+			
+			self.validateField(field, checkValue, function(valid){
+				isValid = valid;
 				if(!valid){
 					if(callback){
 						callback(false);
@@ -123,8 +157,12 @@ if (typeof define === 'function' && define.amd) {
 		validateLoop();
 	}
 	
-	model.prototype.validateField = function(name, value, callback){
-		var field = this._fields[name];
+	model.prototype.validateField = function(field, value, callback){
+		var self = this;
+		if((typeof field)=='string'){
+			field = this._fields[field];	
+		}
+		
 		var isValid = false;
 		
 		if(field){
@@ -148,6 +186,7 @@ if (typeof define === 'function' && define.amd) {
 				}
 				
 				var validationName = valList.shift();
+				
 				var options = field.validators[validationName];
 				
 				validation = validations[validationName];
@@ -161,13 +200,16 @@ if (typeof define === 'function' && define.amd) {
 					}
 				}
 				
-				validation(value, options, function(valid){
+				validation.call(self, value, options, function(valid){
+					
 					if(!valid){
+						
 						isValid = false;
 						if(callback){
 							callback(isValid);
 						}
 					}else{//that one was valid, next
+						
 						isValid = true;
 						validationLoop();
 					}
