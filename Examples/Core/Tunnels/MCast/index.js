@@ -1,7 +1,7 @@
 var FluxNode = require('../../../../FluxNode').FluxNode;
 
 new FluxNode({
-	id: 'Node2', //change this for each instance you start
+	id: 'Node3', //change this for each instance you start
 	//debug: true,
 	listeners:{
 		'Tunnel.Ready': function(destination, tunnel){

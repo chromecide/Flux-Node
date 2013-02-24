@@ -1,0 +1,22 @@
+{
+  "name": "Pop3",
+  "description": "Provides the functionality for monitoring POP3 Email Accounts",
+  "version": "0.1.0",
+  "author": {
+    "name": "Justin Pradier",
+    "email": "chromecide@chromecide.com",
+    "url": "http://chromecide.com/"
+  },
+  "cfg":{
+  	
+  },
+  "events": {
+  	
+  },
+  "listeners": {
+  	
+  },
+  "methods": {
+  	
+  }
+}

@@ -16,9 +16,6 @@ new FluxNode({
 			options:{
 				loginTimeout: 90,
 				method: 'permission',
-				/*store: {
-					databaseName: 'tunnel_auth_test'
-				},*/
 				protectedTopics:{
 					
 				},
@@ -31,6 +28,10 @@ new FluxNode({
 },
 function(thisNode){
 	console.log(thisNode);
+	
+	thisNode.on('GroupSecurity.MustLogin', function(message, rawMessage){
+		console.log('YOU MUST LOGIN TO THIS SERVER');
+	});
 	//connect to the server
 	thisNode.TCPTunnels_Connect({
 		host: '127.0.0.1',

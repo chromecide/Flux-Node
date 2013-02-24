@@ -1,0 +1,35 @@
+{
+  "name": "TCPTunnels",
+  "description": "Provides the ability for remote FluxNodes to connect via TCP",
+  "version": "0.1.0",
+  "author": {
+    "name": "Justin Pradier",
+    "email": "chromecide@chromecide.com",
+    "url": "http://chromecide.com/"
+  },
+  "config":{
+  	"host": {
+  		"name": "host",
+  		"description": "The host name to listen for",
+  		"validators":{
+  			"string":{}
+  		}
+  	},
+  	"port": {
+  		"name": "port",
+  		"description": "The port number to listen on",
+  		"validators":{
+  			"number":{}
+  		}
+  	}
+  },
+  "events": {
+  	
+  },
+  "listeners": {
+  	
+  },
+  "methods": {
+  	
+  }
+}

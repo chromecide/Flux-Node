@@ -21,7 +21,6 @@ if (typeof define === 'function' && define.amd) {
 				if(options.fields){
 					//we need to validate each field, so build a validator object that can be used by the models validateFIeld function
 					modelInst.validate(check, options.fields, function(objectValid){
-						console.log(objectValid);
 						isValid = objectValid; 
 						if(callback){
 							callback(isValid);

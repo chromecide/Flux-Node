@@ -1,0 +1,22 @@
+{
+  "name": "MCastTunnels",
+  "description": "Provides the functionality for remote FluxNodes to connect via a MultiCast Network",
+  "version": "0.1.0",
+  "author": {
+    "name": "Justin Pradier",
+    "email": "chromecide@chromecide.com",
+    "url": "http://chromecide.com/"
+  },
+  "cfg":{
+  	
+  },
+  "events": {
+  	
+  },
+  "listeners": {
+  	
+  },
+  "methods": {
+  	
+  }
+}

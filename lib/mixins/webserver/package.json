@@ -1,25 +1,119 @@
 {
-  "name": "FNM-WebServer",
+  "name": "webserver",
   "version": "0.1.0",
-  "description": "A FluxNode Mixin to provide a wrapper around a node-static server",
-  "homepage": "https://github.com/chromecide/FNM-WebServer",
-  "keywords": [
-    "FluxNode",
-    "Mixin",
-    "Web Server",
-    "Static Website"
-  ],
+  "description": "A FluxNode Mixin to provide Basic Web Server functionality",
+  "homepage": "https://github.com/chromecide/Flux-Node/tree/master/lib/mixins/webserver",
   "author": {
     "name": "Justin Pradier",
     "email": "chromecide@chromecide.com",
     "url": "http://chromecide.com/"
   },
   "dependencies": {
-    "node-static": ">=0.6.2"
+    
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/chromecide/FNM-WebServer.git"
+  "main": "index.js",
+  "options":{
+  	"webroot":{
+  		"name": "Web Root",
+  		"description": "The root folder for the webserver",
+  		"validators": {
+  			"string":{}
+  		}
+  	},
+  	"host":{
+  		"name": "Host",
+  		"description": "The hostname for the Webserver",
+  		"validators": {
+  			"string":{}
+  		}
+  	},
+  	"port":{
+  		"name": "Port",
+  		"description": "The port number for the Webserver",
+  		"validators": {
+  			"number":{}
+  		}
+  	},
+  	"autoStart":{
+  		"name": "Auto Start",
+  		"description":"",
+  		"validators": {
+  			"boolean":{}
+  		}
+  	}
   },
-  "main": "index.js"
+  "events": {
+  	"Webserver.RequestReceived":{
+  		"name": "Webserver.RequestReceived",
+  		"description": "Emitted when the Webserver has recieved a Request",
+  		"parameters":{
+				"path":{
+					"name": "Path",
+					"description": "The Path to the resource requested",
+					"validators": {
+						"string":{}
+					}
+				},
+				"headers":{
+					"name": "Headers",
+					"description": "The header values for the Request"
+				},
+				"method":{
+					"name": "Method",
+					"description": "The HTTP Method of the Request e.g.(GET, POST, PUT)"
+				}
+		}
+  	},
+  	"Webserver.ResponseSent": {
+  		"name":"Webserver.ResponseSent",
+  		"description":"Emitted when the Webserver has sent a Response",
+  		"parameters":{
+			"path":{
+				"name": "Path",
+				"description": "The Path of the actual file sent.  This may not be the same path as the request path.",
+				"validators": {
+					"string":{}
+				}
+			}
+		}
+  	},
+  	"Webserver.Started":{
+  		"name":"Webserver.Started",
+  		"description":"Emitted when the Webserver has been Started",
+  		"parameters":{
+			"config":{
+				"name": "config",
+				"description": "The configuration of the Webserver that was Started",
+				"validators": {
+					"object":{
+						"fields":{
+							"host":{
+								"validators":{
+									"string":{}
+								}
+							},
+							"port":{
+								"validators":{
+									"number":{}
+								}
+							},
+							"webroot":{
+								"validators":{
+									"string":{}
+								}
+							}
+						}
+					}
+				}
+			},
+			"time": {
+				"name": "time",
+				"description": "The time at which the Webserver was Started",
+				"validators":{
+					"date": {}
+				}
+			}
+  		}
+  	}
+  }
 }

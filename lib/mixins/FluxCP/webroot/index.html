@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+		<title>Flux Singularity - Control Panel</title>
+		<style>
+	      body {
+	        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+	      }
+	      
+	      .error-label{
+	      	border: 1px solid red;
+	      }
+	      
+	      .section_pill{
+	      	-webkit-border-radius: 10px;
+			border-radius: 10px;
+			border: 1px solid #ccc;
+			padding:10px;
+			margin-bottom: 10px;
+	      }
+	    </style>
+		<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
+		
+		<script src="http://code.jquery.com/jquery-latest.js"></script>
+		<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/js/bootstrap.min.js"></script>
+		
+		<script data-main="FluxNode/FluxNode.js" src="http://requirejs.org/docs/release/2.1.0/minified/require.js"></script>
+	</head>
+	<body>
+		
+	    <div class="navbar navbar-inverse navbar-fixed-top">
+	      <div class="navbar-inner">
+	        <div class="container">
+	          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </button>
+	          <a class="brand" href="#">FluxNode CP</a>
+	          <div class="nav-collapse collapse">
+	            <ul class="nav" id="main_nav">
+	              
+	            </ul>
+	          </div><!--/.nav-collapse -->
+	        </div>
+	      </div>
+	    </div>
+	    <div class="modal hide fade" id="login_window">
+	    	<div class="modal-header">
+	    		<h3>Login</h3>
+	    	</div>
+	    	<div class="modal-body">
+	    		<div class="error-labal" id="login_error">Login Failed. Please try again</div>
+	    		<label for="user_name">User Name: </label><input type="text" name="user_name" id="login_window_user_name"/>
+	    		<label for="user_pass">Password: </label><input type="password" name="user_pass" id="login_window_user_pass"/>
+	    	</div>
+	    	<div class="modal-footer">
+	    		<a href="#" class="btn btn-primary" onclick="doEvent('CP.DoLogin', {user_name: $('#login_window_user_name').val(), user_pass: $('#login_window_user_pass').val()})">Login</a>
+	    	</div>
+	    </div>
+	    <div class="modal hide fade" id="no_connection_window">
+	    	<div class="modal-header">
+	    		<h3>Cannot Connect to Server</h3>
+	    	</div>
+	    	<div class="modal-body">
+	    		<div class="error-labal" id="login_error">Cannot connect to server.  Please wait...</div>
+	    	</div>
+	    	<div class="modal-footer">
+	    		
+	    	</div>
+	    </div>
+	    <div id="page_content" class="container">
+	    	    <div class="row">
+			    	<div class="span8"></div>
+			    </div>
+	    </div>
+    	<script>
+			require(['./client.js']);
+		</script>	
+	</body>
+</html>

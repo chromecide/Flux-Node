@@ -8,7 +8,7 @@ new FluxNode({
 			var thisNode = this;
 			if(advert.type.name=='FluxNode'){
 				console.log('FluxNode Found');
-				//console.log(advert);
+				
 				if(advert.port!=thisNode.getSetting('TCPTunnels.port')){
 					console.log(advert.addresses[0]);
 					console.log(advert.port);

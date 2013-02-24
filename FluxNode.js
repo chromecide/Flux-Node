@@ -120,7 +120,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				case 'settings':
 					break;
 				default:
-					console.log('ADDING: '+key);
+					
 					self[key] = cfg[key];
 					break;
 			}
@@ -139,6 +139,34 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			}
 		}
 		
+		
+		self.on('FluxNode.getMixinInfo', this.getMixinInfo);
+		
+		self.on('FluxNode.getSettings', function(message, rawMessage){
+			
+			self.getSettings(function(err, settingList){
+				
+				self.sendEvent(rawMessage._message.sender, 'FluxNode.getSettings.Response', settingList, rawMessage._message.id);
+			});
+		});
+		
+		self.on('FluxNode.getInstalledMixins', function(message, rawMessage){
+			self.getInstalledMixins(function(err, mixinList){
+				
+				if(rawMessage && rawMessage._message.sender){
+					self.sendEvent(rawMessage._message.sender, 'FluxNode.getInstalledMixins.Response', mixinList, rawMessage._message.id);
+				}
+			});
+		});
+		
+		self.on('FluxNode.getSettingInfo', function(message, rawMessage){
+			var settingName = message.names;
+			self.getSettingInfo(settingName, function(err, settingInfo){
+				if(rawMessage && rawMessage._message.sender){
+					self.sendEvent(rawMessage._message.sender, 'FluxNode.getSettingInfo.Response', settingInfo, rawMessage._message.id);
+				}
+			});
+		});
 		
 		if(self.debug) console.log('Configuring StorageManager');
 		
@@ -168,6 +196,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				isDefault: true
 			}];
 		}
+		
 		storageManager.on('StorageManager.Error', function(){
 			console.log('STORAGE MANAGER ERROR');
 			console.log(arguments);
@@ -326,7 +355,11 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						}else{
 							self.on('FluxNode.Mixin', function(message, rawMessage){
 								
-								self.mixin(message.name, message.options);
+								self.mixin(message.name, message.options, function(err, mixinCfg){
+									if(rawMessage && rawMessage._message.sender){
+										self.sendEvent(rawMessage._message.sender, 'FluxNode.Mixin.Response', mixinCfg, rawMessage._message.id);
+									}
+								});
 							});
 							
 							self.emit('FluxNode.Ready', self);
@@ -383,13 +416,24 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		FluxNodeConstructor.prototype.addSetting = function(name, initialValue, validation, callback){
 			var self = this;
-			
+			console.log('ADDING SETTING: '+name);
 			self.setDataValueByString(self._Settings, name, initialValue);
 			self.setDataValueByString(self._SettingsMeta, name, validation);
 			
 			if(callback){
 				callback(name);
 			}
+		}
+		
+		FluxNodeConstructor.prototype.getSettingInfo = function(name, callback){
+			var self = this;
+			
+			console.log(self._SettingsMeta);
+			
+			if(callback){
+				callback(false, self._SettingsMeta);
+			}
+			return self._SettingsMeta;
 		}
 		
 		FluxNodeConstructor.prototype.setSetting = function(name, newValue, callback){
@@ -426,6 +470,18 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				}
 				return true;
 			}
+		}
+		
+		FluxNodeConstructor.prototype.getSettings = function(callback){
+			var self = this;
+			
+			var settingVal = self._Settings;
+			
+			if(callback){
+				callback(false, settingVal);
+			}
+			
+			return settingVal;
 		}
 		
 		FluxNodeConstructor.prototype.getSetting = function(name, callback){
@@ -573,6 +629,12 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			
 			if(callback){
 				callback(false, returnInfo);
+			}
+		}
+		
+		FluxNodeConstructor.prototype.getMixinInfo = function(message, rawMessage){
+			if(rawMessage && rawMessage._message.sender){
+				this.sendEvent(rawMessage._message.sender, 'FluxNode.getMixinInfo.Response', this._mixins, rawMessage._message.id);
 			}
 		}
 		
@@ -931,6 +993,31 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			return newID;
 		}
 		
+		FluxNodeConstructor.prototype.getInstalledMixins = function(callback){
+			var self = this;
+			var fs = require('fs');
+			fs.readdir(__dirname+'/lib/mixins/', function(err, files){
+				var returnList = [];
+				
+				for(var i=0;i<files.length;i++){
+					var file = fs.statSync(__dirname+'/lib/mixins/'+files[i]);
+					if(file.isDirectory()){
+						if(!self._mixins[files[i]]){
+							if(fs.existsSync(__dirname+'/lib/mixins/'+files[i]+'/package.json')){
+								var mixinInfo = require(__dirname+'/lib/mixins/'+files[i]+'/package.json');
+								returnList.push(mixinInfo);
+							}	
+						}
+					}
+				}
+				
+				if(callback){
+					
+					callback(false, returnList);
+				}
+			});
+		}
+		
 		FluxNodeConstructor.prototype.mixin = function(mixinName, mixinParams, callback){
 			var self = this;
 			
@@ -951,10 +1038,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						console.log("STILL NOT FOUND");
 					}
 				
-					self._mixins[mixinName] = {
-						name: mixinName,
-						params: mixinParams
-					}
+					
 					
 					for(var x in mixinClass){
 						if(x!='init'){
@@ -966,15 +1050,17 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						mixinParams = {};
 					}
 					
-					mixinClass.init.call(self, mixinParams, function(){
+					mixinClass.init.call(self, mixinParams, function(err, mixinReturn){
+						self._mixins[mixinName] = mixinReturn;
 						if(callback){
-							callback.call(self);	
-						}	
+							callback.call(self, err, mixinReturn);	
+						}
+						self.emit('Mixin.Ready', mixinReturn);
 					});	
 				}else{
-					console.log('Already Mixed In: '+name);
+					mixinReturn = self._mixins[mixinName];
 					if(callback){
-						callback.call(self);
+						callback.call(self, false, mixinReturn);
 					}
 				}
 			}else{
@@ -987,15 +1073,13 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 								self[x] = mixinClass[x];
 							}
 						}
-						mixinClass.init.call(self, mixinParams, function(){
-							self._mixins[mixinName] = {
-								name: mixinName,
-								params: mixinParams
-							}
+						mixinClass.init.call(self, mixinParams, function(err, mixinReturn){
+							self._mixins[mixinName] = mixinReturn;
+							
 							if(callback){
-								callback.call(self);	
+								callback.call(self, err, mixinReturn);	
 							}
-							self.emit('Mixin.Ready', mixinClass, mixinParams);
+							self.emit('Mixin.Ready', mixinReturn);
 						});
 					},
 					function(){
@@ -1007,15 +1091,14 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 								}
 							}
 	
-							mixinClass.init.call(self, mixinParams);
-							self._mixins[mixinName] = {
-								name: mixinName,
-								params: mixinParams
-							}
-							self.emit('Mixin.Ready', mixinClass, mixinParams);
-							if(callback){
-								callback.call(self);	
-							}
+							mixinClass.init.call(self, mixinParams, function(err, mixinReturn){
+								self._mixins[mixinName] = mixinReturn;
+								self.emit('Mixin.Ready', mixinReturn);
+								if(callback){
+									callback.call(self, err, mixinReturn);	
+								}
+							});
+							
 							
 						}, function(){
 							if(self.debug) console.log('Mixin: Checking node_modules Folder');
@@ -1026,17 +1109,15 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 										self[x] = mixinClass[x];
 									}
 								}
-								mixinClass.init.call(self, mixinParams);
-	
-								self._mixins[mixinName] = {
-									name: mixinName,
-									params: mixinParams
-								}
-	
-								self.emit('Mixin.Ready', mixinClass, mixinParams);
-								if(callback){
-									callback.call(self);	
-								}
+								mixinClass.init.call(self, mixinParams, function(err, mixinReturn){
+									
+									self._mixins[mixinName] = mixinReturn;
+		
+									self.emit('Mixin.Ready', mixinReturn);
+									if(callback){
+										callback.call(self, err, mixinReturn);	
+									}
+								});
 	
 							}, function(){
 								self.emit('FluxNode.Error', {

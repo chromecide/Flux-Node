@@ -1,7 +1,7 @@
 {
   "name": "GroupSecurity",
   "version": "0.1.0",
-  "description": "A FluxNode Mixin to provide Group Based User Security",
+  "description": "A FluxNode Mixin to provide Group Based User Security for remote FluxNode connections",
   "homepage": "https://github.com/chromecide/FNMGroupSecurity",
   "keywords": [
     "FluxNode",

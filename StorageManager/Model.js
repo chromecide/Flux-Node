@@ -12,6 +12,7 @@ if (typeof define === 'function' && define.amd) {
 	var valString = require(__dirname+'/field_validators/string.js').validator;
 	var valEmail = require(__dirname+'/field_validators/email.js').validator;
 	var valObject = require(__dirname+'/field_validators/object.js').validator;
+	var valHasMany = require(__dirname+'/field_validators/hasMany.js').validator;
 	
 	exports.Model = model;
 }
@@ -83,7 +84,8 @@ if (typeof define === 'function' && define.amd) {
 		'required': valRequired,
 		'string': valString,
 		'email': valEmail,
-		'object': valObject
+		'object': valObject,
+		'hasMany': valHasMany
 	};
 	
 	model.prototype.generateID = model.prototype.generateId = function(){
@@ -158,9 +160,10 @@ if (typeof define === 'function' && define.amd) {
 	}
 	
 	model.prototype.validateField = function(field, value, callback){
+		
 		var self = this;
 		if((typeof field)=='string'){
-			field = this._fields[field];	
+			field = this._fields[field];
 		}
 		
 		var isValid = false;
@@ -171,12 +174,13 @@ if (typeof define === 'function' && define.amd) {
 			var valList = [];
 			
 			for(var key in validations){
-			
 				valList.push(key);
 			}
 			
 			var self = this;
-			
+			if(valList.length==0){
+				isValid = true;
+			}
 			function validationLoop(){
 				if(valList.length==0){
 					if(callback){

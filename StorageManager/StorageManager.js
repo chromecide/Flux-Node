@@ -167,19 +167,16 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 			callback = store;
 			store = self.getDefaultStore();
 			channel = false;
+		}else{
+			if((typeof store)=='string'){
+				store = self.getStore(store);
+			}
 		}
 		
 		if((typeof channel=='function')){
 			//the callback was passed as the third argument
 			callback = channel;
 			channel = false;
-		}
-
-		if(store && store._environment){//a store object was supplied
-		}else{
-			//console.log('GETTING STORE: ', store);
-			store = self.getStore(store);
-			//console.log(store);
 		}
 		
 		store.save(records, channel, function(err, records){
@@ -610,7 +607,6 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 	}
 	
 	StorageManager.prototype.getStore = function(cfg, callback){
-		
 		var self = this;
 		
 		if(!cfg){//return the default store

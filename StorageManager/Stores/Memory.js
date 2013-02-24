@@ -130,6 +130,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 	 */
 	
 	function save(records, channel, callback){
+		
 		var self = this;
 		var err = false;
 
@@ -143,7 +144,12 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 		}else{
 			if(!channel){
 				channel = self.defaultChannel;
+			}else{
+				if((typeof channel)=='string'){
+					channel = self.getChannel(channel);
+				}
 			}
+			
 		}
 		
 		var ReturnRecords = [];
@@ -180,7 +186,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 		
 		if((record instanceof Record)==false){
 			record = new Record({
-				channel: channel, 
+				channel: channel,
 				data: record
 			});
 		}
@@ -190,12 +196,13 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 		}
 		
 		if(!self._records[channel.name]){
+			
 			self._records[channel.name] = [];
 		}else{
 			var chanRecords = self._records[channel.name];
 			for(var i=0;i<chanRecords.length;i++){
-				var existingRecord = chanRecords[i]; 
-				if(record.get('id')==existingRecord.id){
+				var existingRecord = chanRecords[i];
+				if(record.get('id') && record.get('id')==existingRecord.id){
 					chanRecords.splice(i,1);
 				}
 			}
@@ -203,8 +210,11 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 		}
 		
 		var oldLength = self._records[channel.name].length;
+		var existingRecords = self._records[channel.name]; 
 		
-		var newLength = self._records[channel.name].push(record._data);
+		var newLength = existingRecords.push(record._data);
+		
+		self._records[channel.name] = existingRecords;
 		
 		if(newLength!=oldLength+1){
 			err = true;	

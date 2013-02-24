@@ -1,0 +1,171 @@
+{
+  "name": "Tickers",
+  "description": "Provides configurable Tickers to emit Tick events at predefined intervals",
+  "version": "0.1.0",
+  "author": {
+    "name": "Justin Pradier",
+    "email": "chromecide@chromecide.com",
+    "url": "http://chromecide.com/"
+  },
+  "config":{
+  	"defaultInterval": {
+  		"name": "defaultInterval",
+  		"description": "The interval, in milliseconds, to use when a ticker is created without an interval supplied",
+  		"validators": {
+  			"number": {}
+  		}
+  	},
+  	"tickers": {
+  		"name": "tickers",
+  		"description": "A list of ticker configuration objects",
+  		"validators": {
+  			"hasMany":{
+  				"validators":{
+  					"object": {
+  						"fields": {
+  							"name": {
+  								"name": "name",
+  								"description": "The name of the Ticker",
+  								"validators": {
+  									"required":{},
+  									"string":{}
+  								}
+  							},
+  							"interval": {
+  								"name": "interval",
+  								"description": "The interval, in milliseconds, between Ticks",
+  								"validators": {
+  									"number":{}
+  								}
+  							}
+  						}
+  					}
+  				}
+  			}
+  		}
+  	}
+  },
+  "events": {
+  	"Tickers.{TickerName}.Tick": {
+  		"name": "Tickers.[TickerName].Tick",
+  		"description": "Emitted when the Ticker `TickerName` Ticks",
+  		"parameters": {
+  			"time": {
+  				"name": "time",
+  				"description": "The time at which the Ticker Ticked",
+  				"validators":{
+  					"date":{}
+  				}
+  			}
+  		}
+  	},
+  	"Tickers.{TickerName}.Started": {
+  		"name": "Tickers.[TickerName].Started",
+  		"description": "Emitted when the Ticker `TickerName` has been started",
+  		"parameters": {
+  			"time": {
+  				"name": "time",
+  				"description": "The time at which the Ticker started",
+  				"validators":{
+  					"date":{}
+  				}
+  			}
+  		}
+  	},
+  	"Tickers.{TickerName}.Stopped": {
+  		"name": "Tickers.[TickerName].Stopped",
+  		"description": "Emitted when the Ticker `TickerName` has been stopped",
+  		"parameters": {
+  			"time": {
+  				"name": "time",
+  				"description": "The time at which the Ticker stopped",
+  				"validators":{
+  					"date":{}
+  				}
+  			}
+  		}
+  	},
+  	"Tickers.{TickerName}.Removed": {
+  		"name": "Tickers.[TickerName].Removed",
+  		"description": "Emitted when the Ticker `TickerName` has been removed",
+  		"parameters": {
+  			"time": {
+  				"name": "time",
+  				"description": "The time at which the Ticker was removed",
+  				"validators":{
+  					"date":{}
+  				}
+  			}
+  		}
+  	}
+  },
+  "listeners": {
+  	"Tickers.Create":{
+  		"name":"Tickers.Create",
+  		"description": "Creates a new Ticker",
+  		"parameters": {
+			"name": {
+				"name": "name",
+				"description": "The name of the Ticker to create"
+			},
+			"interval": {
+				"name": "interval",
+				"description": "The number of milliseconds between ticks"
+			}
+		}	
+  	},
+  	"Tickers.Start":{
+  		"name": "Tickers.Start",
+  		"description": "Starts a Ticker by Name",
+  		"parameters": {
+			"name": {
+				"name": "name",
+				"description": "The name of the Ticker to start"
+			}
+		}
+  	},
+  	"Tickers.Stop": {
+  		"name": "Tickers.Stop",
+  		"description": "Stops a Ticker by Name",
+  		"parameters": {
+			"name": {
+				"name": "name",
+				"description": "The name of the Ticker to stop"
+			}
+		}
+  	},
+  	"Tickers.Remove": {
+  		"name": "Tickers.Remove",
+  		"description": "Removes a Ticker by Name",
+  		"parameters": {
+			"name": {
+				"name": "name",
+				"description": "The name of the Ticker to remove"
+			}
+		}
+  	},
+  	"Tickers.Clear": {
+  		"name": "Tickers.Clear",
+  		"description": "Stops and removes all Tickers",
+  		"parameters": {}
+  	},
+  	"Tickers.{TickerName}.Start": {
+  		"name": "Tickers.[TickerName].Start",
+  		"description": "Starts the Ticker named `TickerName`",
+  		"parameters": {}
+  	},
+  	"Tickers.{TickerName}.Stop": {
+  		"name": "Tickers.[TickerName].Stop",
+  		"description": "Stops the Ticker named `TickerName`",
+  		"parameters": {}
+  	},
+  	"Tickers.{TickerName}.Remove": {
+  		"name": "Tickers.[TickerName].Remove",
+  		"description": "Removes the Ticker named `TickerName`",
+  		"parameters": {}
+  	}
+  },
+  "methods": {
+  	
+  }
+}

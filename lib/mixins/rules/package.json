@@ -1,0 +1,22 @@
+{
+  "name": "Rules",
+  "description": "Adds advanced Workflow Rule functionality",
+  "version": "0.1.0",
+  "author": {
+    "name": "Justin Pradier",
+    "email": "chromecide@chromecide.com",
+    "url": "http://chromecide.com/"
+  },
+  "cfg":{
+  	
+  },
+  "events": {
+  	
+  },
+  "listeners": {
+  	
+  },
+  "methods": {
+  	
+  }
+}

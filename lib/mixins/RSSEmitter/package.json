@@ -1,0 +1,113 @@
+{
+  "name": "RSSEmitter",
+  "description": "Provides functionality for monitoring RSS and atom Feeds",
+  "version": "0.1.0",
+  "author": {
+    "name": "Justin Pradier",
+    "email": "chromecide@chromecide.com",
+    "url": "http://chromecide.com/"
+  },
+  "config":{
+  	"defaultInterval": {
+  		"name": "defaultInterval",
+  		"description": "The default poll interval for RSS Feed Polling",
+  		"validators":{
+  			"number": {}
+  		}
+  	}
+  },
+  "events": {
+  	
+  },
+  "listeners": {
+  	"RSSEmitter.Feed.Create": {
+  		"name": "RSSEmitter.Feed.Create",
+  		"description": "Creates a new RSS or Atom Feed",
+  		"parameters": {
+  			"id":{
+  				"name": "id",
+  				"description":"The id of the Feed to create",
+  				"validators":{
+  					"string":{}
+  				}
+  			},
+  			"name":{
+  				"name": "name",
+  				"description":"The name of the Feed to create",
+  				"validators":{
+  					"string":{}
+  				}
+  			},
+  			"url":{
+  				"name": "url",
+  				"description":"The URL of the Feed to create",
+  				"validators":{
+  					"string":{}
+  				}
+  			},
+  			"interval":{
+  				"name": "interval",
+  				"description":"The number of seconds between Feed Polls",
+  				"validators":{
+  					"number":{}
+  				}
+  			}
+  		}
+  	},
+  	"RSSEmitter.Feed.Start":{
+  		"name":"RSSEmitter.Feed.Start",
+  		"description": "Starts a Feed Poll by name",
+  		"parameters":{
+  			"name": {
+  				"name": "name",
+  				"description": "The name of the Feed to start",
+  				"validators":{
+  					"string":{}
+  				}
+  			}
+  		}
+  	},
+  	"RSSEmitter.Feed.Stop":{
+  		"name":"RSSEmitter.Feed.Stop",
+  		"description": "Stops a Feed Poll by name",
+  		"parameters":{
+  			"name": {
+  				"name": "name",
+  				"description": "The name of the Feed to stop",
+  				"validators":{
+  					"string":{}
+  				}
+  			}
+  		}
+  	},
+  	"RSSEmitter.Feed.Remove":{
+  		"name":"RSSEmitter.Feed.Remove",
+  		"description": "Removes a Feed by name",
+  		"parameters":{
+  			"name": {
+  				"name": "name",
+  				"description": "The name of the Feed to remove",
+  				"validators":{
+  					"string":{}
+  				}
+  			}
+  		}
+  	},
+  	"RSSEmitter.Feed.Fetch":{
+  		"name":"RSSEmitter.Feed.Fetch",
+  		"description": "Fetches new articles from the named Feed",
+  		"parameters":{
+  			"name": {
+  				"name": "name",
+  				"description": "The name of the Feed to fetch new articles from",
+  				"validators":{
+  					"string":{}
+  				}
+  			}
+  		}
+  	}
+  },
+  "methods": {
+  	
+  }
+}
