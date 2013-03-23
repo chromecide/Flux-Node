@@ -92,7 +92,7 @@ function RecordBuilder(util, EventEmitter2){
 	}
 	
 	Record.prototype.set = function(fieldName, fieldValue, callback){
-		
+		console.log('RECORD.SET: ', fieldName);
 		var self = this;
 		if(!this._model){
 			var oldValue = this._data[fieldName];
@@ -108,6 +108,7 @@ function RecordBuilder(util, EventEmitter2){
 			//validate the field first
 			this._model.validateField(fieldName, fieldValue, function(isValid){
 				if(isValid){
+					console.log('SETTING:', fieldName);
 					var oldValue = self._data[fieldName];
 					if(oldValue!=fieldValue){
 						self._changed[fieldName] = true;
@@ -119,6 +120,7 @@ function RecordBuilder(util, EventEmitter2){
 					}
 				}else{
 					console.log('NOT SETTING: '+fieldName);
+					
 					if(callback){
 						callback(this._model);
 					}

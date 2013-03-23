@@ -8,12 +8,13 @@ if (typeof define === 'function' && define.amd) {
 } else {
 	var util = require('util'), 
 	EventEmitter2 = require('eventemitter2').EventEmitter2,
-	Record = require(__dirname+'/Record.js').Record;
-	var fnConstruct = ChannelBuilder(util, EventEmitter2);
+	modelCtr = require(__dirname+'/Model.js').Model,
+	RecordCtr = require(__dirname+'/Record.js').Record;
+	var fnConstruct = ChannelBuilder(util, EventEmitter2, modelCtr, RecordCtr);
 	exports.Channel = fnConstruct;
 }
 
-function ChannelBuilder(util, EventEmitter2){
+function ChannelBuilder(util, EventEmitter2, Model, Record){
 	function Channel(cfg, callback){
 		var self = this;
 		
@@ -89,6 +90,12 @@ function ChannelBuilder(util, EventEmitter2){
 	}
 	
 	Channel.prototype.setModel = function(model, callback){
+		
+		
+		if((model instanceof Model)==false){
+			model = new Model(model);
+		}
+		
 		this._model = model;
 		
 		var returnObj = {
@@ -136,8 +143,9 @@ function ChannelBuilder(util, EventEmitter2){
 		var errors = [];
 		if(this._model){
 			//validate the record against the model
-				
+			console.log('NEED TO VALIDATE');
 		}else{
+			err = true;
 			errors.push({
 				message: 'No Model Supplied'
 			});

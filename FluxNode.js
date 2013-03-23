@@ -4,14 +4,16 @@ exports = (typeof process !== 'undefined' && typeof process.title !== 'undefined
 var paths = {
 	'util': './lib/util',
 	'Flux-Node': './',
+	'FluxNode': './',
 	'TunnelManager': './TunnelManager',
 	'Tunnel': 'TunnelManager/Tunnel',
 	'Tunnels': './TunnelManager/Tunnels',
 	'StorageManager': './StorageManager',
 	'Store': 'StorageManager/Store',
 	'Stores': 'StorageManager/Stores',
-	'EventEmitter2': './node_modules/eventemitter2/lib/eventemitter2',
-	'mixins': './lib/mixins'
+	'EventEmitter2': './lib/flux_eventemitter2',
+	'mixins': './lib/mixins',
+	'FluxNode/mixins': './lib/mixins',
 };
 
 if (typeof define === 'function' && define.amd) {
@@ -96,17 +98,39 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		self.Subscribers = {};
 		
-		self.on('Subscribe', function(message, data){
+		self.on('FluxNode.Subscribe', function(message, data){
 			if(self.debug) console.log(data);
 			if(!data.message.events && data.message.eventName) data.message.events=data.message.eventName; //supporting legacy code
 			self.doSubscribe(data._message.sender, data.message.events);
 		});
 		
-		self.on('Unsubscribe', function(data){
+		self.addListenerInfo('FluxNode', 'FluxNode.Subscribe', 'Subscribes to Events on the Target FluxNode', {
+			name: 'Events',
+			validators:{
+				hasMany: {
+					validators: {
+						string:{}
+					}
+				}
+			}
+		});
+		
+		self.on('FluxNode.Unsubscribe', function(data){
 			if(!data.message.events && data.message.eventName) data.message.events=data.message.eventName; //supporting legacy code
 			self.doUnsubscribe(data._message.sender, data.message.events);
 		});
 		
+		
+		self.addListenerInfo('FluxNode', 'FluxNode.Unsubscribe', 'Unsubscribes from Events on the Target FluxNode', {
+			name: 'Events',
+			validators:{
+				hasMany: {
+					validators: {
+						string:{}
+					}
+				}
+			}
+		});
 		//process any non-builtin config items as if they were inteneded to be part of the FluxNode
 		
 		for(key in cfg){
@@ -141,6 +165,64 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		
 		self.on('FluxNode.getMixinInfo', this.getMixinInfo);
+		self.addListenerInfo('FluxNode', 'FluxNode.getMixinInfo', 'Retrieves the Mixin information for the Target FluxNode', {
+			name: 'Mixin Names',
+			validators:{
+				hasMany: {
+					validators: {
+						string:{}
+					}
+				}
+			}
+		});
+		
+		self.on('FluxNode.getStoreInfo', this.getStoreInfo);
+		self.addListenerInfo('FluxNode', 'FluxNode.getStoreInfo', 'Retrieves the Store information for the Target FluxNode', {
+			name: 'Store Names',
+			validators:{
+				hasMany: {
+					validators: {
+						string:{}
+					}
+				}
+			}
+		});
+		
+		self.on('FluxNode.getEventInfo', function(message, rawMessage){
+			self.getEventInfo(message.names, function(err, eventList){
+				if(rawMessage && rawMessage._message.sender){
+					self.sendEvent(rawMessage._message.sender, 'FluxNode.getEventInfo.Response', eventList, rawMessage._message.id);
+				}
+			})
+		});
+		self.addListenerInfo('FluxNode', 'FluxNode.getEventInfo', 'Retrieves the Event Information for the Target FluxNode', {
+			name: 'Event Names',
+			validators:{
+				hasMany: {
+					validators: {
+						string:{}
+					}
+				}
+			}
+		});
+		
+		self.on('FluxNode.getListenerInfo', function(message, rawMessage){
+			self.getListenerInfo(message.mixinName, message.eventName, function(err, listenerList){
+				if(rawMessage && rawMessage._message.sender){
+					self.sendEvent(rawMessage._message.sender, 'FluxNode.getListenerInfo.Response', listenerList, rawMessage._message.id);
+				}
+			})
+		});
+		self.addListenerInfo('FluxNode', 'FluxNode.getListenerInfo', 'Retrieves the Listener Information for the Target FluxNode', {
+			name: 'Listener Names',
+			validators:{
+				hasMany: {
+					validators: {
+						string:{}
+					}
+				}
+			}
+		});
 		
 		self.on('FluxNode.getSettings', function(message, rawMessage){
 			
@@ -148,6 +230,16 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				
 				self.sendEvent(rawMessage._message.sender, 'FluxNode.getSettings.Response', settingList, rawMessage._message.id);
 			});
+		});
+		self.addListenerInfo('FluxNode', 'FluxNode.getSettings', 'Retrieves the Current Setting Values for the target FluxNode', {
+			name: 'Setting Names',
+			validators:{
+				hasMany: {
+					validators: {
+						string:{}
+					}
+				}
+			}
 		});
 		
 		self.on('FluxNode.getInstalledMixins', function(message, rawMessage){
@@ -158,15 +250,42 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				}
 			});
 		});
+		self.addListenerInfo('FluxNode', 'FluxNode.getInstalledMixins', 'Retrieves a List of Mixins that are available to be mixed into the target FluxNode.', {
+			name: 'Mixin Names',
+			validators:{
+				hasMany: {
+					validators: {
+						string:{}
+					}
+				}
+			}
+		});
 		
 		self.on('FluxNode.getSettingInfo', function(message, rawMessage){
 			var settingName = message.names;
-			self.getSettingInfo(settingName, function(err, settingInfo){
+			self.getSettingInfo(settingName, function(err, settingInfo, settingValues){
 				if(rawMessage && rawMessage._message.sender){
-					self.sendEvent(rawMessage._message.sender, 'FluxNode.getSettingInfo.Response', settingInfo, rawMessage._message.id);
+					self.sendEvent(rawMessage._message.sender, 'FluxNode.getSettingInfo.Response', {
+						settings: settingInfo,
+						values: settingValues
+					}, rawMessage._message.id);
 				}
 			});
 		});
+		self.addListenerInfo('FluxNode', 'FluxNode.getSettingInfo', 'Retrieves the Setting Information for the Target Nodes', {
+			name: 'Event Names',
+			validators:{
+				hasMany: {
+					validators: {
+						string:{}
+					}
+				}
+			}
+		});
+		
+		/*
+		 * Start COnfiguration of support services
+		 */
 		
 		if(self.debug) console.log('Configuring StorageManager');
 		
@@ -361,6 +480,29 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 									}
 								});
 							});
+							self.addListenerInfo('FluxNode', 'FluxNode.Mixin', 'Mixes in the functionality for the Selected Mixin', {
+								validators: {
+									object: {
+										fields: {
+											name: {
+												name: 'Mixin Name',
+												description: 'The name of the Mixin to Mix',
+												validators: {
+													string:{}
+												}
+											},
+											options: {
+												name: 'Options',
+												description: 'Options for the selected mixin',
+												validators: {
+													object:{}
+												}
+											}
+										}
+									}
+								}
+							});
+							
 							
 							self.emit('FluxNode.Ready', self);
 							if(cb){
@@ -399,6 +541,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		}
 		
 		if(self.debug) console.log('Starting Configuration');
+		
 		storageManager.configure({
 			debug: self.debug,
 			stores: cfg.stores
@@ -416,7 +559,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		FluxNodeConstructor.prototype.addSetting = function(name, initialValue, validation, callback){
 			var self = this;
-			console.log('ADDING SETTING: '+name);
 			self.setDataValueByString(self._Settings, name, initialValue);
 			self.setDataValueByString(self._SettingsMeta, name, validation);
 			
@@ -428,10 +570,8 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		FluxNodeConstructor.prototype.getSettingInfo = function(name, callback){
 			var self = this;
 			
-			console.log(self._SettingsMeta);
-			
 			if(callback){
-				callback(false, self._SettingsMeta);
+				callback(false, self._SettingsMeta, self._Settings);
 			}
 			return self._SettingsMeta;
 		}
@@ -442,7 +582,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			if(settingMeta){
 				switch(typeof settingMeta){
 					case 'function':
-					
 						var func = settingMeta;
 						if(func(newValue)===true){
 							self.setDataValueByString(self._Settings, name, newValue);
@@ -457,6 +596,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						}
 						break;
 					default:
+					console.log('SETTING: '+name, newValue);
 						if(callback){
 							callback(false);
 						}
@@ -585,7 +725,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			
 			if(!this._listenerInfo[mixinName][listenerName]){
 				this._listenerInfo[mixinName][listenerName] = {
-					mixin:mixinName,
+					mixin: mixinName,
 					name: listenerName,
 					description: listenerDescription,
 					params: listenerParams
@@ -605,7 +745,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		FluxNodeConstructor.prototype.getListenerInfo = function(mixinName, eventName, callback){
 			var returnInfo = {};
-			
+			console.log(this._listenerInfo);
 			if((typeof mixinName) =='function'){
 				callback = mixinName;
 				eventName = false;
@@ -638,7 +778,35 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			}
 		}
 		
+		FluxNodeConstructor.prototype.getStoreInfo = function(message, rawMessage){
+			var stores = this.StorageManager.getStores();
+			var storeReturn = [];
+			
+			for(var i in stores){
+				var store = stores[i];
+				
+				var storeCfg = {
+					id: store.id,
+					name: store.name,
+					channels:[]
+				};
+				for(var chan in store._channels){
+					var chanRec = store._channels[chan];
+					console.log(store._channels[chan]);
+					storeCfg.channels.push({
+						name: chanRec.name
+					});
+				}
+				storeReturn.push(storeCfg);
+			}
+			
+			if(rawMessage && rawMessage._message.sender){
+				this.sendEvent(rawMessage._message.sender, 'FluxNode.getStoreInfo.Response', storeReturn, rawMessage._message.id);
+			}
+		}
+		
 		FluxNodeConstructor.prototype.registerMiddleware = function(mixinName, actionName, middlewareFunc, callback){
+			
 			if(!this._middleware[mixinName]){
 				this._middleware[mixinName]={};
 			}
@@ -654,7 +822,14 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		}
 		
 		FluxNodeConstructor.prototype.getMiddleware = function(mixinName, actionName, params){
-			return (this._middleware[mixinName] && this._middleware[mixinName][actionName])?this._middleware[mixinName][actionName]:[];
+			var returnList = [];
+			if(this._middleware[mixinName] && this._middleware[mixinName][actionName]){
+				for(var i=0;i<this._middleware[mixinName][actionName].length;i++){
+					returnList.push(this._middleware[mixinName][actionName][i]);
+				}	
+			};
+			
+			return returnList;
 		}
 		
 		FluxNodeConstructor.prototype.processMiddleware = function(mixinName, actionName, params, callback){
@@ -686,7 +861,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					return;
 				}
 				var middleFunc = middleware.shift();
-				
 				middleFunc.apply(this, params);	
 			}
 			
@@ -703,11 +877,12 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			self.TunnelManager.registerTunnel(tunnel.destination, newTunnel);
 		}
 		
-		FluxNodeConstructor.prototype.doCallback = function(argList, options){
-			if(typeof argList[argList.length-1] =='function'){
-				var cb = argList[argList.length-1];
-				cb.apply(options);
-			}	
+		FluxNodeConstructor.prototype.doCallback = function(topic, message, rawMessage){
+			var self = this;
+			console.log('DIONG CALLBACK');
+			if(rawMessage._message.sender){
+				self.sendEvent(rawMessage._message.sender, topic+'.Response', message, rawMessage._message.id);
+			}
 		}
 		
 		FluxNodeConstructor.prototype.doSubscribe = function(subscriber, eventList){
@@ -790,6 +965,59 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 			}else{
 				return;	
 			}
+		}
+		
+		FluxNodeConstructor.prototype.mapTaggedObject =  function(inputObject, targetObject, tagFormat, callback){
+			//inputObject and targetObject are required
+			if(!inputObject || typeof(inputObject)!='object'){
+				throw "Invalid input Object";
+			}
+			
+			if(!targetObject || typeof(targetObject)!='object'){
+				throw "Invalid target Object";
+			}
+			
+			//tagFormat is optional, so we need to check iff the callback has been supplied in it's place
+			if((typeof tagFormat)=='function'){
+				callback = tagFormat;
+				tagFormat = /{([^}])+}/g; //"{SourceName}" or "{Source.Name}" 
+			}
+			
+			var self = this;
+			
+			for(var targetKey in targetObject){
+				var targetKeyValue = targetObject[key];
+				
+				//for each property in the target object
+				switch((typeof targetKeyValue)){
+					//if it's a string, we need to check for tags
+					case 'string':
+						//TODO: add some built in objects like "Date" and "ThisNode"
+						var matchedTags = targetKeyValue.match(tagFormat);
+						//map the value for each matched tag
+						for(var tagIdx=0;tagIdx<matchedTags.length;tagIdx++){
+							var tag = matchedTags[tagIdx].replace('{').replace('}');
+							var newValue = self.getDataValueByString(inputObject, tag);
+							targetKeyValue = targetKeyValue.replace(matchedTags[tagIdx], newValue);
+						}
+						targetObject[targetKey] = targetKeyValue;
+						break;
+					//if it's an object, we need to run it back through the mapper
+					case 'object':
+						targetObject[targetKey] = self.mapTaggedObject(inputObject, targetObject[targetKey], tagFormat);
+						break;
+					//if it's anything else, leave it alone
+					default:
+						break;
+					
+				}
+			}
+			
+			if(callback){
+				callback(false, targetObject);	
+			}
+			
+			return targetObject;
 		}
 		
 		FluxNodeConstructor.prototype.setDataValueByString = function(data, nameString, value){
@@ -1026,6 +1254,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				if(!self._mixins[mixinName]){
 					//try and load the mixin from the standard paths
 					try{
+						console.log(mixinName);
 						mixinClass = require(mixinName);
 					}catch(err){
 						if(!mixinClass){
@@ -1067,6 +1296,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				if(!self._mixins[mixinName]){
 					//first try finding the mixin as is
 					if(self.debug){console.log('Mixin: Checking without modification')}
+					
 					require([mixinName], function(mixinClass){
 						for(var x in mixinClass){
 							if(x!='init'){

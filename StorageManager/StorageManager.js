@@ -113,6 +113,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 						var storeCfg = stores.shift();
 						
 						self.createStore(storeCfg, function(createErr, store){
+							console.log(storeCfg);
 							if(!createErr){
 								if(storeCfg.isDefault===true){ //the first store to be added will be the default store, unless a later one has isDefault===true
 									self.defaultStore = store;
@@ -156,6 +157,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 	}
 	
 	StorageManager.prototype.getDefaultStore = function(){
+		console.log(this.defaultStore);
 		return this.defaultStore;
 	}
 	
@@ -168,7 +170,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 			store = self.getDefaultStore();
 			channel = false;
 		}else{
-			if((typeof store)=='string'){
+			if((typeof store)=='string' || !store){
 				store = self.getStore(store);
 			}
 		}
@@ -307,7 +309,7 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 				stores.push(self.stores[strIdx]);
 			}
 		}else{
-			if(!Array.isArray(stores)){
+			if(!Array.isArray(stores) || !stores){
 				var rStore = self.getStore(stores);
 				stores = [rStore]; 
 			}
@@ -355,8 +357,12 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 			var store = stores.shift();
 			
 			var storeChannels = channels[curStoreIdx];
-
+			
 			if(store){
+				if(!storeChannels){
+					storeChannels = storeChannels = [store.defaultChannel];
+				}
+				
 				store.find(query, fields, storeChannels, function(err, records){
 					recs = records;
 					if(!err){
@@ -642,6 +648,14 @@ function StorageManagerBuilder(util, EventEmitter2, Store, Channel, Collection, 
 			}
 		}
 		return false;
+	}
+
+	StorageManager.prototype.getStores = function(callback){
+		var self = this;
+		if(callback){
+			callback(false, self.stores);
+		}
+		return self.stores;	
 	}
 
 	StorageManager.prototype.createCollection = function(cfg, callback){

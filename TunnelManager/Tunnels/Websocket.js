@@ -18,6 +18,7 @@ function wsTunnelBuilder(util, EventEmitter2, Tunnel){
 		var self = this;
 		
 		Tunnel.call(this, arguments);
+		self.type = 'Websocket';
 		self.setSocket = setSocket;
 		self.send = send;
 		self.recieve = recieve;

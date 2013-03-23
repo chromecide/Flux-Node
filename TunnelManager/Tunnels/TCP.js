@@ -17,7 +17,7 @@ if (typeof define === 'function' && define.amd) {
 function tcpTunnelBuilder(util, EventEmitter2, Tunnel){
 	function TCPTunnel(cfg){
 		var self = this;
-		
+		self.type = 'TCP';
 		self.setSocket = setSocket;
 		self.send = send;
 		self.recieve = recieve;

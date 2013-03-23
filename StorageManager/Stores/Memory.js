@@ -95,12 +95,16 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 	 * Channel Functions
 	 */
 	
-	function getChannel(channelName){
-		if(!channelName){
-			return this._channels;
+	function getChannel(channelName, callback){
+		var returnVal = this._channels; 
+		if(channelName){
+			 returnVal = this._channels[channelName]
 		}
 		//console.log(this._channels[channelName]);
-		return this._channels[channelName];
+		if(callback){
+			callback(false, returnVal);
+		}
+		return returnVal;
 	}
 	
 	function addChannel(name, callback){
@@ -253,11 +257,12 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 				}
 			}
 		}
-		
+		console.log(queryType);
 		switch(queryType){
 			case 'string': //assume it's an id
 				for(var chanIdx in channels){
 					var channel = channels[chanIdx];
+					console.log(channel);
 					for(var recIdx in self.records[channel]){
 						
 						if(self.records[channel][recIdx].id==query){
@@ -311,7 +316,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record){
 		if((typeof channel)=='string'){
 			channel = self.getChannel(channel);
 		}
-		
+		console.log(self._records[channel.name]);
 		if(self._records[channel.name]){
 			for(var recIdx=0;recIdx<self._records[channel.name].length;recIdx++){
 				if(maxRecs!=false && retArray.length==maxRecs){

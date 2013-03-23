@@ -1,0 +1,48 @@
+{
+  "name": "TTS",
+  "description": "Provides basic Text to Speech capabilities.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Justin Pradier",
+    "email": "chromecide@chromecide.com",
+    "url": "http://chromecide.com/"
+  },
+  "config":{
+  	"defaultVoice": {
+  		"name": "Default Voice",
+  		"description": "The default voice to use when none is supplied with the TTS.Speak Topic.",
+  		"validators": {
+  			"string": {}
+  		}
+  	}
+  },
+  "events": {
+  	
+  },
+  "listeners": {
+  	"TTS.Speak":{
+  		"name":"TTS.Speak",
+  		"description": "Speaks the supplied text.",
+  		"parameters": {
+			"text": {
+				"name": "Text",
+				"description": "The text to speak.",
+				"validators":{
+					"required":{},
+					"string":{}
+				}
+			},
+			"voice": {
+				"name": "Voice",
+				"description": "Thevoice to use when speaking the text.",
+				"validators":{
+					"string":{}
+				}
+			}
+		}	
+  	}
+  },
+  "methods": {
+  	
+  }
+}

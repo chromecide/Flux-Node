@@ -160,7 +160,6 @@ if (typeof define === 'function' && define.amd) {
 	}
 	
 	model.prototype.validateField = function(field, value, callback){
-		
 		var self = this;
 		if((typeof field)=='string'){
 			field = this._fields[field];
@@ -181,9 +180,11 @@ if (typeof define === 'function' && define.amd) {
 			if(valList.length==0){
 				isValid = true;
 			}
+			
 			function validationLoop(){
 				if(valList.length==0){
 					if(callback){
+						console.log('cb1');
 						callback(isValid);
 					}
 					return;
@@ -221,6 +222,8 @@ if (typeof define === 'function' && define.amd) {
 			}
 			
 			validationLoop();
+		}else{
+			console.log('field not found:', field);
 		}
 	}
 	

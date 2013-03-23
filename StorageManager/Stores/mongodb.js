@@ -41,12 +41,23 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, mongo)
 		
 		if(cfg){
 			self.configureStore(cfg);
+			if(cfg.channels){
+				self.once('Store.Ready', function(){
+					for(var channelName in cfg.channels){
+						channelCfg = cfg.channels[channelName];
+						console.log(channelCfg);
+						self.addChannel(channelCfg);
+					}
+				});
+			}
 		}
+		
 		
 		var Server = mongo.Server;
 		var Db = mongo.Db;
 		
 		self.server = new Server(self.host, self.port, self.mongo_options, {safe: true});
+		
 		var db = self.db = new Db(self.databaseName, self.server, {safe: true});
 		
 		try{
@@ -110,6 +121,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, mongo)
 		}else{
 			self.port = 27017;
 		}
+		
 	}
 	
 	function getChannel(name, callback){
@@ -159,11 +171,10 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, mongo)
 				}).toArray(function(err, modelDefs){
 					if(modelDefs.length==0){
 						db.collection('_models').insert({
-							name:model.name,
+							name: model.name,
 							channel: channelObj.name,
 							fields: model.getFields()
 						}, function(err, recs){
-							console.log('==========');
 							if(callback){
 								callback(err, channelObj);
 							}
@@ -439,6 +450,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, mongo)
 				}
 				self.db.collection(channelName, function(err, collection){
 					var mQuery = objectToQuery(query);
+					
 					var queryOpts = {};
 					if(maxRecs && maxRecs>0){
 						queryOpts.limit = maxRecs;
@@ -448,6 +460,7 @@ function StoreBuilder(util, EventEmitter2, Store, Channel, Model, Record, mongo)
 						var retArr = [];
 						if(cursor){
 							cursor.toArray(function(err, arr){
+								
 								if(!channel){
 									self.getChannel(channelName, function(err, chan){
 										for(var idx in arr){

@@ -2,6 +2,7 @@
   "name": "Rules",
   "description": "Adds advanced Workflow Rule functionality",
   "version": "0.1.0",
+  "main": "RuleManager.js",
   "author": {
     "name": "Justin Pradier",
     "email": "chromecide@chromecide.com",
