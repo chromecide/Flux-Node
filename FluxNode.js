@@ -32,6 +32,12 @@ if (typeof define === 'function' && define.amd) {
 		StorageManager = require('./StorageManager/StorageManager.js').StorageManager;
 	var fnConstruct = FluxNodeObj(util, EventEmitter2, TunnelManager, StorageManager);
 	exports.FluxNode = fnConstruct;
+	
+	if(require.main === module){
+		//module was called directly
+		new fnConstruct();
+	} 
+
 }
 
 //this wrapper allows us to deal with the difference in loading times between NodeJS and asyync browser loading
@@ -358,7 +364,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 							return function (message){
 								
 								if(message._message.inReplyTo==messageId){
-									cb.call(self, message.message, message._message);
+									cb.call(self, message.message, message);
 								}else{
 									//re-add the listener
 									self.TunnelManager.once('message', callbackListenerCreator(mId, callback));
@@ -443,6 +449,14 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					
 					self.emit('Tunnel.Closed', remoteId);
 				});
+				
+				if(!cfg.mixins){
+					cfg.mixins = [
+						{
+							name: 'flux-repl'
+						}
+					];
+				}
 				
 				if(cfg.mixins){
 					if(self.debug) console.log('Configuring Mixins');
@@ -879,7 +893,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 		
 		FluxNodeConstructor.prototype.doCallback = function(topic, message, rawMessage){
 			var self = this;
-			console.log('DIONG CALLBACK');
 			if(rawMessage._message.sender){
 				self.sendEvent(rawMessage._message.sender, topic+'.Response', message, rawMessage._message.id);
 			}
@@ -1153,7 +1166,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 											parent[targetSubName] = newTargetValue;
 										}
 									}else{
-										target[targetSubName] = newTargetValue;	
+										target[targetSubName] = newTargetValue;
 									}
 									
 								}else{
@@ -1254,7 +1267,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				if(!self._mixins[mixinName]){
 					//try and load the mixin from the standard paths
 					try{
-						console.log(mixinName);
 						mixinClass = require(mixinName);
 					}catch(err){
 						if(!mixinClass){
@@ -1266,8 +1278,6 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					if(!mixinClass){
 						console.log("STILL NOT FOUND");
 					}
-				
-					
 					
 					for(var x in mixinClass){
 						if(x!='init'){
