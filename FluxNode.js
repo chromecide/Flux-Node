@@ -35,7 +35,33 @@ if (typeof define === 'function' && define.amd) {
 	
 	if(require.main === module){
 		//module was called directly
-		new fnConstruct();
+		
+		//turn supported command line args into a config
+		var __config = {
+			mixins:[
+				{
+					name: 'flux-repl'
+				}
+			]	
+		};
+		
+		for(var i=2;i<process.argv.length;i++){ //start at 2 because the first one is "node" and the second is the script name
+			var val = process.argv[i];
+			var arg = val.split('=');
+			switch(arg[0].trim().toLowerCase()){
+				case 'debug':
+					__config.debug = true;
+					__config.mixins.push({
+						name: 'debug',
+						options:{
+							events: true
+						}
+					});
+					break
+			}	
+		}
+		
+		new fnConstruct(__config);
 	} 
 
 }
