@@ -487,15 +487,20 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 				if(cfg.mixins){
 					if(self.debug) console.log('Configuring Mixins');
 					var mixin = false;
+					var mixinList = [];
+					for(var mixIdx=0;mixIdx<cfg.mixins.length;mixIdx++){
+						mixinList.push(cfg.mixins[mixIdx]);
+					}
 					var mixinLoop = function(){
 						
-						if(cfg.mixins.length>0){
-							mixin = cfg.mixins.shift();
+						if(mixinList.length>0){
+							mixin = mixinList.shift();
+							console.log(mixin);
 						}else{
+							console.log('all mixins loaded');
 							mixin = false;
 						}
 						if(mixin){
-							
 							if(typeof mixin=='function'){
 								mixin(self);
 							}else{
@@ -520,6 +525,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 									}
 								});
 							});
+							
 							self.addListenerInfo('FluxNode', 'FluxNode.Mixin', 'Mixes in the functionality for the Selected Mixin', {
 								validators: {
 									object: {
@@ -543,8 +549,8 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 								}
 							});
 							
-							
 							self.emit('FluxNode.Ready', self);
+							
 							if(cb){
 								cb(self, cfg);
 							}
@@ -553,6 +559,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 					}
 					mixinLoop();
 				}else{
+					console.log('NODE READY');
 					self.emit('FluxNode.Ready', self);
 					if(cb){
 						cb(self, cfg);
@@ -1320,7 +1327,7 @@ function FluxNodeObj(util, evObj, TunnelManager, StorageManager){
 						if(callback){
 							callback.call(self, err, mixinReturn);	
 						}
-						self.emit('Mixin.Ready', mixinReturn);
+						//self.emit('Mixin.Ready', mixinReturn);
 					});	
 				}else{
 					mixinReturn = self._mixins[mixinName];
